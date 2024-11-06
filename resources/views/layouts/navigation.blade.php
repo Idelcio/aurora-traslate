@@ -21,6 +21,7 @@
                         {{ __('Listade usuários') }}
                     </x-nav-link>
                     @endcan
+
                 </div>
             </div>
 
