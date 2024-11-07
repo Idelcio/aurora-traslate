@@ -51,8 +51,7 @@ Route::middleware('auth')->group(function () {
     // Rota para visualizar o PDF
     Route::get('/pdf/view/{filename}', [PdfController::class, 'show'])->name('pdf.show');
 
-    Route::get('/draw-balls/{count}', [DrawBallController::class, 'drawBalls']);
-    Route::get('/draw-balls-on-image/{count}', [DrawBallController::class, 'drawBallsOnImage']);
+
 
     Route::get('/image/upload', [ImageController::class, 'showUploadForm'])->name('image.upload');
     Route::post('/image/upload', [ImageController::class, 'upload'])->name('image.upload.post');

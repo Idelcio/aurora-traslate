@@ -39,6 +39,11 @@
             {{ $slot }}
         </main>
     </div>
+
+    <!-- Rodapé -->
+    <<footer class="bg-gray-700 text-white text-center py-4 mt-8">
+        <p>&#169; 2024 forest</p>
+        </footer>
 </body>
 
 </html>
