@@ -5,7 +5,6 @@ namespace App\Http\Controllers;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 
-
 class PdfController extends Controller
 {
     // Exibe o formulário de upload
@@ -24,10 +23,10 @@ class PdfController extends Controller
         // Salva o arquivo PDF no storage
         $path = $request->file('pdf')->store('pdfs');
 
-        // Redireciona para a visualização do PDF
+        // Redireciona para a mesma página com o nome do arquivo
         return redirect()->route('pdf.upload')
             ->with('success', 'PDF carregado com sucesso! Arquivo: ' . basename($path))
-            ->with('pdf_filename', basename($path));
+            ->with('pdf_filename', basename($path)); // Passa o nome do arquivo para a sessão
     }
 
     // Exibe o PDF
