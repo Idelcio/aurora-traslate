@@ -14,13 +14,14 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
     <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/script.js'])
 
     <!-- PDF.js Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
 
     <script src="{{ asset('js/pdf.js') }}"></script>
     <script src="{{ asset('js/pdf.worker.js') }}"></script>
+
 </head>
 
 <body class="font-sans antialiased">

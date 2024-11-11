@@ -50,12 +50,6 @@ Route::middleware('auth')->group(function () {
 
     // Rota para visualizar o PDF
     Route::get('/pdf/view/{filename}', [PdfController::class, 'show'])->name('pdf.show');
-
-
-
-    Route::get('/image/upload', [ImageController::class, 'showUploadForm'])->name('image.upload');
-    Route::post('/image/upload', [ImageController::class, 'upload'])->name('image.upload.post');
-    Route::get('/image/view/{filename}', [ImageController::class, 'viewImage'])->name('image.view');
 });
 
 // Incluindo as rotas de autenticação

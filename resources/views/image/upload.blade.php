@@ -21,4 +21,7 @@
             <button type="submit" class="mt-4 bg-blue-500 text-white rounded p-2">Carregar Imagem</button>
         </form>
     </div>
+
+
+
 </x-app-layout>

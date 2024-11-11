@@ -1,6 +1,7 @@
 import './bootstrap';
 
 
+
 import Alpine from 'alpinejs';
 
 import * as pdfjsLib from 'pdfjs-dist';
