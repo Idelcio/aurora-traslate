@@ -1,5 +1,5 @@
 <x-app-layout>
-    <div class="container mx-auto mt-5">
+    <div class="container mx-auto mt-5 ml-10">
         <h2 class="font-semibold">Carregar e Visualizar PDF</h2>
 
         <!-- Exibe erros de validação -->
@@ -31,7 +31,6 @@
         </div>
         <!-- Botões de Desfazer e Salvar -->
         <div class="mt-4">
-            <button id="undoButton" class="bg-red-500 text-white rounded p-2">Desfazer</button>
             <button id="saveButton" class="bg-green-500 text-white rounded p-2">Salvar Anotações</button>
         </div>
         @endif
@@ -45,6 +44,14 @@
         </div>
     </div>
 
+    <!-- Menu contextual para opções de exclusão -->
+    <div id="context-menu" class="hidden absolute bg-white border border-gray-300 rounded shadow-lg z-50">
+        <ul>
+            <li id="remove-and-refactor" class="p-2 hover:bg-gray-200 cursor-pointer">Excluir e Refatorar</li>
+            <li id="remove-keep-numbering" class="p-2 hover:bg-gray-200 cursor-pointer">Excluir e Manter Numeração</li>
+        </ul>
+    </div>
+
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
 
@@ -54,6 +61,7 @@
         let scale = 0.3;
         let circles = [];
         let counter = 1;
+        let targetCircle = null; // Círculo alvo para o menu contextual
 
         document.getElementById('choose-file-btn').addEventListener('click', function() {
             document.getElementById('pdf-input').click();
@@ -112,42 +120,72 @@
         pdfContainer.addEventListener('click', function(event) {
             addCircle(event, pdfContainer);
         });
+
         pdfContainer.addEventListener('contextmenu', function(e) {
             e.preventDefault();
-            removeCircle(e);
+            let target = e.target;
+            if (target.classList.contains('circle')) {
+                targetCircle = target;
+                showContextMenu(e);
+            }
         });
 
-        function addCircle(event, container) {
-            // Obtenha a posição do canvas dentro do container PDF
-            let rect = document.getElementById('pdf-canvas').getBoundingClientRect();
+        function showContextMenu(e) {
+            const contextMenu = document.getElementById('context-menu');
+            contextMenu.style.left = `${e.pageX}px`;
+            contextMenu.style.top = `${e.pageY}px`;
+            contextMenu.classList.remove('hidden');
+        }
 
-            // Calcule a posição clicada relativa ao canvas do PDF, levando em conta o zoom (escala)
-            let x = (event.clientX - rect.left) / scale; // posição X relativa ao PDF sem escala
-            let y = (event.clientY - rect.top) / scale; // posição Y relativa ao PDF sem escala
+        document.addEventListener('click', function(event) {
+            if (!event.target.closest('#context-menu')) {
+                document.getElementById('context-menu').classList.add('hidden');
+            }
+        });
+
+        // Opções de exclusão
+        document.getElementById('remove-and-refactor').addEventListener('click', function() {
+            if (targetCircle) {
+                removeCircle(targetCircle, true);
+                document.getElementById('context-menu').classList.add('hidden');
+            }
+        });
+
+        document.getElementById('remove-keep-numbering').addEventListener('click', function() {
+            if (targetCircle) {
+                removeCircle(targetCircle, false);
+                document.getElementById('context-menu').classList.add('hidden');
+            }
+        });
+
+        // Função para adicionar círculos
+        function addCircle(event, container) {
+            let rect = document.getElementById('pdf-canvas').getBoundingClientRect();
+            let x = (event.clientX - rect.left) / scale;
+            let y = (event.clientY - rect.top) / scale;
 
             let circle = document.createElement('div');
             circle.className = 'circle';
             circle.textContent = counter++;
-            circle.dataset.x = x; // armazena a posição X sem escala
-            circle.dataset.y = y; // armazena a posição Y sem escala
+            circle.dataset.x = x;
+            circle.dataset.y = y;
 
-            // Corrigir o cálculo da posição do círculo para centralizá-lo no ponto de clique
-            let circleSize = 25; // Tamanho do círculo (metade da largura e altura)
-            circle.style.left = `${(x * scale) - circleSize}px`; // Subtrai a metade do tamanho do círculo
-            circle.style.top = `${(y * scale) - circleSize}px`; // Subtrai a metade do tamanho do círculo
-            circle.style.transform = `scale(${scale})`; // ajusta o tamanho do círculo conforme a escala
+            let circleSize = 25;
+            circle.style.left = `${(x * scale) - circleSize}px`;
+            circle.style.top = `${(y * scale) - circleSize}px`;
+            circle.style.transform = `scale(${scale})`;
 
             container.appendChild(circle);
             circles.push(circle);
         }
 
-        function removeCircle(event) {
-            let target = event.target;
-            if (target.classList.contains('circle')) {
-                let index = circles.indexOf(target);
-                if (index !== -1) circles.splice(index, 1);
-                target.remove();
+        // Função para remover círculos
+        function removeCircle(circle, refactorNumbers) {
+            let index = circles.indexOf(circle);
+            if (index !== -1) circles.splice(index, 1);
+            circle.remove();
 
+            if (refactorNumbers) {
                 circles.forEach((circle, i) => {
                     circle.textContent = i + 1;
                 });
@@ -158,11 +196,9 @@
         // Função para atualizar as posições dos círculos após o zoom
         function updateCirclePositions() {
             circles.forEach(circle => {
-                let x = parseFloat(circle.dataset.x); // posição original X sem escala
-                let y = parseFloat(circle.dataset.y); // posição original Y sem escala
-
-                // Recalcula a posição e o tamanho conforme a nova escala
-                let circleSize = 25; // Tamanho do círculo (metade da largura e altura)
+                let x = parseFloat(circle.dataset.x);
+                let y = parseFloat(circle.dataset.y);
+                let circleSize = 25;
                 circle.style.left = `${(x * scale) - circleSize}px`;
                 circle.style.top = `${(y * scale) - circleSize}px`;
                 circle.style.transform = `scale(${scale})`;
@@ -179,35 +215,9 @@
             }
         });
 
-        // Função de salvar anotações
-        document.getElementById('saveButton').addEventListener('click', function() {
-            console.log("Salvando anotações...");
-            // Lógica de salvar anotações aqui
-        });
+
+
         @endif
     </script>
 
-    <!-- CSS para os círculos -->
-    <style>
-        .circle {
-            width: 50px;
-            height: 50px;
-            background-color: red;
-            color: white;
-            border-radius: 50%;
-            position: absolute;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            font-size: 16px;
-            cursor: pointer;
-            user-select: none;
-        }
-
-        /* Cursor de mira */
-        #pdf-container {
-
-            cursor: crosshair;
-        }
-    </style>
 </x-app-layout>

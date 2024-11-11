@@ -6,6 +6,8 @@ use App\Http\Controllers\PdfController; // Importação do PdfController
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DrawBallController;
 use App\Http\Controllers\ImageController;
+use Barryvdh\DomPDF\Facade\Pdf;
+use App\Http\Controllers\AnnotationController;
 
 /*
 |----------------------------------------------------------------------
@@ -50,7 +52,14 @@ Route::middleware('auth')->group(function () {
 
     // Rota para visualizar o PDF
     Route::get('/pdf/view/{filename}', [PdfController::class, 'show'])->name('pdf.show');
+
+    //Exibe o PDF com as anotações
+
+    Route::post('/pdf/{pdfId}/save-annotations', [AnnotationController::class, 'saveAnnotations'])->name('pdf.saveAnnotations');
+    Route::get('/pdf/{pdfId}/view', [AnnotationController::class, 'viewAnnotations'])->name('pdf.view');
 });
+
+
 
 // Incluindo as rotas de autenticação
 require __DIR__ . '/auth.php';
