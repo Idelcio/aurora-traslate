@@ -1,6 +1,6 @@
 import './bootstrap';
 
-
+import { PDFDocument } from 'pdf-lib';
 
 import Alpine from 'alpinejs';
 

@@ -1,6 +1,5 @@
 <x-app-layout>
     <div class="container mx-auto mt-5 ml-10">
-        <h2 class="font-semibold">Carregar e Visualizar PDF</h2>
 
         <!-- Exibe erros de validação -->
         @if ($errors->any())
@@ -54,6 +53,7 @@
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
 
     <script>
         let pdfDoc = null;
@@ -205,17 +205,42 @@
             });
         }
 
-        // Função de desfazer última anotação
-        document.getElementById('undoButton').addEventListener('click', function() {
-            if (circles.length > 0) {
-                let lastCircle = circles.pop();
-                lastCircle.remove();
-                circles.forEach((circle, i) => circle.textContent = i + 1);
-                counter = circles.length + 1;
-            }
+        // Função para salvar o PDF com as edições (bolinhas)
+        document.getElementById('saveButton').addEventListener('click', async function() {
+            const existingPdfBytes = await fetch("{{ route('pdf.show', ['filename' => $pdf_filename]) }}").then(res => res.arrayBuffer());
+            const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
+
+            // Adiciona círculos no PDF
+            const pages = pdfDoc.getPages();
+            const firstPage = pages[0];
+            const {
+                width,
+                height
+            } = firstPage.getSize();
+
+            circles.forEach(circle => {
+                const x = parseFloat(circle.dataset.x) * 72; // Convertendo para unidades do PDF (1 inch = 72 points)
+                const y = height - (parseFloat(circle.dataset.y) * 72); // Ajuste para coordenada Y invertida no PDF
+                firstPage.drawEllipse({
+                    x,
+                    y,
+                    width: 20,
+                    height: 20,
+                    color: PDFLib.rgb(0, 0, 0),
+                    borderWidth: 2,
+                });
+            });
+
+            // Salva o PDF com as alterações
+            const pdfBytes = await pdfDoc.save();
+            const blob = new Blob([pdfBytes], {
+                type: 'application/pdf'
+            });
+            const link = document.createElement('a');
+            link.href = URL.createObjectURL(blob);
+            link.download = 'document_with_annotations.pdf';
+            link.click();
         });
-
-
 
         @endif
     </script>
