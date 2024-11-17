@@ -20,13 +20,19 @@ class PdfController extends Controller
             'pdf' => 'required|mimes:pdf|max:2048', // Validação do arquivo PDF
         ]);
 
-        // Salva o arquivo PDF no storage
-        $path = $request->file('pdf')->store('pdfs');
-        $filename = basename($path);
+        // Obtém o arquivo PDF
+        $pdf = $request->file('pdf');
+
+        // Obtém o nome original do arquivo
+        $filename = $pdf->getClientOriginalName();
+
+        // Salva o arquivo com o nome original no diretório 'pdfs'
+        $path = $pdf->storeAs('pdfs', $filename);
 
         // Retorna para a mesma página com o nome do arquivo
         return view('pdf.pdf_upload', ['pdf_filename' => $filename]);
     }
+
 
     // Exibe o PDF para renderização com PDF.js
     public function show($filename)

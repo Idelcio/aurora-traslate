@@ -217,6 +217,9 @@
             const existingPdfBytes = await fetch("{{ route('pdf.show', ['filename' => $pdf_filename]) }}").then(res => res.arrayBuffer());
             const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
 
+            // Embeds the Helvetica font to ensure the same font is used for the numbers
+            const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+
             // Adiciona círculos e números no PDF
             const pages = pdfDoc.getPages();
             const firstPage = pages[0];
@@ -233,17 +236,16 @@
                     xScale: size, // Largura do círculo
                     yScale: size, // Altura do círculo
                     color: PDFLib.rgb(1, 0, 0), // Cor do círculo (vermelho)
-                    borderWidth: 1,
-
 
                 });
 
-                // Desenha o número sobre o círculo
+                // Desenha o número sobre o círculo (com a fonte Helvetica)
                 firstPage.drawText(circle.textContent, {
                     x: x - 5, // Centraliza o número no círculo
                     y: firstPage.getHeight() - y - 5,
                     size: 25,
-                    color: PDFLib.rgb(1, 1, 1), // Cor do número (vermelho)
+                    color: PDFLib.rgb(1, 1, 1), // Cor do número (branco)
+                    font: font, // Usa a fonte Helvetica carregada
                 });
             });
 
@@ -257,11 +259,12 @@
             // Salva o PDF com o nome original
             const downloadLink = document.createElement('a');
             downloadLink.href = url;
-            downloadLink.download = "{{ $pdf_filename }}"; // Usa o nome original
+            downloadLink.download = "{{ $pdf_filename }}" + "_boleado.pdf";
             downloadLink.click();
 
             URL.revokeObjectURL(url);
         });
+
         @endif
     </script>
 </x-app-layout>
