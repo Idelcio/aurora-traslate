@@ -1,6 +1,5 @@
 <x-app-layout>
     <div class="container mx-auto mt-5 ml-10">
-
         <!-- Exibe erros de validação -->
         @if ($errors->any())
         <div class="bg-red-200 text-red-800 p-3 rounded mt-4">
@@ -35,8 +34,8 @@
         @endif
     </div>
 
-    <!-- Contêiner para botões de zoom -->
-    <div id="zoom-buttons-container" class="fixed bottom-5 right-5 z-50 cursor-move bg-gray-200 rounded-lg p-2 border-2 border-gray-400">
+    <!-- Contêiner para botões de zoom no canto inferior direito -->
+    <div id="zoom-buttons-container" class="fixed bottom-5 right-5 z-50 bg-gray-200 rounded-lg p-2 border-2 border-gray-400">
         <div class="flex space-x-2">
             <button id="zoom-in" class="bg-blue-500 text-white rounded-full p-2 text-sm">+</button>
             <button id="zoom-out" class="bg-blue-500 text-white rounded-full p-2 text-sm">-</button>
@@ -62,6 +61,13 @@
         let circles = [];
         let counter = 1;
         let targetCircle = null; // Círculo alvo para o menu contextual
+
+        // Função para ajustar o tamanho do círculo conforme a escala do PDF
+        function adjustCircleSizeForScale(scale) {
+            const baseCircleSize = 5; // Tamanho base do círculo em pixels
+            const mmToPixelRatio = 3.78; // A relação entre mm e pixels (ajustável conforme a resolução do seu canvas)
+            return baseCircleSize * scale * mmToPixelRatio;
+        }
 
         document.getElementById('choose-file-btn').addEventListener('click', function() {
             document.getElementById('pdf-input').click();
@@ -170,7 +176,8 @@
             circle.dataset.x = x;
             circle.dataset.y = y;
 
-            let circleSize = 25;
+            // Ajuste do tamanho do círculo com a escala
+            let circleSize = adjustCircleSizeForScale(scale);
             circle.style.left = `${(x * scale) - circleSize}px`;
             circle.style.top = `${(y * scale) - circleSize}px`;
             circle.style.transform = `scale(${scale})`;
@@ -198,7 +205,7 @@
             circles.forEach(circle => {
                 let x = parseFloat(circle.dataset.x);
                 let y = parseFloat(circle.dataset.y);
-                let circleSize = 25;
+                let circleSize = adjustCircleSizeForScale(scale);
                 circle.style.left = `${(x * scale) - circleSize}px`;
                 circle.style.top = `${(y * scale) - circleSize}px`;
                 circle.style.transform = `scale(${scale})`;
@@ -210,39 +217,51 @@
             const existingPdfBytes = await fetch("{{ route('pdf.show', ['filename' => $pdf_filename]) }}").then(res => res.arrayBuffer());
             const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
 
-            // Adiciona círculos no PDF
+            // Adiciona círculos e números no PDF
             const pages = pdfDoc.getPages();
             const firstPage = pages[0];
-            const {
-                width,
-                height
-            } = firstPage.getSize();
 
             circles.forEach(circle => {
-                const x = parseFloat(circle.dataset.x) * 72; // Convertendo para unidades do PDF (1 inch = 72 points)
-                const y = height - (parseFloat(circle.dataset.y) * 72); // Ajuste para coordenada Y invertida no PDF
+                const x = parseFloat(circle.dataset.x);
+                const y = parseFloat(circle.dataset.y);
+                const size = 20; // Tamanho do círculo (ajuste conforme necessário)
+
+                // Desenha o círculo no PDF (Fica por baixo do número)
                 firstPage.drawEllipse({
                     x,
-                    y,
-                    width: 20,
-                    height: 20,
-                    color: PDFLib.rgb(0, 0, 0),
-                    borderWidth: 2,
+                    y: firstPage.getHeight() - y,
+                    xScale: size, // Largura do círculo
+                    yScale: size, // Altura do círculo
+                    color: PDFLib.rgb(1, 0, 0), // Cor do círculo (vermelho)
+                    borderWidth: 1,
+
+
+                });
+
+                // Desenha o número sobre o círculo
+                firstPage.drawText(circle.textContent, {
+                    x: x - 5, // Centraliza o número no círculo
+                    y: firstPage.getHeight() - y - 5,
+                    size: 25,
+                    color: PDFLib.rgb(1, 1, 1), // Cor do número (vermelho)
                 });
             });
 
-            // Salva o PDF com as alterações
+            // Salva o PDF
             const pdfBytes = await pdfDoc.save();
             const blob = new Blob([pdfBytes], {
                 type: 'application/pdf'
             });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = 'document_with_annotations.pdf';
-            link.click();
-        });
+            const url = URL.createObjectURL(blob);
 
+            // Salva o PDF com o nome original
+            const downloadLink = document.createElement('a');
+            downloadLink.href = url;
+            downloadLink.download = "{{ $pdf_filename }}"; // Usa o nome original
+            downloadLink.click();
+
+            URL.revokeObjectURL(url);
+        });
         @endif
     </script>
-
 </x-app-layout>

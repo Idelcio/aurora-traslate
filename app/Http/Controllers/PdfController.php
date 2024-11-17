@@ -39,4 +39,28 @@ class PdfController extends Controller
 
         return response()->file($filePath);
     }
+
+    // Salva o PDF com anotações (sem manipulação direta no PDF)
+    public function savePdfWithAnnotations(Request $request)
+    {
+        // Validação das coordenadas e arquivo PDF
+        $request->validate([
+            'pdf' => 'required|file|mimes:pdf',
+            'annotations' => 'required|array'
+        ]);
+
+        // Salva o PDF recebido no servidor
+        $path = $request->file('pdf')->store('pdfs');
+        $filename = basename($path);
+
+        // Salva as anotações em um arquivo JSON
+        $annotationsPath = 'pdfs/annotations_' . time() . '.json';
+        Storage::put($annotationsPath, json_encode($request->input('annotations')));
+
+        return response()->json([
+            'message' => 'PDF e anotações salvos com sucesso!',
+            'pdfPath' => $path,
+            'annotationsPath' => $annotationsPath
+        ], 200);
+    }
 }

@@ -14,9 +14,9 @@ use App\Http\Controllers\AnnotationController;
 | Web Routes
 |----------------------------------------------------------------------
 |
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
+| Aqui você pode registrar as rotas web para sua aplicação. Todas as
+| rotas são carregadas pelo RouteServiceProvider e serão atribuídas
+| ao grupo middleware "web".
 |
 */
 
@@ -42,8 +42,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/users-edit/{id}', [UserController::class, 'edit'])->name('users.edit');
     Route::put('/edit-update/{id}', [UserController::class, 'update'])->name('users.update');
 
-
-
+    // Rotas para o PDF
     // Rota para exibir o formulário de upload
     Route::get('/pdf/upload', [PdfController::class, 'showUploadForm'])->name('pdf.upload');
 
@@ -52,9 +51,12 @@ Route::middleware('auth')->group(function () {
 
     // Rota para visualizar o PDF
     Route::get('/pdf/view/{filename}', [PdfController::class, 'show'])->name('pdf.show');
+
+    // Rota para salvar o PDF com as anotações
+    Route::post('/pdf/save-annotations', [PdfController::class, 'savePdfWithAnnotations'])->name('pdf.saveAnnotations');
+    Route::post('/pdf/save', [PdfController::class, 'savePdf'])->name('pdf.save');
+    Route::post('/pdf/save-with-annotations', [PdfController::class, 'savePdfWithAnnotations'])->name('pdf.save_with_annotations');
 });
-
-
 
 // Incluindo as rotas de autenticação
 require __DIR__ . '/auth.php';
