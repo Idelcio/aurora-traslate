@@ -11,7 +11,7 @@ class UserController extends Controller
 
     public function __construct()
     {
-        $this->middleware('can:level')->only('edit');
+        $this->middleware('can:level')->only('edit', 'index');
     }
 
     public function index()

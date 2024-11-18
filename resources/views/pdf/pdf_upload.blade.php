@@ -23,7 +23,7 @@
 
         <!-- Exibição do PDF -->
         @if (isset($pdf_filename))
-        <h2 class="mt-8 font-semibold">Visualizar PDF:</h2>
+        <h2 class="mt-8 font-semibold"></h2>
         <div id="pdf-container" style="max-width: 95%; max-height: 600px; overflow: auto; border: 1px solid #4B4B4B; padding: 5px; border-radius: 4px; position: relative;">
             <canvas id="pdf-canvas"></canvas>
         </div>
@@ -235,9 +235,9 @@
                     y: firstPage.getHeight() - y,
                     xScale: size, // Largura do círculo
                     yScale: size, // Altura do círculo
-                    color: PDFLib.rgb(1, 0, 0), // Cor do círculo (vermelho)
-
+                    color: PDFLib.rgb(209 / 255, 6 / 255, 6 / 255), // Cor do círculo (vermelho: rgb(209, 6, 6))
                 });
+
 
                 // Desenha o número sobre o círculo (com a fonte Helvetica)
                 firstPage.drawText(circle.textContent, {
