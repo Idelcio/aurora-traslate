@@ -58,16 +58,10 @@
         let pdfDoc = null;
         let currentPage = 1;
         let scale = 0.3;
+        let circleScale = 1; // Variável para o tamanho dos círculos e números
         let circles = [];
         let counter = 1;
-        let targetCircle = null; // Círculo alvo para o menu contextual
-
-        // Função para ajustar o tamanho do círculo conforme a escala do PDF
-        function adjustCircleSizeForScale(scale) {
-            const baseCircleSize = 5; // Tamanho base do círculo em pixels
-            const mmToPixelRatio = 3.78; // A relação entre mm e pixels (ajustável conforme a resolução do seu canvas)
-            return baseCircleSize * scale * mmToPixelRatio;
-        }
+        let targetCircle = null;
 
         document.getElementById('choose-file-btn').addEventListener('click', function() {
             document.getElementById('pdf-input').click();
@@ -92,7 +86,7 @@
                 const canvas = document.getElementById('pdf-canvas');
                 const context = canvas.getContext('2d');
                 const viewport = page.getViewport({
-                    scale: scale
+                    scale
                 });
 
                 canvas.height = viewport.height;
@@ -100,15 +94,13 @@
 
                 page.render({
                     canvasContext: context,
-                    viewport: viewport
+                    viewport
                 }).promise.then(() => {
-                    // Atualiza a posição dos círculos ao renderizar a página
                     updateCirclePositions();
                 });
             });
         }
 
-        // Função de zoom
         document.getElementById('zoom-in').addEventListener('click', function() {
             scale += 0.1;
             renderPage(currentPage);
@@ -121,7 +113,6 @@
             }
         });
 
-        // Funções de marcação de círculos dentro do pdf-container
         let pdfContainer = document.getElementById('pdf-container');
         pdfContainer.addEventListener('click', function(event) {
             addCircle(event, pdfContainer);
@@ -134,6 +125,13 @@
                 targetCircle = target;
                 showContextMenu(e);
             }
+        });
+
+        pdfContainer.addEventListener('wheel', function(e) {
+            e.preventDefault();
+            if (e.deltaY < 0) circleScale += 0.1; // Aumenta o tamanho
+            if (e.deltaY > 0 && circleScale > 0.5) circleScale -= 0.1; // Diminui o tamanho (limite mínimo)
+            updateCircleSizes();
         });
 
         function showContextMenu(e) {
@@ -149,7 +147,6 @@
             }
         });
 
-        // Opções de exclusão
         document.getElementById('remove-and-refactor').addEventListener('click', function() {
             if (targetCircle) {
                 removeCircle(targetCircle, true);
@@ -164,7 +161,6 @@
             }
         });
 
-        // Função para adicionar círculos
         function addCircle(event, container) {
             let rect = document.getElementById('pdf-canvas').getBoundingClientRect();
             let x = (event.clientX - rect.left) / scale;
@@ -176,17 +172,25 @@
             circle.dataset.x = x;
             circle.dataset.y = y;
 
-            // Ajuste do tamanho do círculo com a escala
-            let circleSize = adjustCircleSizeForScale(scale);
-            circle.style.left = `${(x * scale) - circleSize}px`;
-            circle.style.top = `${(y * scale) - circleSize}px`;
-            circle.style.transform = `scale(${scale})`;
-
+            updateCircleStyles(circle);
             container.appendChild(circle);
             circles.push(circle);
         }
 
-        // Função para remover círculos
+        function updateCircleSizes() {
+            circles.forEach(circle => updateCircleStyles(circle));
+        }
+
+        function updateCircleStyles(circle) {
+            let x = parseFloat(circle.dataset.x);
+            let y = parseFloat(circle.dataset.y);
+            let size = adjustCircleSizeForScale(scale * circleScale);
+
+            circle.style.left = `${(x * scale) - size}px`;
+            circle.style.top = `${(y * scale) - size}px`;
+            circle.style.transform = `scale(${scale * circleScale})`;
+        }
+
         function removeCircle(circle, refactorNumbers) {
             let index = circles.indexOf(circle);
             if (index !== -1) circles.splice(index, 1);
@@ -200,52 +204,36 @@
             }
         }
 
-        // Função para atualizar as posições dos círculos após o zoom
         function updateCirclePositions() {
-            circles.forEach(circle => {
-                let x = parseFloat(circle.dataset.x);
-                let y = parseFloat(circle.dataset.y);
-                let circleSize = adjustCircleSizeForScale(scale);
-                circle.style.left = `${(x * scale) - circleSize}px`;
-                circle.style.top = `${(y * scale) - circleSize}px`;
-                circle.style.transform = `scale(${scale})`;
-            });
+            circles.forEach(circle => updateCircleStyles(circle));
         }
 
-        // Função para salvar o PDF com as edições (bolinhas)
         document.getElementById('saveButton').addEventListener('click', async function() {
             const existingPdfBytes = await fetch("{{ route('pdf.show', ['filename' => $pdf_filename]) }}").then(res => res.arrayBuffer());
             const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
-
-            // Embeds the Helvetica font to ensure the same font is used for the numbers
             const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-
-            // Adiciona círculos e números no PDF
             const pages = pdfDoc.getPages();
             const firstPage = pages[0];
 
             circles.forEach(circle => {
                 const x = parseFloat(circle.dataset.x);
                 const y = parseFloat(circle.dataset.y);
-                const size = 20; // Tamanho do círculo (ajuste conforme necessário)
+                const text = circle.textContent;
 
-                // Desenha o círculo no PDF (Fica por baixo do número)
                 firstPage.drawEllipse({
                     x,
                     y: firstPage.getHeight() - y,
-                    xScale: size, // Largura do círculo
-                    yScale: size, // Altura do círculo
-                    color: PDFLib.rgb(209 / 255, 6 / 255, 6 / 255), // Cor do círculo (vermelho: rgb(209, 6, 6))
+                    xScale: 15 * circleScale, // Tamanho do círculo no eixo X
+                    yScale: 15 * circleScale, // Tamanho do círculo no eixo Y
+                    color: PDFLib.rgb(209 / 255, 6 / 255, 6 / 255), // Cor de preenchimento (vermelho)
                 });
 
-
-                // Desenha o número sobre o círculo (com a fonte Helvetica)
-                firstPage.drawText(circle.textContent, {
-                    x: x - 5, // Centraliza o número no círculo
-                    y: firstPage.getHeight() - y - 5,
-                    size: 25,
-                    color: PDFLib.rgb(1, 1, 1), // Cor do número (branco)
-                    font: font, // Usa a fonte Helvetica carregada
+                firstPage.drawText(text, {
+                    x: x - 3 * circleScale, // Ajusta para centralizar o texto no círculo
+                    y: firstPage.getHeight() - y - 3 * circleScale, // Ajusta para centralizar o texto no círculo
+                    size: 12 * circleScale, // Tamanho do texto
+                    font,
+                    color: PDFLib.rgb(1, 1, 1), // Cor do texto (branco)
                 });
             });
 
@@ -265,6 +253,29 @@
             URL.revokeObjectURL(url);
         });
 
+
+        function adjustCircleSizeForScale(scale) {
+            return 10 * scale;
+        }
         @endif
     </script>
+
+    <style>
+        #pdf-container {
+            position: relative;
+        }
+
+        .circle {
+            position: absolute;
+            width: 30px;
+            height: 30px;
+            border-radius: 50%;
+            background: red;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transform-origin: center;
+        }
+    </style>
 </x-app-layout>
