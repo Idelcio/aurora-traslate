@@ -1,4 +1,5 @@
 <x-app-layout>
+
     <div class="container mx-auto mt-5 ml-10">
         <!-- Exibe erros de validação -->
         @if ($errors->any())
@@ -27,7 +28,7 @@
         <div id="pdf-container" style="max-width: 95%; max-height: 600px; overflow: auto; border: 1px solid #4B4B4B; padding: 5px; border-radius: 4px; position: relative;">
             <canvas id="pdf-canvas"></canvas>
         </div>
-        <!-- Botões de Desfazer e Salvar -->
+        <!-- Botões de Salvar -->
         <div class="mt-4">
             <button id="saveButton" class="bg-green-500 text-white rounded p-2">Salvar Anotações</button>
         </div>
@@ -129,9 +130,14 @@
 
         pdfContainer.addEventListener('wheel', function(e) {
             e.preventDefault();
-            if (e.deltaY < 0) circleScale += 0.1; // Aumenta o tamanho
-            if (e.deltaY > 0 && circleScale > 0.5) circleScale -= 0.1; // Diminui o tamanho (limite mínimo)
-            updateCircleSizes();
+            let target = e.target;
+
+            // Verifica se o evento foi disparado sobre um círculo
+            if (target.classList.contains('circle')) {
+                if (e.deltaY < 0) circleScale += 0.1; // Aumenta o tamanho
+                if (e.deltaY > 0 && circleScale > 0.5) circleScale -= 0.1; // Diminui o tamanho (limite mínimo)
+                updateCircleSizes();
+            }
         });
 
         function showContextMenu(e) {
@@ -208,6 +214,9 @@
             circles.forEach(circle => updateCircleStyles(circle));
         }
 
+        function adjustCircleSizeForScale(scale) {
+            return 10 * scale;
+        }
         document.getElementById('saveButton').addEventListener('click', async function() {
             const existingPdfBytes = await fetch("{{ route('pdf.show', ['filename' => $pdf_filename]) }}").then(res => res.arrayBuffer());
             const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
@@ -220,21 +229,25 @@
                 const y = parseFloat(circle.dataset.y);
                 const text = circle.textContent;
 
+                // Desenha o círculo no PDF
                 firstPage.drawEllipse({
                     x,
                     y: firstPage.getHeight() - y,
-                    xScale: 15 * circleScale, // Tamanho do círculo no eixo X
-                    yScale: 15 * circleScale, // Tamanho do círculo no eixo Y
+                    xScale: 15 * circleScale, // Ajusta o tamanho do círculo no eixo X com base no scale atual
+                    yScale: 15 * circleScale, // Ajusta o tamanho do círculo no eixo Y com base no scale atual
                     color: PDFLib.rgb(209 / 255, 6 / 255, 6 / 255), // Cor de preenchimento (vermelho)
                 });
 
+                // Adiciona o texto ao círculo
                 firstPage.drawText(text, {
-                    x: x - 3 * circleScale, // Ajusta para centralizar o texto no círculo
-                    y: firstPage.getHeight() - y - 3 * circleScale, // Ajusta para centralizar o texto no círculo
-                    size: 12 * circleScale, // Tamanho do texto
+                    // Ajuste baseado no comprimento do número (1-9, 10-99, 100-999)
+                    x: x - (text.length === 1 ? 3 * circleScale : (text.length === 2 ? 7 * circleScale : 10 * circleScale)), // Ajusta a posição horizontal
+                    y: firstPage.getHeight() - y - 3 * circleScale, // Ajusta a posição vertical para centralizar o texto no círculo
+                    size: 12 * circleScale, // Ajusta o tamanho do texto com base no circleScale
                     font,
                     color: PDFLib.rgb(1, 1, 1), // Cor do texto (branco)
                 });
+
             });
 
             // Salva o PDF
@@ -244,7 +257,7 @@
             });
             const url = URL.createObjectURL(blob);
 
-            // Salva o PDF com o nome original
+            // Cria um link para download do PDF
             const downloadLink = document.createElement('a');
             downloadLink.href = url;
             downloadLink.download = "{{ $pdf_filename }}" + "_boleado.pdf";
@@ -254,28 +267,7 @@
         });
 
 
-        function adjustCircleSizeForScale(scale) {
-            return 10 * scale;
-        }
         @endif
     </script>
 
-    <style>
-        #pdf-container {
-            position: relative;
-        }
-
-        .circle {
-            position: absolute;
-            width: 30px;
-            height: 30px;
-            border-radius: 50%;
-            background: red;
-            color: white;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            transform-origin: center;
-        }
-    </style>
 </x-app-layout>
