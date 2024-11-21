@@ -1,6 +1,5 @@
 <x-app-layout>
-
-    <div class="container mx-auto mt-5 ml-10">
+    <div class="container mx-auto mt-5 px-4 sm:px-6 lg:px-8">
         <!-- Exibe erros de validação -->
         @if ($errors->any())
         <div class="bg-red-200 text-red-800 p-3 rounded mt-4">
@@ -18,25 +17,26 @@
             <div>
                 <label for="pdf" class="block mb-2"></label>
                 <input type="file" name="pdf" id="pdf-input" accept="application/pdf" required class="hidden">
-                <button type="button" id="choose-file-btn" class="bg-gray-700 text-white rounded p-2">Escolher arquivo</button>
+                <button type="button" id="choose-file-btn" class="bg-gray-700 text-white rounded p-2 w-full sm:w-auto">Escolher arquivo</button>
             </div>
         </form>
 
         <!-- Exibição do PDF -->
         @if (isset($pdf_filename))
-        <h2 class="mt-8 font-semibold"></h2>
-        <div id="pdf-container" style="max-width: 95%; max-height: 600px; overflow: auto; border: 1px solid #4B4B4B; padding: 5px; border-radius: 4px; position: relative;">
-            <canvas id="pdf-canvas"></canvas>
-        </div>
-        <!-- Botões de Salvar -->
-        <div class="mt-4">
-            <button id="saveButton" class="bg-green-500 text-white rounded p-2">Salvar Anotações</button>
+        <div class="mt-8">
+            <div id="pdf-container" class="max-w-full h-auto overflow-auto border-2 border-gray-700 p-4 rounded relative">
+                <canvas id="pdf-canvas"></canvas>
+            </div>
+            <!-- Botões de Salvar -->
+            <div class="mt-4">
+                <button id="saveButton" class="bg-green-500 text-white rounded p-2 w-full sm:w-auto">Salvar Anotações</button>
+            </div>
         </div>
         @endif
     </div>
 
     <!-- Contêiner para botões de zoom no canto inferior direito -->
-    <div id="zoom-buttons-container" class="fixed bottom-5 right-5 z-50 bg-gray-200 rounded-lg p-2 border-2 border-gray-400">
+    <div id="zoom-buttons-container" class="fixed bottom-5 right-5 z-50 bg-gray-200 rounded-lg p-2 border-2 border-gray-400 sm:bottom-3 sm:right-3">
         <div class="flex space-x-2">
             <button id="zoom-in" class="bg-blue-500 text-white rounded-full p-2 text-sm">+</button>
             <button id="zoom-out" class="bg-blue-500 text-white rounded-full p-2 text-sm">-</button>
@@ -44,12 +44,13 @@
     </div>
 
     <!-- Menu contextual para opções de exclusão -->
-    <div id="context-menu" class="hidden absolute bg-white border border-gray-300 rounded shadow-lg z-50">
+    <div id="context-menu" class="hidden absolute bg-white border border-gray-300 rounded shadow-lg z-50 text-sm w-40 sm:w-48">
         <ul>
             <li id="remove-and-refactor" class="p-2 hover:bg-gray-200 cursor-pointer">Excluir e Refatorar</li>
             <li id="remove-keep-numbering" class="p-2 hover:bg-gray-200 cursor-pointer">Excluir e Manter Numeração</li>
         </ul>
     </div>
+
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
