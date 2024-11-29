@@ -20,7 +20,7 @@
                 <button type="button" id="choose-file-btn" class="bg-gray-700 text-white rounded p-2 w-full sm:w-auto">Upload de Arquivo</button>
                 <button id="saveButton" class="bg-blue-500 text-white rounded p-2 w-full sm:w-auto">Salvar Anotações</button>
                 <button id="refactorButton" class="bg-red-500 text-white rounded p-2 w-full sm:w-auto">Refatorar</button>
-
+                <button id="remove-all-button" class="bg-purple-500 text-white rounded p-2 w-full sm:w-auto">Limpar</button>
             </div>
         </form>
 
@@ -63,6 +63,14 @@
             let circles = [];
             let counter = 1;
             let targetCircle = null;
+
+            document.getElementById('remove-all-button').addEventListener('click', function() {
+                // Remove todos os círculos
+                circles.forEach(circle => circle.remove());
+                circles = []; // Limpa a lista de círculos
+                counter = 1; // Reinicia o contador para os números
+            });
+
 
             document.getElementById('choose-file-btn').addEventListener('click', function() {
                 document.getElementById('pdf-input').click();
@@ -304,7 +312,7 @@
                             y: firstPage.getHeight() - y,
                             xScale: 15 * circleScale,
                             yScale: 15 * circleScale,
-                            color: PDFLib.rgb(209 / 255, 6 / 255, 6 / 255),
+                            color: PDFLib.rgb(6 / 255, 9 / 255, 209 / 255),
                         });
 
                         // Adiciona o texto ao círculo
