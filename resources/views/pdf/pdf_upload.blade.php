@@ -18,7 +18,9 @@
                 <label for="pdf" class="block mb-2"></label>
                 <input type="file" name="pdf" id="pdf-input" accept="application/pdf" required class="hidden">
                 <button type="button" id="choose-file-btn" class="bg-gray-700 text-white rounded p-2 w-full sm:w-auto">Upload de Arquivo</button>
-                <button id="saveButton" class="bg-green-500 text-white rounded p-2 w-full sm:w-auto">Salvar Anotações</button>
+                <button id="saveButton" class="bg-blue-500 text-white rounded p-2 w-full sm:w-auto">Salvar Anotações</button>
+                <button id="refactorButton" class="bg-red-500 text-white rounded p-2 w-full sm:w-auto">Refatorar</button>
+
             </div>
         </form>
 
@@ -31,8 +33,10 @@
             @endif
         </div>
 
-        <!-- Contêiner para botões de zoom no canto inferior direito -->
-        <div id="zoom-buttons-container" class="fixed bottom-5 right-5 z-50 bg-gray-200 rounded-lg p-2 border-2 border-gray-400 sm:bottom-3 sm:right-10">
+        <!-- Contêiner para botões de zoom no canto inferior direito
+        oculto
+        -->
+        <div id="zoom-buttons-container" hidden class="fixed bottom-5 right-5 z-50 bg-gray-200 rounded-lg p-2 border-2 border-gray-400 sm:bottom-3 sm:right-10">
             <div class="flex space-x-2">
                 <button id="zoom-in" class="bg-blue-500 text-white rounded-full p-2 text-sm">+</button>
                 <button id="zoom-out" class="bg-blue-500 text-white rounded-full p-2 text-sm">-</button>
@@ -42,8 +46,7 @@
         <!-- Menu contextual para opções de exclusão -->
         <div id="context-menu" class="hidden absolute bg-white border border-gray-300 rounded shadow-lg z-50 text-sm w-40 sm:w-48">
             <ul>
-                <li id="remove-and-refactor" class="p-2 hover:bg-gray-200 cursor-pointer">Excluir e Refatorar</li>
-                <li id="remove-keep-numbering" class="p-2 hover:bg-gray-200 cursor-pointer">Excluir e Manter Numeração</li>
+                <li id="remove-keep-numbering" class="p-2 hover:bg-gray-200 cursor-pointer">Excluir</li>
             </ul>
         </div>
 
@@ -152,7 +155,7 @@
                     }
                 });
 
-                document.getElementById('remove-and-refactor').addEventListener('click', function() {
+                document.getElementById('refactorButton').addEventListener('click', function() {
                     if (targetCircle) {
                         removeCircle(targetCircle, true);
                         document.getElementById('context-menu').classList.add('hidden');
@@ -171,6 +174,11 @@
                     let x = (event.clientX - rect.left) / scale;
                     let y = (event.clientY - rect.top) / scale;
 
+                    // Verifica se a nova posição não sobrepõe nenhuma bolinha existente
+                    if (isOverlapping(x, y)) {
+                        return; // Não adiciona o círculo se estiver sobrepondo outro
+                    }
+
                     let circle = document.createElement('div');
                     circle.className = 'circle';
                     circle.textContent = counter++;
@@ -180,6 +188,9 @@
                     updateCircleStyles(circle);
                     container.appendChild(circle);
                     circles.push(circle);
+
+                    // Iniciar o drag
+                    makeDraggable(circle);
                 }
 
                 function updateCircleSizes() {
@@ -216,6 +227,64 @@
                 function adjustCircleSizeForScale(scale) {
                     return 10 * scale;
                 }
+
+                // Função para verificar se a nova posição do círculo sobrepõe outro
+                function isOverlapping(x, y) {
+                    let overlapThreshold = 20; // Distância mínima entre círculos para evitar sobreposição
+                    for (let circle of circles) {
+                        let circleX = parseFloat(circle.dataset.x);
+                        let circleY = parseFloat(circle.dataset.y);
+                        let distance = Math.sqrt(Math.pow(x - circleX, 2) + Math.pow(y - circleY, 2));
+
+                        // Se a distância entre os centros dos círculos for menor que o limite de sobreposição, retorna true
+                        if (distance < overlapThreshold) {
+                            return true; // O círculo vai se sobrepor
+                        }
+                    }
+                    return false; // Não há sobreposição
+                }
+
+                // Função para tornar os círculos arrastáveis
+                function makeDraggable(circle) {
+                    let isDragging = false;
+                    let offsetX, offsetY;
+
+                    // Quando o usuário começa a arrastar
+                    circle.addEventListener('mousedown', function(e) {
+                        isDragging = true;
+                        offsetX = e.clientX - parseFloat(circle.style.left);
+                        offsetY = e.clientY - parseFloat(circle.style.top);
+
+                        // Adiciona a classe para indicar que está sendo arrastado (opcional)
+                        circle.classList.add('dragging');
+                    });
+
+                    // Quando o mouse move enquanto o círculo está sendo arrastado
+                    document.addEventListener('mousemove', function(e) {
+                        if (isDragging) {
+                            let x = (e.clientX - offsetX) / scale;
+                            let y = (e.clientY - offsetY) / scale;
+
+                            circle.style.left = `${(x * scale)}px`;
+                            circle.style.top = `${(y * scale)}px`;
+
+                            // Atualiza as coordenadas do círculo
+                            circle.dataset.x = x;
+                            circle.dataset.y = y;
+
+                            updateCircleStyles(circle); // Atualiza o estilo do círculo
+                        }
+                    });
+
+                    // Quando o mouse é solto e o arrasto termina
+                    document.addEventListener('mouseup', function() {
+                        if (isDragging) {
+                            isDragging = false;
+                            circle.classList.remove('dragging');
+                        }
+                    });
+                }
+
 
                 document.getElementById('saveButton').addEventListener('click', async function() {
                     const existingPdfBytes = await fetch(pdfUrl).then(res => res.arrayBuffer());
