@@ -11,3 +11,5 @@ pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.min.js';
 window.Alpine = Alpine;
 
 Alpine.start();
+
+
