@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>{{ config('app.name', 'Laravel') }}</title>
+    <title>TagPdf</title>
 
     <!-- Fonts -->
     <script src="https://kit.fontawesome.com/91b85c5ce4.js" crossorigin="anonymous"></script>
@@ -14,7 +14,7 @@
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
     <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js', 'resources/js/script.js'])
+    @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     <!-- PDF.js Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.16.105/pdf.min.js"></script>
@@ -45,7 +45,7 @@
 
     <!-- Rodapé -->
     <<footer class="bg-gray-700 text-white text-center py-4 mt-8">
-        <p>&#169; 2024 forest</p>
+        <p>&#169; OTIMIZARE 2024</p>
         </footer>
 </body>
 

@@ -64,6 +64,7 @@
             let counter = 1;
             let targetCircle = null;
 
+
             document.getElementById('remove-all-button').addEventListener('click', function() {
                 // Remove todos os círculos
                 circles.forEach(circle => circle.remove());
