@@ -308,14 +308,15 @@
                 const firstPage = pages[0];
 
                 // Adiciona a marca d'água no canto inferior direito
+                const scale = 10;
                 const watermarkText = "WWW.OTIMIZARE.COM"; // O texto da marca d'água
-                const fontSize = 40;
+                const fontSize = scale * 2;
                 const textWidth = font.widthOfTextAtSize(watermarkText, fontSize);
                 const textHeight = font.heightAtSize(fontSize);
 
                 firstPage.drawText(watermarkText, {
-                    x: firstPage.getWidth() - textWidth - 30, // 10 pixels de margem do lado direito
-                    y: 30, // 10 pixels de margem do fundo
+                    x: firstPage.getWidth() - textWidth - 10, // 10 pixels de margem do lado direito
+                    y: 15, // 10 pixels de margem do fundo
                     size: fontSize,
                     font,
                     color: PDFLib.rgb(230 / 255, 231 / 255, 244 / 255), // Cor da marca d'água (cinza claro)
