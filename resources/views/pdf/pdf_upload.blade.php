@@ -308,22 +308,40 @@
                         const text = circle.textContent;
 
                         // Desenha o círculo no PDF
+                        // Desenha o círculo com cor de borda (border-color) e cor de fundo (background-color)
                         firstPage.drawEllipse({
                             x,
                             y: firstPage.getHeight() - y,
                             xScale: 15 * circleScale,
                             yScale: 15 * circleScale,
-                            color: PDFLib.rgb(6 / 255, 9 / 255, 209 / 255),
+                            color: PDFLib.rgb(230 / 255, 231 / 255, 244 / 255), // Cor de fundo
+                            borderColor: PDFLib.rgb(6 / 255, 9 / 255, 209 / 255), // Cor da borda
+                            borderWidth: 2, // Largura da borda
                         });
 
-                        // Adiciona o texto ao círculo
+                        // Tamanho da fonte (aumente conforme necessário)
+                        const fontSize = 16 * circleScale;
+
+                        // Ajuste de posição para centralizar o texto com base no tamanho da fonte e comprimento do texto
+                        const textOffsetX =
+                            text.length === 1 ?
+                            fontSize * 0.3 :
+                            (text.length === 2 ?
+                                fontSize * 0.6 :
+                                fontSize * 0.9);
+
+                        const textOffsetY = fontSize * 0.35; // Ajuste vertical para centralizar o texto no círculo
+
+                        // Adiciona o texto ao círculo com a cor ajustada e mantendo centralização
                         firstPage.drawText(text, {
-                            x: x - (text.length === 1 ? 3 * circleScale : (text.length === 2 ? 7 * circleScale : 10 * circleScale)),
-                            y: firstPage.getHeight() - y - 3 * circleScale,
-                            size: 12 * circleScale,
+                            x: x - textOffsetX,
+                            y: firstPage.getHeight() - y - textOffsetY,
+                            size: fontSize,
                             font,
-                            color: PDFLib.rgb(1, 1, 1),
+                            color: PDFLib.rgb(6 / 255, 9 / 255, 209 / 255), // Cor do texto
                         });
+
+
                     });
 
                     const pdfBytes = await pdfDoc.save();

@@ -6,8 +6,10 @@
 .circle {
     width: 40px;
     height: 40px;
-    background-color: rgb(6, 9, 209);
-    color: white;
+    background-color: rgb(230, 231, 244);
+    color: rgb(6, 9, 209);
+    border-color: rgb(6, 9, 209);
+    border-width: 2px;
     border-radius: 50%;
     position: absolute;
     display: flex;
