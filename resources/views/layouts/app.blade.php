@@ -8,6 +8,9 @@
 
     <title>TagPdf</title>
 
+    <link rel="icon" href="{{ asset('logo/tagPdf_logo.png') }}" type="image/png">
+
+
     <!-- Fonts -->
     <script src="https://kit.fontawesome.com/91b85c5ce4.js" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.bunny.net">
@@ -44,7 +47,7 @@
 
     <!-- Rodapé -->
     <<footer class="bg-gray-700 text-white text-center py-4 mt-8">
-        <p>&#169; OTIMIZARE 2024</p>
+        <p>&#169; TagPdf by OTIMIZARE 2024</p>
         </footer>
 </body>
 

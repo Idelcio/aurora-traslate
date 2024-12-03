@@ -1,1 +1,1 @@
-<img src="{{ asset('logo/logo.png') }}" alt="Logo" width="80" height="80">
+<img src="{{ asset('logo/tagPdf_logo.png') }}" alt="Logo" width="40">

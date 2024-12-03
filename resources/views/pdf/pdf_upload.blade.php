@@ -17,38 +17,62 @@
             <div>
                 <label for="pdf" class="block mb-2"></label>
                 <input type="file" name="pdf" id="pdf-input" accept="application/pdf" required class="hidden">
-                <button type="button" id="choose-file-btn" class="bg-gray-700 text-white rounded p-2 w-full sm:w-auto">Upload de Arquivo</button>
-                <button id="saveButton" class="bg-blue-500 text-white rounded p-2 w-full sm:w-auto">Salvar Anotações</button>
-                <button id="refactorButton" class="bg-red-500 text-white rounded p-2 w-full sm:w-auto">Refatorar</button>
-                <button id="remove-all-button" class="bg-purple-500 text-white rounded p-2 w-full sm:w-auto">Limpar</button>
+
+                <!-- Botão "Upload de Arquivo" -->
+                <button type="button" id="choose-file-btn" class="bg-gray-700 text-white rounded p-2 w-full sm:w-auto hover:bg-gray-600">
+                    Upload de Arquivo
+                </button>
+
+                <!-- Botão "Salvar Anotações" -->
+                <button id="saveButton" class="bg-blue-500 text-white rounded p-2 w-full sm:w-auto hover:bg-blue-400">
+                    Salvar Anotações
+                </button>
+
+                <!-- Botão "Refatorar" -->
+                <button id="refactorButton" class="bg-purple-500 text-white rounded p-2 w-full sm:w-auto hover:bg-purple-400">
+                    Refatorar
+                </button>
+
+                <!-- Botão "Limpar" -->
+                <button id="remove-all-button" class="bg-red-500 text-white rounded p-2 w-full sm:w-auto hover:bg-red-400">
+                    Limpar
+                </button>
             </div>
         </form>
 
-        <!-- Exibição do PDF -->
+        <!-- Navegação de páginas -->
         @if (isset($pdf_filename))
+        <div class="flex justify-between mt-4">
+            <button id="prev-page-btn" class="bg-gray-700 text-white p-2 rounded hover:bg-gray-600">Página Anterior</button>
+            <span id="page-number">Página 1</span> <!-- Atualizado dinamicamente -->
+            <button id="next-page-btn" class="bg-gray-700 text-white p-2 rounded hover:bg-gray-600">Próxima Página</button>
+        </div>
+
+        <!-- Exibição do PDF -->
         <div class="mt-8">
             <div id="pdf-container" class="max-w-full h-auto overflow-auto border-2 border-gray-700 p-4 rounded relative">
                 <canvas id="pdf-canvas"></canvas>
             </div>
-            @endif
         </div>
+        @endif
+    </div>
 
-        <!-- Contêiner para botões de zoom no canto inferior direito
+    <!-- Contêiner para botões de zoom no canto inferior direito
         oculto
         -->
-        <div id="zoom-buttons-container" hidden class="fixed bottom-5 right-5 z-50 bg-gray-200 rounded-lg p-2 border-2 border-gray-400 sm:bottom-3 sm:right-10">
-            <div class="flex space-x-2">
-                <button id="zoom-in" class="bg-blue-500 text-white rounded-full p-2 text-sm">+</button>
-                <button id="zoom-out" class="bg-blue-500 text-white rounded-full p-2 text-sm">-</button>
-            </div>
+    <div id="zoom-buttons-container" hidden class="fixed bottom-5 right-5 z-50 bg-gray-200 rounded-lg p-2 border-2 border-gray-400 sm:bottom-3 sm:right-10">
+        <div class="flex space-x-2">
+            <button id="zoom-in" class="bg-blue-500 text-white rounded-full p-2 text-sm">+</button>
+            <button id="zoom-out" class="bg-blue-500 text-white rounded-full p-2 text-sm">-</button>
         </div>
+    </div>
 
-        <!-- Menu contextual para opções de exclusão -->
-        <div id="context-menu" class="hidden absolute bg-white border border-gray-300 rounded shadow-lg z-50 text-sm w-40 sm:w-48">
-            <ul>
-                <li id="remove-keep-numbering" class="p-2 hover:bg-gray-200 cursor-pointer">Excluir</li>
-            </ul>
-        </div>
+    <!-- Menu contextual para opções de exclusão -->
+    <div id="context-menu" class="hidden absolute bg-white border border-gray-300 rounded shadow-lg z-50 text-sm w-40 sm:w-48">
+        <ul>
+            <li id="remove-keep-numbering" class="p-2 hover:bg-gray-200 cursor-pointer">Excluir</li>
+        </ul>
+    </div>
 
     </div>
 
@@ -61,11 +85,14 @@
     <script>
         let pdfDoc = null;
         let currentPage = 1;
+        let totalPages = 0;
         let scale = 0.3;
         let circleScale = 1; // Variável para o tamanho dos círculos e números
         let circles = [];
         let counter = 1;
         let targetCircle = null;
+
+
 
 
         document.getElementById('remove-all-button').addEventListener('click', function() {
@@ -91,10 +118,12 @@
 
             pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
                 pdfDoc = pdf;
-                renderPage(currentPage);
+                totalPages = pdfDoc.numPages; // Total de páginas
+                renderPage(currentPage); // Renderiza a página inicial
             }).catch(function(error) {
                 console.error('Erro ao carregar o PDF:', error);
             });
+
 
             function renderPage(pageNum) {
                 pdfDoc.getPage(pageNum).then(function(page) {
@@ -113,8 +142,25 @@
                     }).promise.then(() => {
                         updateCirclePositions();
                     });
+
+                    document.getElementById('page-number').textContent = `Página ${pageNum}`; // Atualiza o número da página
                 });
             }
+
+            // Navegação entre páginas
+            document.getElementById('next-page-btn').addEventListener('click', function() {
+                if (currentPage < totalPages) {
+                    currentPage++;
+                    renderPage(currentPage);
+                }
+            });
+
+            document.getElementById('prev-page-btn').addEventListener('click', function() {
+                if (currentPage > 1) {
+                    currentPage--;
+                    renderPage(currentPage);
+                }
+            });
 
             document.getElementById('zoom-in').addEventListener('click', function() {
                 scale += 0.1;
@@ -309,7 +355,7 @@
 
                 // Adiciona a marca d'água no canto inferior direito
                 const scale = 10;
-                const watermarkText = "WWW.OTIMIZARE.COM"; // O texto da marca d'água
+                const watermarkText = "WWW.TAGPDF.COM.BR"; // O texto da marca d'água
                 const fontSize = scale * 2;
                 const textWidth = font.widthOfTextAtSize(watermarkText, fontSize);
                 const textHeight = font.heightAtSize(fontSize);
