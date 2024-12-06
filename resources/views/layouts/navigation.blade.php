@@ -3,6 +3,7 @@
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div class="flex justify-between h-16">
             <div class="flex">
+
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center mt-2"> <!-- Adicionada a classe mt-2 -->
                     <a href="{{ route('dashboard') }}">
@@ -13,23 +14,34 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-                    @can('level')
-                    <x-nav-link :href="route('users.index')" :active="request()->routeIs('users.index')">
-                        {{ __('Listade usuários') }}
-                    </x-nav-link>
-                    @endcan
+                    <a
+                        href="{{ route('dashboard') }}"
+                        class="{{ request()->routeIs('dashboard') ? 'border-b-4 border-[#004BAD] text-gray-900' : 'border-b-4 border-transparent text-gray-500 hover:border-[#004BAD] hover:text-gray-700' }} inline-flex items-center px-3 pt-1 text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
+                        {{ __('Home') }}
+                    </a>
 
+                    @can('level')
+                    <a
+                        href="{{ route('users.index') }}"
+                        class="{{ request()->routeIs('users.index') ? 'border-b-4 border-[#004BAD] text-gray-900' : 'border-b-4 border-transparent text-gray-500 hover:border-[#004BAD] hover:text-gray-700' }} inline-flex items-center px-3 pt-1 text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
+                        {{ __('Listade usuários') }}
+                    </a>
+                    @endcan
                 </div>
             </div>
+
+            <div>
+                <img src="{{ asset('logo/TagPdf_tipografia.png') }}" alt="User Logo" class="w-[130px] mr-2">
+
+            </div>
+
 
             <!-- Settings Dropdown -->
             <div class="hidden sm:flex sm:items-center sm:ms-6">
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
                         <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
+                            <img src="{{ asset('icones/usuario/user.png') }}" alt="User Logo" class="h-6 w-6  mr-2">
                             <div>{{ Auth::user()->name }}</div>
 
                             <div class="ms-1">

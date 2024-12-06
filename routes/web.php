@@ -8,6 +8,7 @@ use App\Http\Controllers\DrawBallController;
 use App\Http\Controllers\ImageController;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\AnnotationController;
+use App\Http\Controllers\TermosController;
 
 /*
 |----------------------------------------------------------------------
@@ -56,6 +57,12 @@ Route::middleware('auth')->group(function () {
     Route::post('/pdf/save-annotations', [PdfController::class, 'savePdfWithAnnotations'])->name('pdf.saveAnnotations');
     Route::post('/pdf/save', [PdfController::class, 'savePdf'])->name('pdf.save');
     Route::post('/pdf/save-with-annotations', [PdfController::class, 'savePdfWithAnnotations'])->name('pdf.save_with_annotations');
+
+    // Rota para Termos de Segurança
+    Route::get('/termos-seguranca', [TermosController::class, 'showTermosSeguranca'])->name('termos.seguranca');
+
+    // Rota para Política de Privacidade
+    Route::get('/politica-privacidade', [TermosController::class, 'showPoliticaPrivacidade'])->name('politica.privacidade');
 });
 
 // Incluindo as rotas de autenticação

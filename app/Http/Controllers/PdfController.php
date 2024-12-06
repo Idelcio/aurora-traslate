@@ -17,7 +17,7 @@ class PdfController extends Controller
     public function upload(Request $request)
     {
         $request->validate([
-            'pdf' => 'required|mimes:pdf|max:2048', // Validação do arquivo PDF
+            'pdf' => 'required|mimes:pdf', // Removido o limite de tamanho
         ]);
 
         // Obtém o arquivo PDF

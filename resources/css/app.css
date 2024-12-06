@@ -2,13 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+body {
+    font-family: 'Montserrat', sans-serif;
+  }
+
+
 /* Estilo para os círculos */
 .circle {
-    width: 40px;
+   width: 40px;
     height: 40px;
-    background-color: rgb(230, 231, 244);
-    color: rgb(6, 9, 209);
-    border-color: rgb(6, 9, 209);
+    background-color:  #FFFFFF;
+    color: #004BAD;
+    border-color: #004BAD;
     border-width: 2px;
     border-radius: 50%;
     position: absolute;
@@ -19,6 +24,21 @@
     cursor: pointer;
     user-select: none;
 }
+
+/* Estilo básico para o modal */
+#page-selector-modal {
+    display: none; /* Esconde o modal por padrão */
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 50;
+    justify-content: center;
+    align-items: center;
+}
+
 
 /* Cursor de mira */
 #pdf-container {

@@ -8,10 +8,14 @@
 
     <title>TagPdf</title>
 
-    <link rel="icon" href="{{ asset('logo/tagPdf_logo.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('icones/logo/tagPdf_logo.png') }}" type="image/png">
 
 
     <!-- Fonts -->
+
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+
+
     <script src="https://kit.fontawesome.com/91b85c5ce4.js" crossorigin="anonymous"></script>
     <link rel="preconnect" href="https://fonts.bunny.net">
     <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
@@ -44,11 +48,21 @@
             {{ $slot }}
         </main>
     </div>
-
-    <!-- Rodapé -->
-    <<footer class="bg-gray-700 text-white text-center py-4 mt-8">
-        <p>&#169; TagPdf by OTIMIZARE 2024</p>
-        </footer>
+    <footer class="bg-white w-full py-2">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-6">
+            <div class="flex justify-center items-center space-x-2">
+                <!-- Exemplo de Logos -->
+                <img src="{{ asset('icones/linkedIn/linkedin_Black.png') }}" alt="Logo LinkedIn" class="h-6">
+                <h2 class="font-sans text-gray-800 font-bold text-base">
+                    TagPDF
+                </h2>
+                <img src="{{ asset('icones/instagram/instagram_black.png') }}" alt="Logo Instagram" class="h-6">
+                <h2 class="font-sans text-gray-800 font-bold text-base">
+                    TagPDF
+                </h2>
+            </div>
+        </div>
+    </footer>
 </body>
 
 </html>

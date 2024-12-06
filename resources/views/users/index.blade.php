@@ -19,11 +19,12 @@
                         {{ $users->links() }}
                     </div>
                     <table class="table-auto w-full">
-                        <thead class="textleft bg-gray-100">
+                        <thead class="text-left bg-gray-100">
                             <tr>
                                 <th class="text-center">Nível</th>
                                 <th class="p-4">Nome</th>
                                 <th>E-mail</th>
+                                <th>Empresa</th>
                                 <th>Data de cadastro</th>
 
                                 @can('level')
@@ -44,6 +45,7 @@
                                 </td>
                                 <td class="p-2">{{ $user->name }}</td>
                                 <td>{{ $user->email }}</td>
+                                <td>{{ $user->company_name }}</td>
                                 <td>{{ $user->created_at }}</td>
                                 @can('level')
                                 <td class="text-center">

@@ -1,1 +1,1 @@
-<img src="{{ asset('logo/tagPdf_logo.png') }}" alt="Logo" width="40">
+<img src="{{ asset('logo/TagPDF_icone.png') }}" alt="Logo" width="50">
