@@ -48,10 +48,14 @@
             {{ $slot }}
         </main>
     </div>
+
+    <!-- footer -->
+
+
     <footer class="bg-white w-full py-2">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-6">
             <div class="flex justify-center items-center space-x-2">
-                <!-- Exemplo de Logos -->
+                <!-- logos -->
                 <img src="{{ asset('icones/linkedIn/linkedin_Black.png') }}" alt="Logo LinkedIn" class="h-6">
                 <h2 class="font-sans text-gray-800 font-bold text-base">
                     TagPDF

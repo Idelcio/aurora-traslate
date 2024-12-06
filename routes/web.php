@@ -8,7 +8,8 @@ use App\Http\Controllers\DrawBallController;
 use App\Http\Controllers\ImageController;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\AnnotationController;
-use App\Http\Controllers\TermosController;
+use App\Http\Controllers\TermsOfUseController;
+
 
 /*
 |----------------------------------------------------------------------
@@ -58,11 +59,22 @@ Route::middleware('auth')->group(function () {
     Route::post('/pdf/save', [PdfController::class, 'savePdf'])->name('pdf.save');
     Route::post('/pdf/save-with-annotations', [PdfController::class, 'savePdfWithAnnotations'])->name('pdf.save_with_annotations');
 
-    // Rota para Termos de Segurança
-    Route::get('/termos-seguranca', [TermosController::class, 'showTermosSeguranca'])->name('termos.seguranca');
 
-    // Rota para Política de Privacidade
-    Route::get('/politica-privacidade', [TermosController::class, 'showPoliticaPrivacidade'])->name('politica.privacidade');
+
+    // Rota pública para exibir um termo específico
+    Route::get('/terms/{id}', [TermsOfUseController::class, 'show'])->name('terms.show');
+
+    // Rotas protegidas por autenticação
+    Route::middleware('auth')->group(function () {
+        Route::prefix('terms')->name('terms.')->group(function () {
+            Route::get('/', [TermsOfUseController::class, 'index'])->name('index');
+            Route::get('/create', [TermsOfUseController::class, 'create'])->name('create');
+            Route::post('/', [TermsOfUseController::class, 'store'])->name('store');
+            Route::get('/{id}/edit', [TermsOfUseController::class, 'edit'])->name('edit');
+            Route::put('/{id}', [TermsOfUseController::class, 'update'])->name('update');
+            Route::delete('/{id}', [TermsOfUseController::class, 'destroy'])->name('destroy');
+        });
+    });
 });
 
 // Incluindo as rotas de autenticação

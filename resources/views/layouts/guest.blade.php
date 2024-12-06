@@ -36,9 +36,11 @@
         <!-- Termos de Uso -->
         <div class="mt-4 text-center">
             <h3 class="text-sm text-gray-600 font-medium">
-                <a href="#" class="text-indigo-600 underline hover:text-indigo-800">Termos de Uso de Dados</a>.
+                <a href="{{ route('terms.show', 1) }}" class="text-indigo-600 underline hover:text-indigo-800">Termos de Uso de Dados</a>
             </h3>
         </div>
+
+
     </div>
 
     <!-- Rodapé -->
