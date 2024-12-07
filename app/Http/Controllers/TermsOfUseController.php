@@ -7,9 +7,10 @@ use Illuminate\Http\Request;
 
 class TermsOfUseController extends Controller
 {
+    // Aplicando restrição de acesso usando o Gate
     public function __construct()
     {
-        $this->middleware('auth')->except(['show']);
+        $this->middleware('can:level')->only(['create', 'store', 'edit', 'update', 'destroy']);
     }
 
     public function index()
@@ -21,7 +22,6 @@ class TermsOfUseController extends Controller
     public function show($id)
     {
         $term = TermsOfUse::findOrFail($id);
-
         return view('terms.show', compact('term'));
     }
 

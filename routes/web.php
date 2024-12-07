@@ -11,6 +11,7 @@ use App\Http\Controllers\AnnotationController;
 use App\Http\Controllers\TermsOfUseController;
 
 
+
 /*
 |----------------------------------------------------------------------
 | Web Routes
@@ -27,6 +28,9 @@ Route::get('/', function () {
     return view('auth.login');
 });
 
+// Rotas públicas para Termos de Uso
+Route::get('/terms', [TermsOfUseController::class, 'index'])->name('terms.index');
+Route::get('/terms/{id}', [TermsOfUseController::class, 'show'])->name('terms.show');
 // Rota para o dashboard
 Route::get('/dashboard', function () {
     return view('dashboard');
@@ -60,14 +64,17 @@ Route::middleware('auth')->group(function () {
     Route::post('/pdf/save-with-annotations', [PdfController::class, 'savePdfWithAnnotations'])->name('pdf.save_with_annotations');
 
 
-
-    // Rota pública para exibir um termo específico
-    Route::get('/terms/{id}', [TermsOfUseController::class, 'show'])->name('terms.show');
-
     // Rotas protegidas por autenticação
     Route::middleware('auth')->group(function () {
+
+        // Dashboard protegido
+        Route::get('/dashboard', function () {
+            return view('dashboard');
+        })->name('dashboard');
+
+
+        // Rotas de CRUD para Termos de Uso
         Route::prefix('terms')->name('terms.')->group(function () {
-            Route::get('/', [TermsOfUseController::class, 'index'])->name('index');
             Route::get('/create', [TermsOfUseController::class, 'create'])->name('create');
             Route::post('/', [TermsOfUseController::class, 'store'])->name('store');
             Route::get('/{id}/edit', [TermsOfUseController::class, 'edit'])->name('edit');
