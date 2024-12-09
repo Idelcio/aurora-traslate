@@ -11,124 +11,169 @@
         </div>
         @endif
 
+
+
+        <!-- Formulário de upload do PDF -->
+        <form id="pdf-upload-form" action="{{ route('pdf.upload.post') }}" method="POST" enctype="multipart/form-data" class="mt-4">
+            @csrf
+            <div>
+                <label for="pdf" class="block mb-2"></label>
+                <input type="file" name="pdf" id="pdf-input" accept="application/pdf" required class="hidden">
+                <button type="button" id="choose-file-btn" class="bg-gray-800 text-white rounded p-2 w-full sm:w-auto hover:bg-[#004BAD]">
+                    Upload de Arquivo
+                </button>
+                <button id="saveButton" class="bg-gray-800 text-white rounded p-2 w-full sm:w-auto hover:bg-[#004BAD]">
+                    Salvar Anotações
+                </button>
+                <button id="refactorButton" class="bg-gray-800 text-white rounded p-2 w-full sm:w-auto hover:bg-[#004BAD]">
+                    Refatorar
+                </button>
+                <button id="remove-all-button" class="bg-gray-800 text-white rounded p-2 w-full sm:w-auto hover:bg-[#004BAD]">
+                    Limpar
+                </button>
+
+                <!-- Botão para abrir o popup -->
+                <button id="open-modal-btn" class="bg-gray-800 text-white rounded p-2 hover:bg-[#004BAD]">
+                    Selecionar Página
+                </button>
+
+                <!-- Modal -->
+                <div id="page-selector-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center hidden">
+                    <div class="bg-white rounded-lg p-6 w-80 shadow-lg">
+                        <h2 class="text-lg font-semibold mb-4">Selecionar Página</h2>
+                        <div class="flex items-center space-x-2">
+                            <label for="page-selector" class="text-sm">Página:</label>
+                            <input type="number" id="page-selector" class="w-16 text-center border rounded p-1" min="1" value="1">
+                            <button id="load-page-btn" class="bg-gray-800 text-white rounded px-3 py-2 text-sm hover:bg-[#004BAD]">
+                                Carregar Página
+                            </button>
+                        </div>
+                        <div class="mt-4 text-right">
+                            <button id="close-modal-btn" class="bg-gray-800 text-white rounded p-2 hover:bg-[#004BAD]">
+                                Fechar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </form>
+
         <!-- Modal -->
         <div id="upload-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-            <div class="relative bg-white/80 border border-gray-300 rounded-lg w-[400px] h-[300px] shadow-md p-4">
-                <!-- Botão Fechar -->
-                <button id="close-upload-modal" class="absolute top-2 right-2 text-gray-600 text-xl hover:text-black">&times;</button>
-
-                <!-- Título -->
-                <h2 class="text-gray-800 font-bold text-center text-[16px] mb-4">Comandos</h2>
+            <div class="relative bg-white rounded-lg w-[360px] shadow-md">
+                <!-- Título com Fundo Cinza Escuro -->
+                <div class="bg-[#333333] text-white font-bold text-left text-[18px] p-2 rounded-t-lg flex items-center justify-between">
+                    <span>Comandos:</span>
+                    <!-- Botão Fechar -->
+                    <button id="close-upload-modal"
+                        class="text-white text-xl
+                rounded-full w-8 h-8 flex items-center justify-center hover:bg-white hover:text-black transition">
+                        &times;
+                    </button>
+                </div>
 
                 <!-- Conteúdo -->
-                <div class="space-y-2">
-                    @for ($i = 1; $i <= 6; $i++)
-                        <div class="flex items-center">
-                        <!-- Imagem -->
-                        <img src="{{ asset('images/image-' . $i . '.jpg') }}" alt="Imagem {{ $i }}" class="w-[40px] h-[40px] rounded mr-3">
-                        <!-- Texto -->
+                <div class="space-y-4 p-4">
+                    <div class="flex items-start">
+                        <img src="{{ asset('icones/icones_comandos/icone_tamanho_tag_(1).png') }}" alt="Definir Tamanho" class="w-12 h-12 mr-3">
                         <div>
-                            <h3 class="text-gray-700 font-bold text-[14px]">Título {{ $i }}</h3>
-                            <p class="text-gray-600 text-[12px]">Descrição breve para a linha {{ $i }}.</p>
+                            <h3 class="font-bold text-[16px] text-gray-800">Definir tamanho da tag:</h3>
+                            <p class="text-gray-600 text-[14px]">Roda do mouse para cima ou para baixo sobre a tag</p>
                         </div>
-                </div>
-                @endfor
-            </div>
-        </div>
-    </div>
-
-
-    <!-- Formulário de upload do PDF -->
-    <form id="pdf-upload-form" action="{{ route('pdf.upload.post') }}" method="POST" enctype="multipart/form-data" class="mt-4">
-        @csrf
-        <div>
-            <label for="pdf" class="block mb-2"></label>
-            <input type="file" name="pdf" id="pdf-input" accept="application/pdf" required class="hidden">
-            <button type="button" id="choose-file-btn" class="bg-gray-800 text-white rounded p-2 w-full sm:w-auto hover:bg-[#004BAD]">
-                Upload de Arquivo
-            </button>
-            <button id="saveButton" class="bg-gray-800 text-white rounded p-2 w-full sm:w-auto hover:bg-[#004BAD]">
-                Salvar Anotações
-            </button>
-            <button id="refactorButton" class="bg-gray-800 text-white rounded p-2 w-full sm:w-auto hover:bg-[#004BAD]">
-                Refatorar
-            </button>
-            <button id="remove-all-button" class="bg-gray-800 text-white rounded p-2 w-full sm:w-auto hover:bg-[#004BAD]">
-                Limpar
-            </button>
-
-            <!-- Botão para abrir o popup -->
-            <button id="open-modal-btn" class="bg-gray-800 text-white rounded p-2 hover:bg-[#004BAD]">
-                Selecionar Página
-            </button>
-
-            <!-- Modal -->
-            <div id="page-selector-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 flex justify-center items-center hidden">
-                <div class="bg-white rounded-lg p-6 w-80 shadow-lg">
-                    <h2 class="text-lg font-semibold mb-4">Selecionar Página</h2>
-                    <div class="flex items-center space-x-2">
-                        <label for="page-selector" class="text-sm">Página:</label>
-                        <input type="number" id="page-selector" class="w-16 text-center border rounded p-1" min="1" value="1">
-                        <button id="load-page-btn" class="bg-gray-800 text-white rounded px-3 py-2 text-sm hover:bg-[#004BAD]">
-                            Carregar Página
-                        </button>
                     </div>
-                    <div class="mt-4 text-right">
-                        <button id="close-modal-btn" class="bg-gray-800 text-white rounded p-2 hover:bg-[#004BAD]">
-                            Fechar
-                        </button>
+                    <div class="flex items-start">
+                        <img src="{{ asset('icones/icones_comandos/icone_zom.png') }}" alt="Zoom" class="w-12 h-12 mr-3">
+                        <div>
+                            <h3 class="font-bold text-[16px] text-gray-800">Zoom:</h3>
+                            <p class="text-gray-600 text-[14px]">Roda do mouse para cima ou para baixo.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <img src="{{ asset('icones/icones_comandos/icone_mover.png') }}" alt="Mover PDF" class="w-12 h-12 mr-3">
+                        <div>
+                            <h3 class="font-bold text-[16px] text-gray-800">Mover PDF:</h3>
+                            <p class="text-gray-600 text-[14px]">Clique na roda do mouse.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <img src="{{ asset('icones/icones_comandos/icone_clique_mouse.png') }}" alt="Adicionar Tag" class="w-12 h-12 mr-3">
+                        <div>
+                            <h3 class="font-bold text-[16px] text-gray-800">Adicionar tag:</h3>
+                            <p class="text-gray-600 text-[14px]">Clique com botão esquerdo na cota que deseja marcar.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <img src="{{ asset('icones/icones_comandos/icone_clique_direito_mouse.png') }}" alt="Excluir Tag" class="w-12 h-12 mr-3">
+                        <div>
+                            <h3 class="font-bold text-[16px] text-gray-800">Excluir tag:</h3>
+                            <p class="text-gray-600 text-[14px]">Clique com botão direito sobre a tag que deseja excluir.</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start">
+                        <img src="{{ asset('icones/icones_comandos/icone_clique_e_segure_mouse_(1).png') }}" alt="Mover Tag" class="w-12 h-12 mr-3">
+                        <div>
+                            <h3 class="font-bold text-[16px] text-gray-800">Mover tag:</h3>
+                            <p class="text-gray-600 text-[14px]">Clique e segure com botão direito sobre a tag.</p>
+                        </div>
                     </div>
                 </div>
             </div>
 
+
         </div>
-    </form>
+
+        <button id="open-upload-modal" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-[#004BAD]">
+            Comandos
+        </button>
 
 
 
-    <!-- Exibição do PDF -->
-    @if (isset($pdf_filename))
-    <div class="mt-8">
-        <div id="pdf-container" class="w-full h-[80vh] overflow-auto border-2 border-gray-700 p-4 rounded relative">
-            <canvas id="pdf-canvas"></canvas>
+
+
+        <!-- Exibição do PDF -->
+        @if (isset($pdf_filename))
+        <div class="mt-8">
+            <div id="pdf-container" class="w-full h-[80vh] overflow-auto border-2 border-gray-700 p-4 rounded relative">
+                <canvas id="pdf-canvas"></canvas>
+            </div>
         </div>
-    </div>
-    @endif
+        @endif
 
-    <!-- Contêiner para botões de zoom no canto inferior direito -->
-    <div id="zoom-buttons-container" hidden class="fixed bottom-5 right-5 z-50 bg-gray-200 rounded-lg p-2 border-2 border-gray-400 sm:bottom-3 sm:right-10">
-        <div class="flex space-x-2">
-            <button id="zoom-in" class="bg-gray-800 text-white rounded-full p-2 hover:bg-[#004BAD] text-sm">+</button>
-            <button id="zoom-out" class="bg-gray-800 text-white rounded-full p-2 hover:bg-[#004BAD] text-sm">-</button>
+        <!-- Contêiner para botões de zoom no canto inferior direito -->
+        <div id="zoom-buttons-container" hidden class="fixed bottom-5 right-5 z-50 bg-gray-200 rounded-lg p-2 border-2 border-gray-400 sm:bottom-3 sm:right-10">
+            <div class="flex space-x-2">
+                <button id="zoom-in" class="bg-gray-800 text-white rounded-full p-2 hover:bg-[#004BAD] text-sm">+</button>
+                <button id="zoom-out" class="bg-gray-800 text-white rounded-full p-2 hover:bg-[#004BAD] text-sm">-</button>
+            </div>
         </div>
-    </div>
 
-    <!-- Menu contextual para opções de exclusão -->
-    <div id="context-menu" class="hidden absolute bg-white border border-gray-300 rounded shadow-lg z-50 text-sm w-40 sm:w-48">
-        <ul>
-            <li id="remove-keep-numbering" class="p-2 hover:bg-gray-200 cursor-pointer">Excluir</li>
-        </ul>
-    </div>
+        <!-- Menu contextual para opções de exclusão -->
+        <div id="context-menu" class="hidden absolute bg-white border border-gray-300 rounded shadow-lg z-50 text-sm w-40 sm:w-48">
+            <ul>
+                <li id="remove-keep-numbering" class="p-2 hover:bg-gray-200 cursor-pointer">Excluir</li>
+            </ul>
+        </div>
 
 
-    <!-- Contêiner para botões de zoom no canto inferior direito
+        <!-- Contêiner para botões de zoom no canto inferior direito
         oculto
         -->
-    <div id="zoom-buttons-container" hidden class="fixed bottom-5 right-5 z-50 bg-gray-200 rounded-lg p-2 border-2 border-gray-400 sm:bottom-3 sm:right-10">
-        <div class="flex space-x-2">
-            <button id="zoom-in" class="bg-blue-500 text-white rounded-full p-2 text-sm">+</button>
-            <button id="zoom-out" class="bg-blue-500 text-white rounded-full p-2 text-sm">-</button>
+        <div id="zoom-buttons-container" hidden class="fixed bottom-5 right-5 z-50 bg-gray-200 rounded-lg p-2 border-2 border-gray-400 sm:bottom-3 sm:right-10">
+            <div class="flex space-x-2">
+                <button id="zoom-in" class="bg-blue-500 text-white rounded-full p-2 text-sm">+</button>
+                <button id="zoom-out" class="bg-blue-500 text-white rounded-full p-2 text-sm">-</button>
+            </div>
         </div>
+
+        <!-- Menu contextual para opções de exclusão -->
+        <div id="context-menu" class="hidden absolute bg-white border border-gray-300 rounded shadow-lg z-50 text-sm w-40 sm:w-48">
+            <ul>
+                <li id="remove-keep-numbering" class="p-2 hover:bg-gray-200 cursor-pointer">Excluir</li>
+            </ul>
+        </div>
+
     </div>
-
-    <!-- Menu contextual para opções de exclusão -->
-    <div id="context-menu" class="hidden absolute bg-white border border-gray-300 rounded shadow-lg z-50 text-sm w-40 sm:w-48">
-        <ul>
-            <li id="remove-keep-numbering" class="p-2 hover:bg-gray-200 cursor-pointer">Excluir</li>
-        </ul>
-    </div>
-
-
 
     <!-- Scripts -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
@@ -145,28 +190,52 @@
         let targetCircle = null;
         let pageCircles = {}; // Armazena círculos para cada página
 
-        // Elementos
+        // Modal de Seleção de Página
         const openModalBtn = document.getElementById('open-modal-btn');
         const closeModalBtn = document.getElementById('close-modal-btn');
         const modal = document.getElementById('page-selector-modal');
-        const loadPageBtn = document.getElementById('load-page-btn');
 
-        // Abrir o modal
+        // Abrir o modal de seleção de página
         openModalBtn.addEventListener('click', () => {
             modal.style.display = 'flex'; // Mostra o modal
         });
 
-        // Fechar o modal
+        // Fechar o modal de seleção de página
         closeModalBtn.addEventListener('click', () => {
             modal.style.display = 'none'; // Esconde o modal
         });
 
-        // Fechar ao clicar fora do modal
+        // Fechar o modal ao clicar fora do conteúdo
         window.addEventListener('click', (e) => {
             if (e.target === modal) {
                 modal.style.display = 'none';
             }
         });
+
+        // Modal de Comandos
+        const modalComandos = document.getElementById('upload-modal');
+        const openModalBtnComandos = document.getElementById('open-upload-modal');
+        const closeModalBtnComandos = document.getElementById('close-upload-modal');
+
+        // Abrir o modal de comandos
+        openModalBtnComandos.addEventListener('click', () => {
+            modalComandos.classList.remove('hidden'); // Mostra o modal
+        });
+
+        // Fechar o modal de comandos
+        closeModalBtnComandos.addEventListener('click', () => {
+            modalComandos.classList.add('hidden'); // Esconde o modal
+        });
+
+        // Fechar o modal de comandos ao clicar fora do conteúdo
+        modalComandos.addEventListener('click', (event) => {
+            if (event.target === modalComandos) {
+                modalComandos.classList.add('hidden');
+            }
+        });
+
+
+
 
         // Lógica para carregar a página
         loadPageBtn.addEventListener('click', () => {

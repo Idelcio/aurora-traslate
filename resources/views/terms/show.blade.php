@@ -53,8 +53,7 @@
         .logout-btn {
             display: block;
             margin: 40px auto 0;
-            background-color: #666666;
-            /* Cor de fundo cinza */
+            background-color: #333333;
             color: white;
             border: none;
             padding: 10px 20px;
@@ -66,7 +65,7 @@
         }
 
         .logout-btn:hover {
-            background-color: #333333;
+            background-color: #444;
             /* Cor de fundo ao passar o mouse */
         }
     </style>
@@ -75,7 +74,7 @@
 <body>
     <div class="container">
         <div class="logo">
-            <img src="{{ asset('logo/tagPdf_logo.png') }}" alt="Logo TagPDF">
+            <img src="{{ asset('icones/logo/tagpdf_logo.png') }}" alt="Logo TagPDF">
         </div>
 
         <h1>{{ $term->title }}</h1>
@@ -84,11 +83,8 @@
             {!! nl2br(e($term->content)) !!}
         </div>
 
-        <!-- Botão de Sair -->
-        <form method="POST" action="{{ route('logout') }}">
-            @csrf
-            <button type="submit" class="logout-btn">Sair</button>
-        </form>
+        <!-- Botão Voltar -->
+        <button type="button" class="logout-btn" onclick="history.back()">Voltar</button>
     </div>
 </body>
 
