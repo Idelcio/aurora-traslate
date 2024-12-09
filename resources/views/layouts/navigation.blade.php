@@ -31,7 +31,7 @@
             </div>
 
             <div>
-                <img src="{{ asset('logo/TagPdf_tipografia.png') }}" alt="User Logo" class="w-[130px] mr-2">
+                <img src="{{ asset('icones/logo/tagpdf_tipografia.png') }}" alt="User Logo" class="w-[130px] mr-2">
 
             </div>
 
