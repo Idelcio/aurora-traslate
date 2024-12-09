@@ -9,6 +9,7 @@ use App\Http\Controllers\ImageController;
 use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\AnnotationController;
 use App\Http\Controllers\TermsOfUseController;
+use App\Http\Controllers\ComandosController;
 
 
 
@@ -82,6 +83,10 @@ Route::middleware('auth')->group(function () {
             Route::delete('/{id}', [TermsOfUseController::class, 'destroy'])->name('destroy');
         });
     });
+
+    // comandos
+
+    Route::get('/comandos', [ComandosController::class, 'index'])->name('comandos.modal');
 });
 
 // Incluindo as rotas de autenticação
