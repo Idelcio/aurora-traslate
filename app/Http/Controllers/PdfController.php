@@ -14,10 +14,12 @@ class PdfController extends Controller
     }
 
     // Processa o upload do PDF e exibe na mesma página
+
     public function upload(Request $request)
     {
+        // Valida o upload, sem limite de tamanho
         $request->validate([
-            'pdf' => 'required|mimes:pdf', // Removido o limite de tamanho
+            'pdf' => 'required|mimes:pdf',
         ]);
 
         // Obtém o arquivo PDF
@@ -26,10 +28,13 @@ class PdfController extends Controller
         // Obtém o nome original do arquivo
         $filename = $pdf->getClientOriginalName();
 
-        // Salva o arquivo com o nome original no diretório 'pdfs'
-        $path = $pdf->storeAs('pdfs', $filename);
+        // Salva o arquivo no diretório 'pdfs' sem modificar o nome original
+        $pdf->storeAs('pdfs', $filename, 'public');
 
-        // Retorna para a mesma página com o nome do arquivo
+        // Define uma variável de sessão para indicar que o upload foi bem-sucedido
+        session()->flash('pdf_uploaded', true);
+
+        // Retorna para a mesma view, passando o nome do arquivo
         return view('pdf.pdf_upload', ['pdf_filename' => $filename]);
     }
 
