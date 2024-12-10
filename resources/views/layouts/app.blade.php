@@ -8,7 +8,7 @@
 
     <title>TagPdf</title>
 
-    <link rel="icon" href="{{ asset('icones/logo/tagpdf_logo.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('icones/logo/favicon.png') }}" type="image/png">
 
     <!-- Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">

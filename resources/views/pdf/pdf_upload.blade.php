@@ -66,7 +66,7 @@
 
         <!-- Terceira Div: Botão Comandos no Canto Direito -->
         <div class="ml-auto">
-            <button id="open-upload-modal" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-[#004BAD]">
+            <button id="open-upload-modal" class="bg-gray-800 hidden text-white px-4 py-2 rounded hover:bg-[#004BAD]">
                 Comandos
             </button>
         </div>
