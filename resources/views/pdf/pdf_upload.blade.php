@@ -1,4 +1,5 @@
 <x-app-layout>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
     <!-- Contêiner de Erros de Validação -->
     <div class="container mx-auto px-4 sm:px-6 lg:px-8 mt-0">
         @if ($errors->any())
@@ -16,44 +17,44 @@
     <div class="w-full px-4 flex items-center justify-between">
 
         <!-- Formulário de Upload -->
-        <form id="pdf-upload-form" action="{{ route('pdf.upload.post') }}" method="POST" enctype="multipart/form-data" class="flex items-center space-x-4 py-0">
+        <form id="pdf-upload-form" action="{{ route('pdf.upload.post') }}" method="POST" enctype="multipart/form-data" class="flex items-center space-x-4 py-0 font-normal" style="font-family: 'Montserrat', sans-serif;">
 
             <!-- Logo à Esquerda -->
-            <a href="{{ route('dashboard') }}" class="flex items-center">
+            <a href="#" class="flex items-center">
                 <img src="{{ asset('icones/logo/tagpdf_icone.png') }}" alt="User Logo" class="w-[40px]">
             </a>
+
 
             @csrf
             <input type="file" name="pdf" id="pdf-input" accept="application/pdf" required class="hidden">
 
             <!-- Botões de Ação -->
-            <button type="button" id="choose-file-btn" class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-[#004BAD]">
-                Upload de Arquivo
+            <button type="button" id="choose-file-btn" class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-[#004BAD] font-normal">
+                Upload de PDF
             </button>
 
-            <button id="saveButton" class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-[#004BAD]">
-                Salvar Anotações
+            <button id="saveButton" class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-[#004BAD] font-normal">
+                Salvar anotações
             </button>
 
-            <button id="refactorButton" class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-[#004BAD]">
-                Refatorar
+            <button id="refactorButton" class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-[#004BAD] font-normal">
+                Reordenar
             </button>
 
-            <button id="remove-all-button" class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-[#004BAD]">
+            <button id="remove-all-button" class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-[#004BAD] font-normal">
                 Limpar
             </button>
 
-
             <!-- Navegação de Página -->
             <div class="flex items-center justify-center space-x-4">
-                <h3 class="text-lg font-medium text-gray-800">Página</h3>
-                <button id="prev-page-btn" class="px-2 py-1 bg-gray-300 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-400">
+                <h3 class="text-lg font-normal text-gray-800">Página</h3>
+                <button id="prev-page-btn" class="px-2 py-1 bg-gray-300 text-gray-800 text-sm rounded-md hover:bg-gray-400 font-normal">
                     &lt;
                 </button>
-                <span id="current-page" class="px-4 py-2 bg-[#004BAD] text-white text-5xl font-bold rounded-md">
+                <span id="current-page" class="px-4 py-2 bg-[#004BAD] text-white text-5xl rounded-md font-normal">
                     1
                 </span>
-                <button id="next-page-btn" class="px-2 py-1 bg-gray-300 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-400">
+                <button id="next-page-btn" class="px-2 py-1 bg-gray-300 text-gray-800 text-sm rounded-md hover:bg-gray-400 font-normal">
                     &gt;
                 </button>
             </div>
@@ -61,10 +62,11 @@
 
         <!-- Terceira Div: Botão Comandos no Canto Direito -->
         <div class="ml-auto">
-            <button id="toggle-comandos" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-[#004BAD] hidden">
+            <button id="toggle-comandos" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-[#004BAD] hidden font-normal">
                 Comandos
             </button>
         </div>
+
     </div>
 
 
@@ -78,7 +80,7 @@
 
 
         <!-- Área de Comandos -->
-        <div id="comandos-container" class="w-[320px] h-auto ml-auto bg-white shadow-md border-l-2 border-gray-700 rounded-lg">
+        <div id="comandos-container" class="w-[320px] h-auto ml-auto bg-white shadow-md border-l-2  rounded-lg">
             <div class="bg-[#333333] text-white font-bold text-[18px] p-2 flex items-center justify-between rounded-t-lg">
                 <span>Comandos:</span>
                 <button id="close-comandos" class="text-white text-xl rounded-full w-8 h-8 flex items-center justify-center hover:bg-white hover:text-black transition">
@@ -204,45 +206,31 @@
                 });
             });
 
+            // comandos
 
-            // atualiza o comandos-container
             document.addEventListener("DOMContentLoaded", () => {
                 const comandosContainer = document.getElementById("comandos-container");
                 const toggleComandosBtn = document.getElementById("toggle-comandos");
                 const closeComandosBtn = document.getElementById("close-comandos");
 
-                // Verifica no localStorage se o painel foi fechado manualmente
-                let fechadoNoX = localStorage.getItem("fechadoNoX");
-
-                // Função para abrir comandos
-                function abrirComandos() {
-                    comandosContainer.style.display = "block"; // Mantém aberto
-                    toggleComandosBtn.style.display = "none";
-                    localStorage.setItem("fechadoNoX", "false"); // Define como não fechado
-                }
-
                 // Função para fechar comandos ao clicar no botão "X"
                 closeComandosBtn.addEventListener("click", () => {
                     comandosContainer.style.display = "none"; // Fecha a área de comandos
                     toggleComandosBtn.style.display = "inline-block"; // Mostra o botão "Comandos"
-                    localStorage.setItem("fechadoNoX", "true"); // Salva o estado como fechado
                 });
 
                 // Reabrir comandos ao clicar no botão "Comandos"
                 toggleComandosBtn.addEventListener("click", () => {
-                    abrirComandos(); // Reabre comandos
+                    comandosContainer.style.display = "block"; // Reabre comandos
+                    toggleComandosBtn.style.display = "none"; // Esconde o botão "Comandos"
                 });
 
-                // Lógica de carregamento ao entrar na página
-                if (fechadoNoX === "false" || fechadoNoX === null) {
-                    // Se não foi fechado manualmente, mantém aberto
-                    abrirComandos();
-                } else {
-                    // Se foi fechado manualmente, exibe o botão
-                    comandosContainer.style.display = "none";
-                    toggleComandosBtn.style.display = "inline-block";
-                }
+                // Mantém o container sempre aberto ao carregar a página
+                comandosContainer.style.display = "block";
+                toggleComandosBtn.style.display = "none";
             });
+
+
 
 
 
@@ -379,17 +367,31 @@
                         showContextMenu(e);
                     }
                 });
+                let zoomScale = 1.0; // Zoom inicial
+                let zoomTimeout = null; // Controlador de timeout
 
                 pdfContainer.addEventListener('wheel', function(e) {
-                    e.preventDefault();
-                    let target = e.target;
-
-                    // Verifica se o evento foi disparado sobre um círculo
-                    if (target.classList.contains('circle')) {
-                        if (e.deltaY < 0) circleScale += 0.1; // Aumenta o tamanho
-                        if (e.deltaY > 0 && circleScale > 0.5) circleScale -= 0.1; // Diminui o tamanho (limite mínimo)
-                        updateCircleSizes();
+                    // Verifica se o alvo do evento é um círculo
+                    if (e.target.classList.contains('circle')) {
+                        return; // Ignora a rolagem sobre os círculos
                     }
+
+                    e.preventDefault(); // Evita a rolagem padrão
+
+                    // Se já houver um timeout definido, cancela o anterior
+                    if (zoomTimeout) clearTimeout(zoomTimeout);
+
+                    // Controla o zoom após parar de rolar
+                    zoomTimeout = setTimeout(() => {
+                        if (e.deltaY < 0 && zoomScale < 5.0) {
+                            zoomScale = Math.min(zoomScale + 0.1, 5.0); // Aumenta o zoom
+                        } else if (e.deltaY > 0 && zoomScale > 0.5) {
+                            zoomScale = Math.max(zoomScale - 0.1, 0.5); // Diminui o zoom
+                        }
+
+                        console.log(`Zoom Atual: ${zoomScale.toFixed(1)}`);
+                        renderPage(currentPage); // Renderiza novamente com o novo zoom
+                    }, 200); // Define um atraso de 200 ms
                 });
 
                 function showContextMenu(e) {
