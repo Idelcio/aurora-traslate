@@ -83,8 +83,11 @@
         <div class="content">
             <!-- Logo -->
             <div>
-                <img src="{{ asset('icones/logo/tagpdf_logo.png') }}" alt="Logo" style="max-width: 200px;">
+                <a href="{{ url('/') }}">
+                    <img src="{{ asset('icones/logo/tagpdf_logo.png') }}" alt="Logo" style="max-width: 200px;">
+                </a>
             </div>
+
 
             <!-- Conteúdo Principal -->
             <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">

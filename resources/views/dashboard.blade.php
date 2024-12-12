@@ -1,17 +1,23 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-2xl text-gray-800 leading-tight">
+
+    <!-- Link da fonte -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@100;300;400;500;700;900&display=swap" rel="stylesheet">
+
+    <!-- Botão Alinhado -->
+    <div class="container mx-auto px-0 mb-0"> <!-- Removido preenchimento interno -->
+        <h2 class="text-2xl text-gray-800 leading-tight">
             <x-nav-link
                 :href="route('pdf.upload.post')"
                 :active="request()->routeIs('pdf.upload.post')"
-                class="inline-block bg-[#004BAD] text-white px-4 py-2 rounded-md ease-in-out leading-[2rem]">
+                class="inline-flex items-center justify-center bg-[#004BAD] text-white px-2 py-1.5 rounded-md leading-none text-lg font-semibold hover:bg-[#333333] hover:text-white text-center h-10 font-[Montserrat] ml-10">
                 {{ __('Upload de PDF') }}
             </x-nav-link>
         </h2>
-    </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    </div>
+
+    <div class="py-4">
+        <div class="max-w-7xl mx-auto px-0">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <!-- Conteúdo adicional -->
             </div>

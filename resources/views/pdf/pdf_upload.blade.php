@@ -1,8 +1,8 @@
 <x-app-layout>
-    <div class="container mx-auto mt-5 px-4 sm:px-6 lg:px-8">
-        <!-- Exibe erros de validação -->
+    <!-- Contêiner de Erros de Validação -->
+    <div class="container mx-auto px-4 sm:px-6 lg:px-8 mt-0">
         @if ($errors->any())
-        <div class="bg-red-200 text-red-800 p-3 rounded mt-4">
+        <div class="bg-red-200 text-red-800 p-3 rounded mt-2">
             <ul>
                 @foreach ($errors->all() as $error)
                 <li>{{ $error }}</li>
@@ -10,142 +10,136 @@
             </ul>
         </div>
         @endif
-
     </div>
 
+    <!-- Contêiner Principal Alinhado ao Cabeçalho -->
+    <div class="w-full px-4 flex items-center justify-between">
 
-    <!-- Contêiner Principal para Alinhamento -->
-    <div class="flex items-center justify-between w-full px-8 mt-4">
+        <!-- Formulário de Upload -->
+        <form id="pdf-upload-form" action="{{ route('pdf.upload.post') }}" method="POST" enctype="multipart/form-data" class="flex items-center space-x-4 py-0">
 
-        <!-- Primeira Div: Formulário de Upload -->
-        <div class="inline-block">
-            <form id="pdf-upload-form" action="{{ route('pdf.upload.post') }}" method="POST" enctype="multipart/form-data" class="flex items-center space-x-4">
-                @csrf
-                <input type="file" name="pdf" id="pdf-input" accept="application/pdf" required class="hidden">
+            <!-- Logo à Esquerda -->
+            <a href="{{ route('dashboard') }}" class="flex items-center">
+                <img src="{{ asset('icones/logo/tagpdf_icone.png') }}" alt="User Logo" class="w-[40px]">
+            </a>
 
-                <button type="button" id="choose-file-btn" class="bg-gray-800 text-white rounded p-2 hover:bg-[#004BAD]">
-                    Upload de Arquivo
+            @csrf
+            <input type="file" name="pdf" id="pdf-input" accept="application/pdf" required class="hidden">
+
+            <!-- Botões de Ação -->
+            <button type="button" id="choose-file-btn" class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-[#004BAD]">
+                Upload de Arquivo
+            </button>
+
+            <button id="saveButton" class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-[#004BAD]">
+                Salvar Anotações
+            </button>
+
+            <button id="refactorButton" class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-[#004BAD]">
+                Refatorar
+            </button>
+
+            <button id="remove-all-button" class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-[#004BAD]">
+                Limpar
+            </button>
+
+
+            <!-- Navegação de Página -->
+            <div class="flex items-center justify-center space-x-4">
+                <h3 class="text-lg font-medium text-gray-800">Página</h3>
+                <button id="prev-page-btn" class="px-2 py-1 bg-gray-300 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-400">
+                    &lt;
                 </button>
-
-                <button id="saveButton" class="bg-gray-800 text-white rounded p-2 hover:bg-[#004BAD]">
-                    Salvar Anotações
+                <span id="current-page" class="px-4 py-2 bg-[#004BAD] text-white text-5xl font-bold rounded-md">
+                    1
+                </span>
+                <button id="next-page-btn" class="px-2 py-1 bg-gray-300 text-gray-800 text-sm font-medium rounded-md hover:bg-gray-400">
+                    &gt;
                 </button>
-
-                <button id="refactorButton" class="bg-gray-800 text-white rounded p-2 hover:bg-[#004BAD]">
-                    Refatorar
-                </button>
-
-                <button id="remove-all-button" class="bg-gray-800 text-white rounded p-2 hover:bg-[#004BAD]">
-                    Limpar
-                </button>
-
-                <button id="open-modal-btn" class="bg-gray-800 text-white rounded p-2 hover:bg-[#004BAD]">
-                    Selecionar Página
-                </button>
-            </form>
-        </div>
-
-        <!-- Segunda Div: Modal de Seleção de Página -->
-        <div id="page-selector-modal" class="fixed inset-0 bg-gray-900 bg-opacity-50 hidden justify-center items-center">
-            <div class="bg-white rounded-lg p-6 w-80 shadow-lg">
-                <h2 class="text-lg font-semibold mb-4">Selecionar Página</h2>
-                <div class="flex items-center space-x-2">
-                    <label for="page-selector" class="text-sm">Página:</label>
-                    <input type="number" id="page-selector" class="w-16 text-center border rounded p-1" min="1" value="1">
-                    <button id="load-page-btn" class="bg-gray-800 text-white rounded px-3 py-2 text-sm hover:bg-[#004BAD]">
-                        Carregar Página
-                    </button>
-                </div>
-                <div class="mt-4 text-right">
-                    <button id="close-modal-btn" class="bg-gray-800 text-white rounded p-2 hover:bg-[#004BAD]">
-                        Fechar
-                    </button>
-                </div>
             </div>
-        </div>
+        </form>
 
         <!-- Terceira Div: Botão Comandos no Canto Direito -->
         <div class="ml-auto">
-            <button id="open-upload-modal" class="bg-gray-800 hidden text-white px-4 py-2 rounded hover:bg-[#004BAD]">
+            <button id="toggle-comandos" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-[#004BAD] hidden">
                 Comandos
             </button>
         </div>
     </div>
 
 
-    <!-- Modal de Comandos -->
-    <div id="upload-modal" class="fixed inset-0 bg-black bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div class="relative bg-white rounded-lg w-[360px] shadow-md">
-            <div class="bg-[#333333] text-white font-bold text-[18px] p-2 rounded-t-lg flex items-center justify-between">
+    <!-- Exibição do PDF -->
+    @if (isset($pdf_filename))
+    <div class="flex mt-0">
+        <div id="pdf-container" class="flex-grow w-full h-[calc(100vh-120px)] overflow-auto border-2 border-gray-700 p-4 rounded relative">
+            <canvas id="pdf-canvas"></canvas>
+        </div>
+        @endif
+
+
+        <!-- Área de Comandos -->
+        <div id="comandos-container" class="w-[320px] h-auto ml-auto bg-white shadow-md border-l-2 border-gray-700 rounded-lg">
+            <div class="bg-[#333333] text-white font-bold text-[18px] p-2 flex items-center justify-between rounded-t-lg">
                 <span>Comandos:</span>
-                <button id="close-upload-modal" class="text-white text-xl rounded-full w-8 h-8 flex items-center justify-center hover:bg-white hover:text-black transition">
+                <button id="close-comandos" class="text-white text-xl rounded-full w-8 h-8 flex items-center justify-center hover:bg-white hover:text-black transition">
                     &times;
                 </button>
             </div>
 
-            <!-- Conteúdo do Modal de Comandos -->
-            <div class="space-y-4 p-4">
-                <div class="flex items-start">
-                    <img src="{{ asset('icones/icones_comandos/icone_tamanho_tag_(1).png') }}" alt="Definir Tamanho" class="w-12 h-12 mr-3">
+
+            <!-- Conteúdo dos Comandos (Sem rolagem) -->
+            <div class="ml-auto space-y-2 p-2">
+                <div class="flex items-start space-x-2">
+                    <img src="{{ asset('icones/icones_comandos/icone_tamanho_tag_(1).png') }}" alt="Definir Tamanho" class="w-8 h-8">
                     <div>
-                        <h3 class="font-bold text-[16px] text-gray-800">Definir tamanho da tag:</h3>
-                        <p class="text-gray-600 text-[14px]">Roda do mouse para cima ou para baixo sobre a tag.</p>
+                        <h3 class="font-bold text-[14px] text-gray-800">Definir tamanho da tag:</h3>
+                        <p class="text-gray-600 text-[12px]">Roda do mouse para cima ou para baixo sobre a tag.</p>
                     </div>
                 </div>
 
-                <div class="flex items-start">
-                    <img src="{{ asset('icones/icones_comandos/icone_zom.png') }}" alt="Zoom" class="w-12 h-12 mr-3">
+                <div class="flex items-start space-x-2">
+                    <img src="{{ asset('icones/icones_comandos/icone_zom.png') }}" alt="Zoom" class="w-8 h-8">
                     <div>
-                        <h3 class="font-bold text-[16px] text-gray-800">Zoom:</h3>
-                        <p class="text-gray-600 text-[14px]">Roda do mouse para cima ou para baixo.</p>
+                        <h3 class="font-bold text-[14px] text-gray-800">Zoom:</h3>
+                        <p class="text-gray-600 text-[12px]">Roda do mouse para cima ou para baixo.</p>
                     </div>
                 </div>
 
-                <div class="flex items-start">
-                    <img src="{{ asset('icones/icones_comandos/icone_mover.png') }}" alt="Mover PDF" class="w-12 h-12 mr-3">
+                <div class="flex items-start space-x-2">
+                    <img src="{{ asset('icones/icones_comandos/icone_mover.png') }}" alt="Mover PDF" class="w-8 h-8">
                     <div>
-                        <h3 class="font-bold text-[16px] text-gray-800">Mover PDF:</h3>
-                        <p class="text-gray-600 text-[14px]">Clique na roda do mouse.</p>
+                        <h3 class="font-bold text-[14px] text-gray-800">Mover PDF:</h3>
+                        <p class="text-gray-600 text-[12px]">Clique na roda do mouse.</p>
                     </div>
                 </div>
 
-                <div class="flex items-start">
-                    <img src="{{ asset('icones/icones_comandos/icone_clique_mouse.png') }}" alt="Adicionar Tag" class="w-12 h-12 mr-3">
+                <div class="flex items-start space-x-2">
+                    <img src="{{ asset('icones/icones_comandos/icone_clique_mouse.png') }}" alt="Adicionar Tag" class="w-8 h-8">
                     <div>
-                        <h3 class="font-bold text-[16px] text-gray-800">Adicionar tag:</h3>
-                        <p class="text-gray-600 text-[14px]">Clique com botão esquerdo na cota que deseja marcar.</p>
+                        <h3 class="font-bold text-[14px] text-gray-800">Adicionar tag:</h3>
+                        <p class="text-gray-600 text-[12px]">Clique com botão esquerdo na cota que deseja marcar.</p>
                     </div>
                 </div>
 
-                <div class="flex items-start">
-                    <img src="{{ asset('icones/icones_comandos/icone_clique_direito_mouse.png') }}" alt="Excluir Tag" class="w-12 h-12 mr-3">
+                <div class="flex items-start space-x-2">
+                    <img src="{{ asset('icones/icones_comandos/icone_clique_direito_mouse.png') }}" alt="Excluir Tag" class="w-8 h-8">
                     <div>
-                        <h3 class="font-bold text-[16px] text-gray-800">Excluir tag:</h3>
-                        <p class="text-gray-600 text-[14px]">Clique com botão direito sobre a tag que deseja excluir.</p>
+                        <h3 class="font-bold text-[14px] text-gray-800">Excluir tag:</h3>
+                        <p class="text-gray-600 text-[12px]">Clique com botão direito sobre a tag que deseja excluir.</p>
                     </div>
                 </div>
 
-                <div class="flex items-start">
-                    <img src="{{ asset('icones/icones_comandos/icone_clique_e_segure_mouse_(1).png') }}" alt="Mover Tag" class="w-12 h-12 mr-3">
+                <div class="flex items-start space-x-2">
+                    <img src="{{ asset('icones/icones_comandos/icone_clique_e_segure_mouse_(1).png') }}" alt="Mover Tag" class="w-8 h-8">
                     <div>
-                        <h3 class="font-bold text-[16px] text-gray-800">Mover tag:</h3>
-                        <p class="text-gray-600 text-[14px]">Clique e segure com botão direito sobre a tag.</p>
+                        <h3 class="font-bold text-[14px] text-gray-800">Mover tag:</h3>
+                        <p class="text-gray-600 text-[12px]">Clique e segure com botão direito sobre a tag.</p>
                     </div>
                 </div>
             </div>
         </div>
+
     </div>
-
-
-    <!-- Exibição do PDF -->
-    @if (isset($pdf_filename))
-    <div class="mt-8">
-        <div id="pdf-container" class="w-full h-[80vh] overflow-auto border-2 border-gray-700 p-4 rounded relative">
-            <canvas id="pdf-canvas"></canvas>
-        </div>
-    </div>
-    @endif
-
 
     <!-- Contêiner para botões de zoom no canto inferior direito
         oculto
@@ -190,13 +184,101 @@
             window.pdfDoc = null;
             window.currentPage = 1;
 
-            // Função global para renderizar páginas
+            const prevPageBtn = document.getElementById('prev-page-btn');
+            const nextPageBtn = document.getElementById('next-page-btn');
+            const currentPageDisplay = document.getElementById('current-page');
+            // Gerenciamento da área de comandos
+            document.addEventListener('DOMContentLoaded', () => {
+                const comandosContainer = document.getElementById('comandos-container');
+                const toggleComandosBtn = document.getElementById('toggle-comandos');
+                const closeComandosBtn = document.getElementById('close-comandos');
+
+                // Alternar visibilidade dos comandos
+                toggleComandosBtn.addEventListener('click', () => {
+                    comandosContainer.classList.toggle('hidden');
+                });
+
+                // Fechar a área de comandos
+                closeComandosBtn.addEventListener('click', () => {
+                    comandosContainer.classList.add('hidden');
+                });
+            });
+
+
+            // atualiza o comandos-container
+            document.addEventListener("DOMContentLoaded", () => {
+                const comandosContainer = document.getElementById("comandos-container");
+                const toggleComandosBtn = document.getElementById("toggle-comandos");
+                const closeComandosBtn = document.getElementById("close-comandos");
+
+                // Verifica no localStorage se o painel foi fechado manualmente
+                let fechadoNoX = localStorage.getItem("fechadoNoX");
+
+                // Função para abrir comandos
+                function abrirComandos() {
+                    comandosContainer.style.display = "block"; // Mantém aberto
+                    toggleComandosBtn.style.display = "none";
+                    localStorage.setItem("fechadoNoX", "false"); // Define como não fechado
+                }
+
+                // Função para fechar comandos ao clicar no botão "X"
+                closeComandosBtn.addEventListener("click", () => {
+                    comandosContainer.style.display = "none"; // Fecha a área de comandos
+                    toggleComandosBtn.style.display = "inline-block"; // Mostra o botão "Comandos"
+                    localStorage.setItem("fechadoNoX", "true"); // Salva o estado como fechado
+                });
+
+                // Reabrir comandos ao clicar no botão "Comandos"
+                toggleComandosBtn.addEventListener("click", () => {
+                    abrirComandos(); // Reabre comandos
+                });
+
+                // Lógica de carregamento ao entrar na página
+                if (fechadoNoX === "false" || fechadoNoX === null) {
+                    // Se não foi fechado manualmente, mantém aberto
+                    abrirComandos();
+                } else {
+                    // Se foi fechado manualmente, exibe o botão
+                    comandosContainer.style.display = "none";
+                    toggleComandosBtn.style.display = "inline-block";
+                }
+            });
+
+
+
+            // Função para atualizar exibição de página
+            function updatePageDisplay() {
+                currentPageDisplay.textContent = currentPage;
+                renderPage(currentPage);
+            }
+
+            // Lógica para ir à página anterior
+            prevPageBtn.addEventListener('click', () => {
+                if (currentPage > 1) {
+                    currentPage--;
+                    updatePageDisplay();
+                } else {
+                    alert("Você já está na primeira página.");
+                }
+            });
+
+            // Lógica para ir à próxima página
+            nextPageBtn.addEventListener('click', () => {
+                if (currentPage < pdfDoc.numPages) {
+                    currentPage++;
+                    updatePageDisplay();
+                } else {
+                    alert("Você já está na última página.");
+                }
+            });
+
+            // Função global para renderizar a página
             window.renderPage = function(pageNum) {
-                pdfDoc.getPage(pageNum).then(function(page) {
+                pdfDoc.getPage(pageNum).then((page) => {
                     const canvas = document.getElementById('pdf-canvas');
                     const context = canvas.getContext('2d');
                     const viewport = page.getViewport({
-                        scale: window.scale
+                        scale
                     });
 
                     // Redimensiona o canvas
@@ -206,7 +288,7 @@
                     // Renderiza a página no canvas
                     page.render({
                         canvasContext: context,
-                        viewport: viewport
+                        viewport: viewport,
                     }).promise.then(() => {
                         console.log(`Página ${pageNum} renderizada`);
                     });
@@ -559,5 +641,5 @@
             }
         </script>
         </div>
-
+    </body>
 </x-app-layout>
