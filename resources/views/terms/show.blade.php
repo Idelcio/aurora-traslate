@@ -74,9 +74,12 @@
 
 <body>
     <div class="container">
-        <div class="logo">
-            <img src="{{ asset('icones/logo/tagpdf_logo.png') }}" alt="Logo TagPDF">
-        </div>
+
+        <a href="{{ url('/') }}">
+            <div class="logo">
+                <img src="{{ asset('icones/logo/tagpdf_logo.png') }}" alt="Logo TagPDF">
+            </div>
+        </a>
 
         <h1>{{ $term->title }}</h1>
 

@@ -171,40 +171,58 @@
 
         <script>
             let pdfDoc = null;
+            // Armazena a referência ao documento PDF carregado. Inicialmente, não há PDF, portanto é nulo.
+
             let currentPage = 1;
+            // Define o número da página atualmente exibida no PDF. Começa na página 1.
+
             let scale = 0.3;
-            let circleScale = 1; // Variável para o tamanho dos círculos e números
+            // Define o nível de zoom base para a renderização do PDF. O viewport da página será escalado por esse valor.
+
+            let circleScale = 1;
+            // Define a escala dos círculos (marcações) desenhados sobre o PDF. Ajusta o tamanho relativo deles.
+
             let circles = [];
+            // Array para armazenar as referências aos elementos HTML (círculos) criados sobre o PDF, para manipulação futura.
+
             let counter = 1;
+            // Contador usado para numerar os círculos em ordem crescente conforme eles são adicionados.
+
             let targetCircle = null;
-            let pageCircles = {}; // Armazena círculos para cada página
-            // Elementos
-            const openModalBtn = document.getElementById('open-modal-btn');
-            const closeModalBtn = document.getElementById('close-modal-btn');
-            const modal = document.getElementById('page-selector-modal');
-            const loadPageBtn = document.getElementById('load-page-btn');
+            // Armazena a referência ao círculo atualmente selecionado (por exemplo, para remoção ou edição).
+
+            let pageCircles = {};
+            // Um objeto para armazenar os círculos por página. Cada chave seria um número de página, e o valor um array de círculos.
+            // (Pode não estar sendo usado agora, mas a intenção é agrupar círculos por página.)
+
             window.pdfDoc = null;
+            // Define também a variável pdfDoc no escopo global (window), permitindo acessá-la de fora do escopo atual se necessário.
+
             window.currentPage = 1;
+            // Define a variável currentPage também no escopo global, possibilitando acesso global ao número da página atual.
+
+            const openModalBtn = document.getElementById('open-modal-btn');
+            // Obtém a referência ao botão que abre um modal (por exemplo, um seletor de páginas). Pode não estar em uso imediato.
+
+            const closeModalBtn = document.getElementById('close-modal-btn');
+            // Referência ao botão que fecha o modal de seleção de página.
+
+            const modal = document.getElementById('page-selector-modal');
+            // Referência ao elemento modal que permite selecionar uma página específica do PDF.
+
+            const loadPageBtn = document.getElementById('load-page-btn');
+            // Referência ao botão que confirma o carregamento de uma página selecionada no modal.
 
             const prevPageBtn = document.getElementById('prev-page-btn');
+            // Referência ao botão que mostra a página anterior do PDF quando clicado.
+
             const nextPageBtn = document.getElementById('next-page-btn');
+            // Referência ao botão que avança para a próxima página do PDF.
+
             const currentPageDisplay = document.getElementById('current-page');
-            // Gerenciamento da área de comandos
-            document.addEventListener('DOMContentLoaded', () => {
-                const comandosContainer = document.getElementById('comandos-container');
-                const toggleComandosBtn = document.getElementById('toggle-comandos');
-                const closeComandosBtn = document.getElementById('close-comandos');
+            // Referência ao elemento HTML que mostra o número da página atual para o usuário.
 
-                // Alternar visibilidade dos comandos
-                toggleComandosBtn.addEventListener('click', () => {
-                    comandosContainer.classList.toggle('hidden');
-                });
 
-                // Fechar a área de comandos
-                closeComandosBtn.addEventListener('click', () => {
-                    comandosContainer.classList.add('hidden');
-                });
-            });
 
             // comandos
 
@@ -232,13 +250,13 @@
 
 
 
-
-
             // Função para atualizar exibição de página
             function updatePageDisplay() {
                 currentPageDisplay.textContent = currentPage;
+                counter = 1; // Zera o contador ao trocar de página
                 renderPage(currentPage);
             }
+
 
             // Lógica para ir à página anterior
             prevPageBtn.addEventListener('click', () => {
@@ -260,52 +278,46 @@
                 }
             });
 
-            // Função global para renderizar a página
-            window.renderPage = function(pageNum) {
-                pdfDoc.getPage(pageNum).then((page) => {
-                    const canvas = document.getElementById('pdf-canvas');
-                    const context = canvas.getContext('2d');
-                    const viewport = page.getViewport({
-                        scale
-                    });
-
-                    // Redimensiona o canvas
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
-
-                    // Renderiza a página no canvas
-                    page.render({
-                        canvasContext: context,
-                        viewport: viewport,
-                    }).promise.then(() => {
-                        console.log(`Página ${pageNum} renderizada`);
-                    });
-                });
-            };
             document.addEventListener('DOMContentLoaded', () => {
+                // Quando o DOM estiver totalmente carregado, executa este código
                 const isPdfUploaded = document.body.dataset.pdfUploaded === 'true';
+                // Verifica se o atributo data-pdf-uploaded no body é 'true', indicando que um PDF foi enviado
 
                 if (isPdfUploaded) {
                     const modalComandos = document.getElementById('upload-modal');
+                    // Obtém o elemento com id 'upload-modal', que representa o modal de comandos ou instruções
+
                     if (modalComandos) {
-                        modalComandos.classList.remove('hidden'); // Mostra o modal
+                        modalComandos.classList.remove('hidden');
+                        // Remove a classe 'hidden' do modal, tornando-o visível ao usuário
+
                         console.log("Modal de comandos aberto automaticamente após upload.");
+                        // Exibe uma mensagem no console indicando que o modal foi aberto automaticamente após o upload do PDF
                     }
                 }
             });
 
 
             document.getElementById('remove-all-button').addEventListener('click', function() {
-                // Remove todos os círculos
-                circles.forEach(circle => circle.remove());
-                circles = []; // Limpa a lista de círculos
-                counter = 1; // Reinicia o contador para os números
+                if (pageCircles[currentPage]) {
+                    // Remove todos os círculos do DOM
+                    document.querySelectorAll(`.circle[data-page="${currentPage}"]`).forEach(circle => circle.remove());
+
+                    // Limpa a lista de círculos da página atual
+                    pageCircles[currentPage] = [];
+                    counter = 1; // Reseta o contador apenas para a página atual
+                }
             });
+
 
 
             document.getElementById('choose-file-btn').addEventListener('click', function() {
+                // Quando o botão com id 'choose-file-btn' é clicado,
+                // simula o clique no input de arquivo 'pdf-input'.
+                // Isso abre a janela para o usuário selecionar um arquivo PDF.
                 document.getElementById('pdf-input').click();
             });
+
 
             document.getElementById('pdf-input').addEventListener('change', function() {
                 // Limpa os círculos ao carregar um novo arquivo
@@ -330,8 +342,6 @@
                     console.error('Erro ao carregar o PDF:', error);
                 });
 
-
-
                 function renderPage(pageNum) {
                     pdfDoc.getPage(pageNum).then(function(page) {
                         const canvas = document.getElementById('pdf-canvas');
@@ -340,17 +350,31 @@
                             scale
                         });
 
+                        // Ajusta o tamanho do canvas
                         canvas.height = viewport.height;
                         canvas.width = viewport.width;
 
+                        // Renderiza a página no canvas
                         page.render({
                             canvasContext: context,
                             viewport
                         }).promise.then(() => {
-                            updateCirclePositions();
+                            // Remove círculos antigos da página
+                            circles.forEach(circle => circle.remove());
+                            circles = [];
+
+                            // Restaura círculos salvos
+                            if (pageCircles[pageNum]) {
+                                pageCircles[pageNum].forEach(circleData => {
+                                    const circle = createCircleElement(circleData.text, circleData.x, circleData.y, pageNum);
+                                    document.getElementById('pdf-container').appendChild(circle);
+                                    circles.push(circle);
+                                });
+                            }
                         });
                     });
                 }
+
 
 
 
@@ -407,43 +431,59 @@
                     }
                 });
 
-                document.getElementById('refactorButton').addEventListener('click', function() {
+                document.getElementById('remove-keep-numbering').addEventListener('click', function() {
                     if (targetCircle) {
-                        removeCircle(targetCircle, true);
+                        removeCircle(targetCircle, false); // Remove e mantém numeração
                         document.getElementById('context-menu').classList.add('hidden');
                     }
                 });
 
-                document.getElementById('remove-keep-numbering').addEventListener('click', function() {
+                document.getElementById('refactorButton').addEventListener('click', function() {
                     if (targetCircle) {
-                        removeCircle(targetCircle, false);
+                        removeCircle(targetCircle, true); // Remove e reordena números
                         document.getElementById('context-menu').classList.add('hidden');
                     }
                 });
+
 
                 function addCircle(event, container) {
                     let rect = document.getElementById('pdf-canvas').getBoundingClientRect();
                     let x = (event.clientX - rect.left) / scale;
                     let y = (event.clientY - rect.top) / scale;
 
-                    // Verifica se a nova posição não sobrepõe nenhuma bolinha existente
-                    if (isOverlapping(x, y)) {
-                        return; // Não adiciona o círculo se estiver sobrepondo outro
-                    }
+                    // Verifica se a nova posição sobrepõe algum círculo
+                    if (isOverlapping(x, y)) return;
 
-                    let circle = document.createElement('div');
-                    circle.className = 'circle';
-                    circle.textContent = counter++;
-                    circle.dataset.x = x;
-                    circle.dataset.y = y;
-
-                    updateCircleStyles(circle);
+                    // Cria e configura o círculo
+                    const circle = createCircleElement(counter++, x, y, currentPage);
                     container.appendChild(circle);
                     circles.push(circle);
 
-                    // Iniciar o drag
+                    // Salva o círculo na estrutura por página
+                    if (!pageCircles[currentPage]) {
+                        pageCircles[currentPage] = [];
+                    }
+                    pageCircles[currentPage].push({
+                        text: circle.textContent,
+                        x: circle.dataset.x,
+                        y: circle.dataset.y
+                    });
+
                     makeDraggable(circle);
                 }
+
+                function createCircleElement(text, x, y, page) {
+                    const circle = document.createElement('div');
+                    circle.className = 'circle';
+                    circle.textContent = text;
+                    circle.dataset.x = x;
+                    circle.dataset.y = y;
+                    circle.dataset.page = page;
+
+                    updateCircleStyles(circle);
+                    return circle;
+                }
+
 
                 function updateCircleSizes() {
                     circles.forEach(circle => updateCircleStyles(circle));
@@ -460,18 +500,38 @@
                 }
 
                 function removeCircle(circle, refactorNumbers) {
-                    let index = circles.indexOf(circle);
-                    if (index !== -1) circles.splice(index, 1);
+                    const pageNum = parseInt(circle.dataset.page);
+                    const x = parseFloat(circle.dataset.x);
+                    const y = parseFloat(circle.dataset.y);
+
+                    // Remove do array de círculos da página
+                    pageCircles[pageNum] = pageCircles[pageNum].filter(
+                        c => !(c.x == x && c.y == y && c.text === circle.textContent)
+                    );
+
+                    // Remove do DOM
                     circle.remove();
 
                     if (refactorNumbers) {
-                        circles.forEach((circle, i) => {
-                            circle.textContent = i + 1;
+                        // Reordena números restantes
+                        pageCircles[pageNum].forEach((circleData, i) => {
+                            const correspondingCircle = document.querySelector(
+                                `.circle[data-page="${pageNum}"][data-x="${circleData.x}"][data-y="${circleData.y}"]`
+                            );
+                            if (correspondingCircle) {
+                                correspondingCircle.textContent = i + 1;
+                                circleData.text = (i + 1).toString();
+                            }
                         });
-                        counter = circles.length + 1;
+
+                        // Atualiza o contador
+                        counter = pageCircles[pageNum].length + 1;
                     }
                 }
 
+
+
+                // Função para atualizar posições dos círculos
                 function updateCirclePositions() {
                     circles.forEach(circle => updateCircleStyles(circle));
                 }
@@ -480,21 +540,21 @@
                     return 10 * scale;
                 }
 
+
                 // Função para verificar se a nova posição do círculo sobrepõe outro
                 function isOverlapping(x, y) {
-                    let overlapThreshold = 20; // Distância mínima entre círculos para evitar sobreposição
-                    for (let circle of circles) {
-                        let circleX = parseFloat(circle.dataset.x);
-                        let circleY = parseFloat(circle.dataset.y);
-                        let distance = Math.sqrt(Math.pow(x - circleX, 2) + Math.pow(y - circleY, 2));
-
-                        // Se a distância entre os centros dos círculos for menor que o limite de sobreposição, retorna true
-                        if (distance < overlapThreshold) {
-                            return true; // O círculo vai se sobrepor
+                    const overlapThreshold = 20; // Distância mínima para considerar sobreposição
+                    if (pageCircles[currentPage]) {
+                        for (let circle of pageCircles[currentPage]) {
+                            const distance = Math.sqrt(Math.pow(x - circle.x, 2) + Math.pow(y - circle.y, 2));
+                            if (distance < overlapThreshold) {
+                                return true; // Indica sobreposição
+                            }
                         }
                     }
                     return false; // Não há sobreposição
                 }
+
 
                 // Função para tornar os círculos arrastáveis
                 function makeDraggable(circle) {
@@ -545,53 +605,56 @@
                         const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
 
                         const pages = pdfDoc.getPages();
-                        const selectedPage = pages[currentPage - 1]; // Obtenha a página selecionada
 
-                        // Adicione círculos e textos na página selecionada
-                        circles.forEach(circle => {
-                            const x = parseFloat(circle.dataset.x);
-                            const y = parseFloat(circle.dataset.y);
-                            const text = circle.textContent;
+                        // Itera sobre todas as páginas e adiciona as marcações
+                        for (const [pageNum, circles] of Object.entries(pageCircles)) {
+                            const selectedPage = pages[pageNum - 1];
 
-                            // Desenha o círculo
-                            selectedPage.drawEllipse({
-                                x,
-                                y: selectedPage.getHeight() - y,
-                                xScale: 15 * circleScale,
-                                yScale: 15 * circleScale,
-                                color: PDFLib.rgb(1, 1, 1), // Branco (equivalente a #FFFFFF)
-                                borderColor: PDFLib.rgb(0 / 255, 75 / 255, 173 / 255), // Azul (hexadecimal #004BAD)
-                                borderWidth: 2,
+                            circles.forEach(circle => {
+                                const x = parseFloat(circle.x);
+                                const y = parseFloat(circle.y);
+                                const text = circle.text;
+
+                                // Desenha o círculo
+                                selectedPage.drawEllipse({
+                                    x,
+                                    y: selectedPage.getHeight() - y,
+                                    xScale: 15 * circleScale,
+                                    yScale: 15 * circleScale,
+                                    color: PDFLib.rgb(1, 1, 1),
+                                    borderColor: PDFLib.rgb(0 / 255, 75 / 255, 173 / 255),
+                                    borderWidth: 2,
+                                });
+
+                                // Adiciona o número no círculo
+                                const fontSize = 16 * circleScale;
+                                const textOffsetX = text.length === 1 ? fontSize * 0.3 : fontSize * 0.6;
+                                const textOffsetY = fontSize * 0.35;
+
+                                selectedPage.drawText(text, {
+                                    x: x - textOffsetX,
+                                    y: selectedPage.getHeight() - y - textOffsetY,
+                                    size: fontSize,
+                                    font,
+                                    color: PDFLib.rgb(0 / 255, 75 / 255, 173 / 255),
+                                });
                             });
 
-                            // Adicione o número no círculo
-                            const fontSize = 16 * circleScale;
-                            const textOffsetX = text.length === 1 ? fontSize * 0.3 : fontSize * 0.6;
-                            const textOffsetY = fontSize * 0.35;
+                            // Adiciona o link no canto inferior direito
+                            const linkFontSize = 12;
+                            const linkText = "WWW.TAGPDF.COM.BR";
+                            const linkWidth = font.widthOfTextAtSize(linkText, linkFontSize);
+                            const pageWidth = selectedPage.getWidth();
+                            const margin = 10;
 
-                            selectedPage.drawText(text, {
-                                x: x - textOffsetX,
-                                y: selectedPage.getHeight() - y - textOffsetY,
-                                size: fontSize,
+                            selectedPage.drawText(linkText, {
+                                x: pageWidth - linkWidth - margin,
+                                y: margin,
+                                size: linkFontSize,
                                 font,
-                                color: PDFLib.rgb(0 / 255, 75 / 255, 173 / 255), // Azul (hexadecimal #004BAD)
+                                color: PDFLib.rgb(0 / 255, 75 / 255, 173 / 255),
                             });
-                        });
-
-                        // Adiciona o link no canto inferior direito
-                        const linkFontSize = 12; // Tamanho da fonte do link
-                        const linkText = "WWW.TAGPDF.COM.BR"; // Texto do link
-                        const linkWidth = font.widthOfTextAtSize(linkText, linkFontSize); // Calcula a largura do texto
-                        const pageWidth = selectedPage.getWidth();
-                        const margin = 10; // Margem do texto para as bordas da página
-
-                        selectedPage.drawText(linkText, {
-                            x: pageWidth - linkWidth - margin, // Posição à direita com margem
-                            y: margin, // Posição inferior com margem
-                            size: linkFontSize,
-                            font,
-                            color: PDFLib.rgb(0 / 255, 75 / 255, 173 / 255), // Azul (hexadecimal #004BAD)
-                        });
+                        }
 
                         // Salva o PDF com as alterações
                         const pdfBytes = await pdfDoc.save();
@@ -616,32 +679,7 @@
             } else {
                 console.error("Nenhum arquivo PDF foi carregado.");
             }
-
-            function renderPage(pageNum) {
-                pdfDoc.getPage(pageNum).then(function(page) {
-                    const canvas = document.getElementById('pdf-canvas');
-                    const context = canvas.getContext('2d');
-                    const viewport = page.getViewport({
-                        scale
-                    });
-
-                    // Limpa os círculos visíveis antes de renderizar a nova página
-                    circles.forEach(circle => circle.remove());
-                    circles = []; // Esvazia o array de círculos da página anterior
-                    counter = 1; // Reinicia o contador de círculos
-
-                    canvas.height = viewport.height;
-                    canvas.width = viewport.width;
-
-                    page.render({
-                        canvasContext: context,
-                        viewport,
-                    }).promise.then(() => {
-                        console.log(`Página ${pageNum} renderizada`);
-                    });
-                });
-            }
         </script>
-        </div>
+
     </body>
 </x-app-layout>

@@ -42,14 +42,16 @@ class PdfController extends Controller
     // Exibe o PDF para renderização com PDF.js
     public function show($filename)
     {
-        $filePath = storage_path('app/pdfs/' . $filename);
+        $filePath = storage_path('app/public/pdfs/' . $filename);
 
         if (!file_exists($filePath)) {
-            abort(404); // Erro 404 se o arquivo não existir
+            abort(404, 'Arquivo não encontrado');
         }
 
         return response()->file($filePath);
     }
+
+
 
     // Salva o PDF com anotações (sem manipulação direta no PDF)
     public function savePdfWithAnnotations(Request $request)
