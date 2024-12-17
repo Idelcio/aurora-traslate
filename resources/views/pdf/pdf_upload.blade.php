@@ -46,18 +46,15 @@
             </button>
 
             <!-- Navegação de Página -->
-            <div class="flex items-center justify-center space-x-4">
+            <div id="page-selector" class="flex items-center justify-center space-x-4">
                 <h3 class="text-lg font-normal text-gray-800">Página</h3>
-                <button id="prev-page-btn" class="px-2 py-1 bg-gray-300 text-gray-800 text-sm rounded-md hover:bg-gray-400 font-normal">
-                    &lt;
-                </button>
-                <span id="current-page" class="px-4 py-2 bg-[#004BAD] text-white text-5xl rounded-md font-normal">
-                    1
-                </span>
-                <button id="next-page-btn" class="px-2 py-1 bg-gray-300 text-gray-800 text-sm rounded-md hover:bg-gray-400 font-normal">
-                    &gt;
-                </button>
+                <button id="prev-page-btn" class="px-2 py-1 bg-gray-300 text-gray-800 text-sm rounded-md hover:bg-gray-400 font-normal">&lt;</button>
+
+                <div id="page-numbers" class="flex space-x-2"></div>
+
+                <button id="next-page-btn" class="px-2 py-1 bg-gray-300 text-gray-800 text-sm rounded-md hover:bg-gray-400 font-normal">&gt;</button>
             </div>
+
         </form>
 
         <!-- Terceira Div: Botão Comandos no Canto Direito -->
@@ -213,11 +210,9 @@
             const loadPageBtn = document.getElementById('load-page-btn');
             // Referência ao botão que confirma o carregamento de uma página selecionada no modal.
 
-            const prevPageBtn = document.getElementById('prev-page-btn');
-            // Referência ao botão que mostra a página anterior do PDF quando clicado.
-
-            const nextPageBtn = document.getElementById('next-page-btn');
-            // Referência ao botão que avança para a próxima página do PDF.
+            let currentBlockStart = 1;
+            const pagesPerBlock = 5;
+            const pageNumbersContainer = document.getElementById("page-numbers");
 
             const currentPageDisplay = document.getElementById('current-page');
             // Referência ao elemento HTML que mostra o número da página atual para o usuário.
@@ -258,25 +253,7 @@
             }
 
 
-            // Lógica para ir à página anterior
-            prevPageBtn.addEventListener('click', () => {
-                if (currentPage > 1) {
-                    currentPage--;
-                    updatePageDisplay();
-                } else {
-                    alert("Você já está na primeira página.");
-                }
-            });
 
-            // Lógica para ir à próxima página
-            nextPageBtn.addEventListener('click', () => {
-                if (currentPage < pdfDoc.numPages) {
-                    currentPage++;
-                    updatePageDisplay();
-                } else {
-                    alert("Você já está na última página.");
-                }
-            });
 
             document.addEventListener('DOMContentLoaded', () => {
                 // Quando o DOM estiver totalmente carregado, executa este código
@@ -328,6 +305,12 @@
                 document.getElementById('pdf-upload-form').submit();
             });
 
+            function updatePageDisplay() {
+                counter = 1; // Reinicia o contador ao trocar de página
+                renderPage(currentPage); // Renderiza a nova página
+                renderPageNumbers(); // Atualiza os números de página
+            }
+
 
             const pdfFilename = "{{ $pdf_filename ?? '' }}";
             let isPageChanging = false; // Controla se estamos trocando de página
@@ -342,6 +325,16 @@
                     console.error('Erro ao carregar o PDF:', error);
                 });
 
+
+                pdfjsLib.getDocument(pdfUrl).promise.then(function(pdf) {
+                    pdfDoc = pdf;
+                    renderPage(currentPage); // Renderiza a primeira página
+                    renderPageNumbers(); // Renderiza os botões de página
+                }).catch(function(error) {
+                    console.error('Erro ao carregar o PDF:', error);
+                });
+
+                // Função para renderizar a página do PDF
                 function renderPage(pageNum) {
                     pdfDoc.getPage(pageNum).then(function(page) {
                         const canvas = document.getElementById('pdf-canvas');
@@ -357,7 +350,7 @@
                         // Renderiza a página no canvas
                         page.render({
                             canvasContext: context,
-                            viewport
+                            viewport,
                         }).promise.then(() => {
                             // Remove círculos antigos da página
                             circles.forEach(circle => circle.remove());
@@ -375,8 +368,47 @@
                     });
                 }
 
+                // Renderiza os números das páginas
+                function renderPageNumbers() {
+                    pageNumbersContainer.innerHTML = ""; // Limpa botões anteriores
+
+                    for (let i = currentBlockStart; i < currentBlockStart + pagesPerBlock && i <= pdfDoc.numPages; i++) {
+                        const pageBtn = document.createElement("button");
+
+                        // Aplicando classes do Tailwind
+                        pageBtn.textContent = i;
+                        pageBtn.className = `
+            page-btn px-4 py-2 rounded-md text-sm font-medium transition
+            ${i === currentPage ? "bg-[#004BAD] text-white" : "bg-gray-200 text-gray-800 hover:bg-gray-300"}
+        `;
+
+                        // Evento de clique para renderizar a página
+                        pageBtn.addEventListener("click", () => {
+                            currentPage = i; // Atualiza a página atual
+                            updatePageDisplay(); // Renderiza a nova página
+                        });
+
+                        pageNumbersContainer.appendChild(pageBtn); // Adiciona botão ao seletor
+                    }
+                }
 
 
+
+                // Destaca o botão atual
+                function highlightActiveButton() {
+                    document.querySelectorAll('.page-btn').forEach(btn => {
+                        const pageNumber = parseInt(btn.textContent, 10);
+
+                        // Adiciona ou remove classes com Tailwind
+                        if (pageNumber === currentPage) {
+                            btn.classList.add("bg-[#004BAD]", "text-white");
+                            btn.classList.remove("bg-gray-200", "text-gray-800", "hover:bg-gray-300");
+                        } else {
+                            btn.classList.remove("bg-[#004BAD]", "text-white");
+                            btn.classList.add("bg-gray-200", "text-gray-800", "hover:bg-gray-300");
+                        }
+                    });
+                }
 
                 let pdfContainer = document.getElementById('pdf-container');
                 pdfContainer.addEventListener('click', function(event) {
@@ -410,7 +442,7 @@
                         if (e.deltaY < 0 && zoomScale < 5.0) {
                             zoomScale = Math.min(zoomScale + 0.1, 5.0); // Aumenta o zoom
                         } else if (e.deltaY > 0 && zoomScale > 0.5) {
-                            zoomScale = Math.max(zoomScale - 0.1, 0.5); // Diminui o zoom
+                            zoomScale = Math.max(zoomScale - 0.5, 1.5); // Diminui o zoom
                         }
 
                         console.log(`Zoom Atual: ${zoomScale.toFixed(1)}`);
@@ -679,6 +711,26 @@
             } else {
                 console.error("Nenhum arquivo PDF foi carregado.");
             }
+
+
+
+            document.getElementById("prev-page-btn").addEventListener("click", () => {
+                if (currentBlockStart > 1) {
+                    currentBlockStart -= pagesPerBlock;
+                    renderPageNumbers();
+                } else {
+                    alert("Você já está na primeira página.");
+                }
+            });
+
+            document.getElementById("next-page-btn").addEventListener("click", () => {
+                if (currentBlockStart + pagesPerBlock <= pdfDoc.numPages) {
+                    currentBlockStart += pagesPerBlock;
+                    renderPageNumbers();
+                } else {
+                    alert("Você já está na última página.");
+                }
+            });
         </script>
 
     </body>

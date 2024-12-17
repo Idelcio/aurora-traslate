@@ -2,19 +2,31 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Fonte principal */
 body {
     font-family: 'Montserrat', sans-serif;
-  }
+}
 
+/* Botão de Página */
+.page-btn {
+    @apply px-4 py-2 rounded-md text-sm font-medium transition;
+}
 
-/* Estilo para os círculos */
+.page-btn:hover {
+    @apply bg-gray-300 cursor-pointer;
+}
+
+.page-btn.active {
+    @apply bg-[#004BAD] text-white;
+}
+
+/* Círculos Numerados */
 .circle {
-   width: 40px;
+    width: 40px;
     height: 40px;
-    background-color:  #FFFFFF;
+    background-color: #FFFFFF;
     color: #004BAD;
-    border-color: #004BAD;
-    border-width: 2px;
+    border: 2px solid #004BAD;
     border-radius: 50%;
     position: absolute;
     display: flex;
@@ -24,51 +36,33 @@ body {
     cursor: pointer;
     user-select: none;
 }
-/* Botões de navegação */
-/* Botões de navegação (setas e número ativo) */
-button, #current-page {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 1rem;
-    font-weight: 600;
-    cursor: pointer;
-    transition: background-color 0.3s ease, color 0.3s ease;
-}
-
-/* Botões de seta */
-
-/* Estilo básico para o modal */
-#page-selector-modal {
-    display: none; /* Esconde o modal por padrão */
-    position: fixed;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    z-index: 50;
-    justify-content: center;
-    align-items: center;
-}
-
-
-/* Cursor de mira */
+/* Contêiner do PDF - Cursor de Mira */
 #pdf-container {
+    @apply max-h-[calc(100vh-170px)];
     cursor: crosshair;
 }
-#pdf-container {
-    max-height: calc(100vh - 170px);
-    /* Altura máxima ajustada para a tela */
+
+/* Botões de Navegação */
+/* Estilo de Botão */
+.page-btn {
+    @apply px-4 py-2 rounded-md text-sm font-medium transition;
 }
 
+.page-btn:hover {
+    @apply bg-gray-300 cursor-pointer;
+}
 
+.page-btn.active {
+    @apply bg-[#004BAD] text-white;
+}
+
+/* Responsividade */
 @media (max-width: 640px) {
     #pdf-container {
-        padding: 3px;
+        @apply p-3;
     }
 
     #zoom-buttons-container {
-        padding: 1px;
+        @apply p-1;
     }
 }
