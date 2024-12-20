@@ -34,15 +34,11 @@
             </button>
 
             <button id="saveButton" class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-[#004BAD] font-normal">
-                Salvar anotações
+                Download
             </button>
 
             <button id="refactorButton" class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-[#004BAD] font-normal">
                 Reordenar
-            </button>
-
-            <button id="remove-all-button" class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-[#004BAD] font-normal">
-                Limpar
             </button>
 
             <!-- Navegação de Página -->
@@ -220,7 +216,6 @@
 
 
             // comandos
-
             document.addEventListener("DOMContentLoaded", () => {
                 const comandosContainer = document.getElementById("comandos-container");
                 const toggleComandosBtn = document.getElementById("toggle-comandos");
@@ -244,11 +239,63 @@
             });
 
 
+            document.addEventListener("DOMContentLoaded", () => {
+                const pdfContainer = document.getElementById("pdf-container");
+                let isMoving = false;
+                let startX, startY, scrollLeft, scrollTop;
+
+                // Apenas Botão Esquerdo: Criar Círculo
+                pdfContainer.addEventListener("mousedown", (e) => {
+                    if (e.button === 0) { // Verifica se é o botão esquerdo do mouse
+                        if (!e.target.classList.contains("circle")) {
+                            addCircle(e, pdfContainer); // Adiciona um círculo
+                        } else {
+                            startDraggingCircle(e.target, e); // Inicia arrasto do círculo
+                        }
+                    } else if (e.button === 2) { // Verifica se é o botão direito do mouse
+                        e.preventDefault(); // Impede o menu de contexto padrão
+                        isMoving = true;
+
+                        // Salva posição inicial do mouse e do scroll
+                        startX = e.clientX;
+                        startY = e.clientY;
+                        scrollLeft = pdfContainer.scrollLeft;
+                        scrollTop = pdfContainer.scrollTop;
+
+                        pdfContainer.classList.add("grabbing");
+                    }
+                });
+
+                // Move o PDF ao arrastar com botão direito
+                pdfContainer.addEventListener("mousemove", (e) => {
+                    if (!isMoving) return;
+
+                    // Calcula deslocamento
+                    const xDiff = e.clientX - startX;
+                    const yDiff = e.clientY - startY;
+
+                    // Atualiza o scroll
+                    pdfContainer.scrollLeft = scrollLeft - xDiff;
+                    pdfContainer.scrollTop = scrollTop - yDiff;
+                });
+
+                // Para movimento ao soltar o botão direito
+                document.addEventListener("mouseup", () => {
+                    if (isMoving) {
+                        isMoving = false;
+                        pdfContainer.classList.remove("grabbing");
+                    }
+                });
+
+                // Impede o menu de contexto padrão
+                pdfContainer.addEventListener("contextmenu", (e) => e.preventDefault());
+            });
+
 
             // Função para atualizar exibição de página
             function updatePageDisplay() {
                 currentPageDisplay.textContent = currentPage;
-                counter = 1; // Zera o contador ao trocar de página
+                // Zera o contador ao trocar de página
                 renderPage(currentPage);
             }
 
@@ -275,19 +322,6 @@
             });
 
 
-            document.getElementById('remove-all-button').addEventListener('click', function() {
-                if (pageCircles[currentPage]) {
-                    // Remove todos os círculos do DOM
-                    document.querySelectorAll(`.circle[data-page="${currentPage}"]`).forEach(circle => circle.remove());
-
-                    // Limpa a lista de círculos da página atual
-                    pageCircles[currentPage] = [];
-                    counter = 1; // Reseta o contador apenas para a página atual
-                }
-            });
-
-
-
             document.getElementById('choose-file-btn').addEventListener('click', function() {
                 // Quando o botão com id 'choose-file-btn' é clicado,
                 // simula o clique no input de arquivo 'pdf-input'.
@@ -300,13 +334,13 @@
                 // Limpa os círculos ao carregar um novo arquivo
                 circles.forEach(circle => circle.remove());
                 circles = []; // Esvazia o array de círculos
-                counter = 1; // Reinicia o contador de círculos
+                // Reinicia o contador de círculos
 
                 document.getElementById('pdf-upload-form').submit();
             });
 
             function updatePageDisplay() {
-                counter = 1; // Reinicia o contador ao trocar de página
+                // Reinicia o contador ao trocar de página
                 renderPage(currentPage); // Renderiza a nova página
                 renderPageNumbers(); // Atualiza os números de página
             }
@@ -335,6 +369,8 @@
                 });
 
                 // Função para renderizar a página do PDF
+                let currentRenderTask = null;
+
                 function renderPage(pageNum) {
                     pdfDoc.getPage(pageNum).then(function(page) {
                         const canvas = document.getElementById('pdf-canvas');
@@ -343,30 +379,53 @@
                             scale
                         });
 
-                        // Ajusta o tamanho do canvas
                         canvas.height = viewport.height;
                         canvas.width = viewport.width;
 
-                        // Renderiza a página no canvas
-                        page.render({
-                            canvasContext: context,
-                            viewport,
-                        }).promise.then(() => {
-                            // Remove círculos antigos da página
-                            circles.forEach(circle => circle.remove());
-                            circles = [];
+                        // Cancela a renderização anterior, se existir
+                        if (currentRenderTask) {
+                            currentRenderTask.cancel();
+                        }
 
-                            // Restaura círculos salvos
+                        // Inicia uma nova tarefa de renderização
+                        currentRenderTask = page.render({
+                            canvasContext: context,
+                            viewport: viewport,
+                        });
+
+                        currentRenderTask.promise.then(() => {
+                            console.log(`Página ${pageNum} renderizada com sucesso.`);
+
+                            // Remove todos os círculos antigos da página atual
+                            document.querySelectorAll(`.circle`).forEach(circle => circle.remove());
+                            circles = []; // Limpa a lista global de círculos
+
+                            // Restaura círculos salvos para a nova página
                             if (pageCircles[pageNum]) {
                                 pageCircles[pageNum].forEach(circleData => {
-                                    const circle = createCircleElement(circleData.text, circleData.x, circleData.y, pageNum);
+                                    const circle = createCircleElement(
+                                        circleData.text,
+                                        parseFloat(circleData.x),
+                                        parseFloat(circleData.y),
+                                        pageNum
+                                    );
                                     document.getElementById('pdf-container').appendChild(circle);
                                     circles.push(circle);
+                                    makeDraggable(circle); // Torna arrastável novamente
                                 });
                             }
+                        }).catch(error => {
+                            if (error.name !== "RenderingCancelledException") {
+                                console.error('Erro ao renderizar página:', error);
+                            }
                         });
+
+                    }).catch(error => {
+                        console.error('Erro ao obter página:', error);
                     });
                 }
+
+
 
                 // Renderiza os números das páginas
                 function renderPageNumbers() {
@@ -409,11 +468,41 @@
                         }
                     });
                 }
-
                 let pdfContainer = document.getElementById('pdf-container');
-                pdfContainer.addEventListener('click', function(event) {
-                    addCircle(event, pdfContainer);
+                let isLongPress = false;
+                let pressTimer;
+
+                // Inicia o temporizador ao pressionar o botão esquerdo
+                pdfContainer.addEventListener('mousedown', function(event) {
+                    if (event.button !== 0) return; // Ignora qualquer botão que não seja o esquerdo
+
+                    // Configura o temporizador para clique longo
+                    pressTimer = setTimeout(function() {
+                        isLongPress = true; // Clique longo detectado
+                    }, 500);
                 });
+
+                // Adiciona círculo apenas com o botão esquerdo
+                pdfContainer.addEventListener('mouseup', function(event) {
+                    if (event.button !== 0) return; // Ignora se não for botão esquerdo
+
+                    clearTimeout(pressTimer); // Limpa o temporizador
+
+                    if (!isLongPress) {
+                        // Se não for um clique longo, adiciona o círculo
+                        addCircle(event, pdfContainer);
+                    }
+
+                    isLongPress = false; // Reseta o status para o próximo clique
+                });
+
+                // Cancela temporizador ao sair do contêiner
+                pdfContainer.addEventListener('mouseleave', function() {
+                    clearTimeout(pressTimer); // Cancela o temporizador
+                    isLongPress = false; // Reseta o status
+                });
+
+
 
                 pdfContainer.addEventListener('contextmenu', function(e) {
                     e.preventDefault();
@@ -463,46 +552,59 @@
                     }
                 });
 
+                // Exclusão simples ao clicar na opção
                 document.getElementById('remove-keep-numbering').addEventListener('click', function() {
                     if (targetCircle) {
-                        removeCircle(targetCircle, false); // Remove e mantém numeração
+                        removeCircle(targetCircle); // Remove sem reordenar
                         document.getElementById('context-menu').classList.add('hidden');
                     }
                 });
 
                 document.getElementById('refactorButton').addEventListener('click', function() {
-                    if (targetCircle) {
-                        removeCircle(targetCircle, true); // Remove e reordena números
-                        document.getElementById('context-menu').classList.add('hidden');
-                    }
+                    refactorAllCircles(); // Refatora todas as páginas
                 });
+
+
 
 
                 function addCircle(event, container) {
                     let rect = document.getElementById('pdf-canvas').getBoundingClientRect();
-                    let x = (event.clientX - rect.left) / scale;
-                    let y = (event.clientY - rect.top) / scale;
+                    let x = event.clientX - rect.left;
+                    let y = event.clientY - rect.top;
 
-                    // Verifica se a nova posição sobrepõe algum círculo
-                    if (isOverlapping(x, y)) return;
+                    if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
+                        console.log("Clique fora da área do PDF.");
+                        return;
+                    }
 
-                    // Cria e configura o círculo
-                    const circle = createCircleElement(counter++, x, y, currentPage);
+                    x /= scale;
+                    y /= scale;
+
+                    if (isOverlapping(x, y)) {
+                        console.log("Posição sobrepõe uma marcação existente.");
+                        return;
+                    }
+
+                    const timestamp = Date.now();
+                    const circle = createCircleElement(counter++, x, y, currentPage, timestamp);
                     container.appendChild(circle);
                     circles.push(circle);
 
-                    // Salva o círculo na estrutura por página
                     if (!pageCircles[currentPage]) {
                         pageCircles[currentPage] = [];
                     }
+
                     pageCircles[currentPage].push({
                         text: circle.textContent,
                         x: circle.dataset.x,
-                        y: circle.dataset.y
+                        y: circle.dataset.y,
+                        createdAt: timestamp,
                     });
 
                     makeDraggable(circle);
                 }
+
+
 
                 function createCircleElement(text, x, y, page) {
                     const circle = document.createElement('div');
@@ -531,37 +633,96 @@
                     circle.style.transform = `scale(${scale * circleScale})`;
                 }
 
-                function removeCircle(circle, refactorNumbers) {
+
+                function removeCircle(circle) {
                     const pageNum = parseInt(circle.dataset.page);
                     const x = parseFloat(circle.dataset.x);
                     const y = parseFloat(circle.dataset.y);
+                    const text = circle.textContent;
 
-                    // Remove do array de círculos da página
-                    pageCircles[pageNum] = pageCircles[pageNum].filter(
-                        c => !(c.x == x && c.y == y && c.text === circle.textContent)
-                    );
-
-                    // Remove do DOM
+                    // Remove o círculo do DOM
                     circle.remove();
 
-                    if (refactorNumbers) {
-                        // Reordena números restantes
-                        pageCircles[pageNum].forEach((circleData, i) => {
-                            const correspondingCircle = document.querySelector(
-                                `.circle[data-page="${pageNum}"][data-x="${circleData.x}"][data-y="${circleData.y}"]`
-                            );
-                            if (correspondingCircle) {
-                                correspondingCircle.textContent = i + 1;
-                                circleData.text = (i + 1).toString();
-                            }
-                        });
+                    // Remove do array `pageCircles`
+                    pageCircles[pageNum] = pageCircles[pageNum].filter(
+                        c => !(c.x == x && c.y == y && c.text === text)
+                    );
 
-                        // Atualiza o contador
-                        counter = pageCircles[pageNum].length + 1;
-                    }
+                    console.log(`Círculo removido na página ${pageNum}: X=${x}, Y=${y}`);
                 }
 
 
+
+                let globalCounter = 1; // Contador global para todas as páginas
+
+                function refactorCircles(pageNum) {
+                    if (!pageCircles[pageNum] || pageCircles[pageNum].length === 0) {
+                        console.log(`Nenhum círculo para refatorar na página ${pageNum}`);
+                        return;
+                    }
+
+                    // Atualiza os círculos na estrutura de dados e no DOM
+                    pageCircles[pageNum].forEach(circleData => {
+                        circleData.text = globalCounter;
+
+                        const correspondingCircle = document.querySelector(
+                            `.circle[data-page="${pageNum}"][data-x="${circleData.x}"][data-y="${circleData.y}"]`
+                        );
+
+                        if (correspondingCircle) {
+                            correspondingCircle.textContent = globalCounter.toString();
+                        }
+
+                        globalCounter++; // Incrementa globalmente após cada círculo
+                    });
+
+                    console.log(`Refatoração concluída na página ${pageNum}`);
+                }
+
+                function refactorAllCircles() {
+                    console.log("Iniciando refatoração de todas as páginas...");
+
+                    // Combina todos os círculos de todas as páginas em uma lista única
+                    const allCircles = [];
+
+                    // Coleta todos os círculos existentes pela ordem de criação
+                    for (const pageNum in pageCircles) {
+                        pageCircles[pageNum].forEach(circleData => {
+                            allCircles.push({
+                                ...circleData,
+                                page: parseInt(pageNum)
+                            });
+                        });
+                    }
+
+                    // Ordena todos os círculos com base na ordem de criação original
+                    allCircles.sort((a, b) => parseInt(a.createdAt) - parseInt(b.createdAt));
+
+                    let counter = 1; // Reinicia o contador global
+                    allCircles.forEach(circleData => {
+                        // Atualiza o texto do círculo
+                        circleData.text = counter;
+
+                        // Atualiza o DOM
+                        const correspondingCircle = document.querySelector(
+                            `.circle[data-page="${circleData.page}"][data-x="${circleData.x}"][data-y="${circleData.y}"]`
+                        );
+
+                        if (correspondingCircle) {
+                            correspondingCircle.textContent = counter.toString();
+                        }
+
+                        counter++; // Incrementa o contador
+                    });
+
+                    console.log("Refatoração concluída.");
+                }
+
+
+                // Ação no botão de reordenar
+                document.getElementById('refactorButton').addEventListener('click', function() {
+                    refactorAllCircles(); // Chama a refatoração global
+                });
 
                 // Função para atualizar posições dos círculos
                 function updateCirclePositions() {
@@ -593,34 +754,38 @@
                     let isDragging = false;
                     let offsetX, offsetY;
 
-                    // Quando o usuário começa a arrastar
                     circle.addEventListener('mousedown', function(e) {
                         isDragging = true;
                         offsetX = e.clientX - parseFloat(circle.style.left);
                         offsetY = e.clientY - parseFloat(circle.style.top);
-
-                        // Adiciona a classe para indicar que está sendo arrastado (opcional)
                         circle.classList.add('dragging');
                     });
 
-                    // Quando o mouse move enquanto o círculo está sendo arrastado
                     document.addEventListener('mousemove', function(e) {
                         if (isDragging) {
                             let x = (e.clientX - offsetX) / scale;
                             let y = (e.clientY - offsetY) / scale;
 
-                            circle.style.left = `${(x * scale)}px`;
-                            circle.style.top = `${(y * scale)}px`;
+                            // Atualiza a posição do círculo visualmente
+                            circle.style.left = `${x * scale}px`;
+                            circle.style.top = `${y * scale}px`;
 
-                            // Atualiza as coordenadas do círculo
-                            circle.dataset.x = x;
-                            circle.dataset.y = y;
+                            // Atualiza coordenadas reais do círculo
+                            circle.dataset.x = x.toFixed(2);
+                            circle.dataset.y = y.toFixed(2);
 
-                            updateCircleStyles(circle); // Atualiza o estilo do círculo
+                            // Atualiza a posição na estrutura de dados
+                            const pageNum = parseInt(circle.dataset.page);
+                            const index = pageCircles[pageNum].findIndex(
+                                c => c.text === circle.textContent
+                            );
+                            if (index !== -1) {
+                                pageCircles[pageNum][index].x = x.toFixed(2);
+                                pageCircles[pageNum][index].y = y.toFixed(2);
+                            }
                         }
                     });
 
-                    // Quando o mouse é solto e o arrasto termina
                     document.addEventListener('mouseup', function() {
                         if (isDragging) {
                             isDragging = false;
@@ -629,90 +794,80 @@
                     });
                 }
 
-
                 document.getElementById('saveButton').addEventListener('click', async function() {
                     try {
+                        console.log('Iniciando processo de salvamento do PDF...');
+
                         const existingPdfBytes = await fetch(pdfUrl).then(res => res.arrayBuffer());
                         const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
                         const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
-
                         const pages = pdfDoc.getPages();
 
-                        // Itera sobre todas as páginas e adiciona as marcações
+                        console.log('PDF carregado para edição.');
+
+                        // Salvar marcações conforme estão na visualização
                         for (const [pageNum, circles] of Object.entries(pageCircles)) {
                             const selectedPage = pages[pageNum - 1];
 
                             circles.forEach(circle => {
-                                const x = parseFloat(circle.x);
-                                const y = parseFloat(circle.y);
+                                const x = parseFloat(circle.x) * scale;
+                                const y = parseFloat(circle.y) * scale;
                                 const text = circle.text;
+                                const fontSize = 16 * circleScale;
 
-                                // Desenha o círculo
+                                // Desenha o círculo no PDF
                                 selectedPage.drawEllipse({
-                                    x,
+                                    x: x,
                                     y: selectedPage.getHeight() - y,
                                     xScale: 15 * circleScale,
                                     yScale: 15 * circleScale,
                                     color: PDFLib.rgb(1, 1, 1),
-                                    borderColor: PDFLib.rgb(0 / 255, 75 / 255, 173 / 255),
+                                    borderColor: PDFLib.rgb(0, 75 / 255, 173 / 255),
                                     borderWidth: 2,
                                 });
 
                                 // Adiciona o número no círculo
-                                const fontSize = 16 * circleScale;
-                                const textOffsetX = text.length === 1 ? fontSize * 0.3 : fontSize * 0.6;
-                                const textOffsetY = fontSize * 0.35;
-
-                                selectedPage.drawText(text, {
-                                    x: x - textOffsetX,
-                                    y: selectedPage.getHeight() - y - textOffsetY,
+                                selectedPage.drawText(text.toString(), {
+                                    x: x - fontSize * 0.3,
+                                    y: selectedPage.getHeight() - y - fontSize * 0.35,
                                     size: fontSize,
-                                    font,
-                                    color: PDFLib.rgb(0 / 255, 75 / 255, 173 / 255),
+                                    font: font,
+                                    color: PDFLib.rgb(0, 75 / 255, 173 / 255),
                                 });
                             });
 
-                            // Adiciona o link no canto inferior direito
-                            const linkFontSize = 12;
-                            const linkText = "WWW.TAGPDF.COM.BR";
-                            const linkWidth = font.widthOfTextAtSize(linkText, linkFontSize);
-                            const pageWidth = selectedPage.getWidth();
-                            const margin = 10;
-
-                            selectedPage.drawText(linkText, {
-                                x: pageWidth - linkWidth - margin,
-                                y: margin,
-                                size: linkFontSize,
-                                font,
-                                color: PDFLib.rgb(0 / 255, 75 / 255, 173 / 255),
+                            // Marca d'água
+                            selectedPage.drawText("WWW.TAGPDF.COM.BR", {
+                                x: selectedPage.getWidth() - 120,
+                                y: 20,
+                                size: 12,
+                                font: font,
+                                color: PDFLib.rgb(0, 75 / 255, 173 / 255),
                             });
                         }
 
-                        // Salva o PDF com as alterações
                         const pdfBytes = await pdfDoc.save();
                         const blob = new Blob([pdfBytes], {
                             type: 'application/pdf'
                         });
                         const url = URL.createObjectURL(blob);
-
-                        // Baixa o arquivo
                         const downloadLink = document.createElement('a');
                         downloadLink.href = url;
-                        downloadLink.download = pdfFilename + "_boleado.pdf";
+                        downloadLink.download = `${pdfFilename.replace('.pdf', '_boleado.pdf')}`;
                         downloadLink.click();
 
                         URL.revokeObjectURL(url);
+                        console.log('PDF salvo e baixado com sucesso.');
                     } catch (error) {
-                        console.error("Erro ao salvar o PDF:", error);
-                        alert("Ocorreu um erro ao salvar o PDF. Verifique o console para mais detalhes.");
+                        console.error('Erro ao salvar o PDF:', error);
+                        alert('Erro ao salvar o PDF. Veja o console para detalhes.');
                     }
                 });
+
 
             } else {
                 console.error("Nenhum arquivo PDF foi carregado.");
             }
-
-
 
             document.getElementById("prev-page-btn").addEventListener("click", () => {
                 if (currentBlockStart > 1) {

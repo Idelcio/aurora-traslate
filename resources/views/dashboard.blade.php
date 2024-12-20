@@ -7,13 +7,12 @@
     <div class="container mx-auto px-0 mb-0"> <!-- Removido preenchimento interno -->
         <h2 class="text-2xl text-gray-800 leading-tight">
             <x-nav-link
-                :href="route('pdf.upload.post')"
-                :active="request()->routeIs('pdf.upload.post')"
+                href="#"
+                onclick="document.getElementById('pdf-input').click(); return false;"
                 class="inline-flex items-center justify-center bg-[#004BAD] text-white px-2 py-1.5 rounded-md leading-none text-lg font-semibold hover:bg-[#333333] hover:text-white text-center h-10 font-[Montserrat] ml-10">
                 {{ __('Upload de PDF') }}
             </x-nav-link>
         </h2>
-
     </div>
 
     <div class="py-4">
@@ -23,5 +22,11 @@
             </div>
         </div>
     </div>
+
+    <!-- Formulário oculto para upload -->
+    <form id="pdf-upload-form" action="{{ route('pdf.upload.post') }}" method="POST" enctype="multipart/form-data" class="hidden">
+        @csrf
+        <input type="file" id="pdf-input" name="pdf" accept="application/pdf" onchange="document.getElementById('pdf-upload-form').submit();">
+    </form>
 
 </x-app-layout>

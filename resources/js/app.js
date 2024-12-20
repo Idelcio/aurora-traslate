@@ -16,17 +16,8 @@ Alpine.start();
 // zoom do PDF
 
 
-document.getElementById('zoom-in').addEventListener('click', function() {
-    scale += 0.1;
-    renderPage(currentPage);
-});
 
-document.getElementById('zoom-out').addEventListener('click', function() {
-    if (scale > 0.2) {
-        scale -= 0.1;
-        renderPage(currentPage);
-    }
-});
+
 
 document.getElementById('pdf-container').addEventListener('wheel', function(e) {
     e.preventDefault(); // Impede que o scroll afete a rolagem da página
@@ -53,8 +44,7 @@ document.getElementById('pdf-container').addEventListener('wheel', function(e) {
         renderPage(currentPage); // Renderiza a página com a nova escala
     }
 
-    // Aplica o scroll normal no contêiner do PDF
-    pdfContainer.scrollTop += e.deltaY;
+
 });
 
 
@@ -88,15 +78,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // modal selecionar pagina
 
-// Abrir o modal
-openModalBtn.addEventListener('click', () => {
-    modal.style.display = 'flex'; // Mostra o modal
-});
 
-// Fechar o modal
-closeModalBtn.addEventListener('click', () => {
-    modal.style.display = 'none'; // Esconde o modal
-});
+
+
 
 // Fechar ao clicar fora do modal
 window.addEventListener('click', (e) => {
@@ -105,19 +89,6 @@ window.addEventListener('click', (e) => {
     }
 });
 
-// Lógica para carregar a página
-loadPageBtn.addEventListener('click', () => {
-    const pageInput = document.getElementById('page-selector');
-    const selectedPage = parseInt(pageInput.value);
-
-    if (selectedPage >= 1 && selectedPage <= pdfDoc.numPages) {
-        currentPage = selectedPage;
-        renderPage(currentPage);
-        modal.style.display = 'none'; // Fecha o modal após carregar a página
-    } else {
-        alert('Número de página inválido. Escolha uma página válida.');
-    }
-});
 
 
 

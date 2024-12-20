@@ -50,10 +50,10 @@
                     </div>
                 </div>
                 <div class="flex items-start">
-                    <img src="{{ asset('icones/icones_comandos/icone_mover.png') }}" alt="Mover PDF" class="w-14 h-14 mr-3">
+                    <img src="{{ asset('icones/icones_comandos/icone_mover.png') }}" alt="Mover PDF" class="w-18 h-14 mr-3">
                     <div>
                         <h3 class="font-bold text-[16px] text-gray-800">Mover PDF:</h3>
-                        <p class="text-gray-600 text-[14px]">Clique na roda do mouse.</p>
+                        <p class="text-gray-600 text-[14px]">Clique e segure para mover.</p>
                     </div>
                 </div>
                 <div class="flex items-start">

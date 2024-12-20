@@ -2,6 +2,9 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Estilo de movimento ativo */
+
+
 /* Fonte principal */
 body {
     font-family: 'Montserrat', sans-serif;
@@ -19,7 +22,15 @@ body {
 .page-btn.active {
     @apply bg-[#004BAD] text-white;
 }
+#pdf-container {
+    cursor: grab;
+}
 
+#pdf-container.grabbing {
+    cursor: grabbing !important;
+}
+
+/* Círculos Numerados */
 /* Círculos Numerados */
 .circle {
     width: 40px;
@@ -32,14 +43,31 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 25px;
+    font-size: 20px; /* Padrão */
     cursor: pointer;
     user-select: none;
 }
+
+
 /* Contêiner do PDF - Cursor de Mira */
 #pdf-container {
     @apply max-h-[calc(100vh-170px)];
     cursor: crosshair;
+}
+#pdf-container {
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    touch-action: none; /* Previne gestos padrão em dispositivos móveis */
+}
+
+#pdf-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: scale(1);
+    transform-origin: center center;
 }
 
 /* Botões de Navegação */
