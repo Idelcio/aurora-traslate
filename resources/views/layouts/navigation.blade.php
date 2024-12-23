@@ -5,11 +5,7 @@
             <div class="flex">
 
                 <!-- Logo -->
-                <div class="shrink-0 flex items-center mt-2"> <!-- Adicionada a classe mt-2 -->
-                    <a href="{{ route('dashboard') }}">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-800" />
-                    </a>
-                </div>
+
 
 
                 <!-- Navigation Links -->
@@ -33,7 +29,7 @@
             <div>
                 <a
                     href="{{ route('dashboard') }}">
-                    <img src="{{ asset('icones/logo/tagpdf_tipografia.png') }}" alt="User Logo" class="w-[130px] mr-2">
+                    <img src="{{ asset('icones/logo/tagpdf_logo.png') }}" alt="User Logo" class="w-[130px] mr-2">
                 </a>
             </div>
 

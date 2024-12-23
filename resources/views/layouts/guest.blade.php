@@ -9,7 +9,7 @@
     <title>TagPdf</title>
 
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('icones/logo/favicon.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('icones/logo/simbolo_tag.png') }}" type="image/png">
 
     <!-- Fonts -->
     <link rel="preconnect" href="https://fonts.bunny.net">

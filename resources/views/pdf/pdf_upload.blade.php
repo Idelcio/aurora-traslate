@@ -561,10 +561,8 @@
                 });
 
                 document.getElementById('refactorButton').addEventListener('click', function() {
-                    refactorAllCircles(); // Refatora todas as páginas
+                    refactorCircles(); // Refatora todas as páginas em sequência contínua
                 });
-
-
 
 
                 function addCircle(event, container) {
@@ -572,51 +570,57 @@
                     let x = event.clientX - rect.left;
                     let y = event.clientY - rect.top;
 
-                    if (x < 0 || y < 0 || x > rect.width || y > rect.height) {
-                        console.log("Clique fora da área do PDF.");
+                    const margin = 40; // Margem de segurança em pixels
+
+                    // Verifica se está dentro dos limites permitidos
+                    if (x < margin || y < margin || x > rect.width - margin || y > rect.height - margin) {
+                        console.log("Fora dos limites permitidos. Círculo não adicionado.");
                         return;
                     }
 
+                    // Ajusta coordenadas para o sistema de referência do PDF
                     x /= scale;
                     y /= scale;
 
-                    if (isOverlapping(x, y)) {
-                        console.log("Posição sobrepõe uma marcação existente.");
+                    // Verifica sobreposição com outros círculos
+                    if (isOverlapping(x, y, margin)) {
+                        console.log("Sobreposição detectada. Círculo não adicionado.");
                         return;
                     }
 
                     const timestamp = Date.now();
                     const circle = createCircleElement(counter++, x, y, currentPage, timestamp);
                     container.appendChild(circle);
-                    circles.push(circle);
 
+                    // Garante que a página atual tenha um array para armazenar círculos
                     if (!pageCircles[currentPage]) {
                         pageCircles[currentPage] = [];
                     }
 
                     pageCircles[currentPage].push({
                         text: circle.textContent,
-                        x: circle.dataset.x,
-                        y: circle.dataset.y,
-                        createdAt: timestamp,
+                        x: parseFloat(circle.dataset.x), // Garante que seja armazenado como número
+                        y: parseFloat(circle.dataset.y), // Garante que seja armazenado como número
+                        createdAt: timestamp
                     });
 
-                    makeDraggable(circle);
+                    makeDraggable(circle); // Torna o círculo arrastável
                 }
 
 
-
-                function createCircleElement(text, x, y, page) {
+                function createCircleElement(text, x, y, page, timestamp) {
                     const circle = document.createElement('div');
                     circle.className = 'circle';
                     circle.textContent = text;
                     circle.dataset.x = x;
                     circle.dataset.y = y;
                     circle.dataset.page = page;
+                    circle.dataset.timestamp = timestamp; // Adiciona o timestamp como identificador único
 
                     updateCircleStyles(circle);
                     return circle;
                 }
+
 
 
                 function updateCircleSizes() {
@@ -652,77 +656,73 @@
                 }
 
 
-
-                let globalCounter = 1; // Contador global para todas as páginas
-
-                function refactorCircles(pageNum) {
-                    if (!pageCircles[pageNum] || pageCircles[pageNum].length === 0) {
-                        console.log(`Nenhum círculo para refatorar na página ${pageNum}`);
+                function refactorCircles() {
+                    if (Object.keys(pageCircles).length === 0) {
+                        console.log("Nenhum círculo para refatorar.");
                         return;
                     }
 
-                    // Atualiza os círculos na estrutura de dados e no DOM
-                    pageCircles[pageNum].forEach(circleData => {
-                        circleData.text = globalCounter;
+                    let globalCounter = 1; // Contador global para reordenar os círculos
 
+                    // Cria um array de todas as marcações em todas as páginas
+                    let allCircles = [];
+
+                    // Itera pelas páginas e adiciona os círculos ao array
+                    for (const pageNum of Object.keys(pageCircles)) {
+                        pageCircles[pageNum].forEach(circleData => {
+                            allCircles.push({
+                                ...circleData,
+                                pageNum: parseInt(pageNum)
+                            });
+                        });
+                    }
+
+                    // Ordena todas as marcações por `timestamp`
+                    allCircles.sort((a, b) => a.createdAt - b.createdAt);
+
+                    // Reordena as marcações de acordo com o timestamp
+                    allCircles.forEach(circle => {
+                        const {
+                            pageNum,
+                            x,
+                            y,
+                            createdAt
+                        } = circle;
+
+                        // Atualiza o texto do círculo na estrutura de dados
+                        circle.text = globalCounter.toString();
+
+                        // Encontra o círculo correspondente no DOM e atualiza o texto
                         const correspondingCircle = document.querySelector(
-                            `.circle[data-page="${pageNum}"][data-x="${circleData.x}"][data-y="${circleData.y}"]`
+                            `.circle[data-page="${pageNum}"][data-x="${x}"][data-y="${y}"][data-timestamp="${createdAt}"]`
                         );
 
                         if (correspondingCircle) {
                             correspondingCircle.textContent = globalCounter.toString();
                         }
 
-                        globalCounter++; // Incrementa globalmente após cada círculo
+                        globalCounter++; // Incrementa o contador global
                     });
 
-                    console.log(`Refatoração concluída na página ${pageNum}`);
-                }
-
-                function refactorAllCircles() {
-                    console.log("Iniciando refatoração de todas as páginas...");
-
-                    // Combina todos os círculos de todas as páginas em uma lista única
-                    const allCircles = [];
-
-                    // Coleta todos os círculos existentes pela ordem de criação
-                    for (const pageNum in pageCircles) {
-                        pageCircles[pageNum].forEach(circleData => {
-                            allCircles.push({
-                                ...circleData,
-                                page: parseInt(pageNum)
-                            });
-                        });
-                    }
-
-                    // Ordena todos os círculos com base na ordem de criação original
-                    allCircles.sort((a, b) => parseInt(a.createdAt) - parseInt(b.createdAt));
-
-                    let counter = 1; // Reinicia o contador global
-                    allCircles.forEach(circleData => {
-                        // Atualiza o texto do círculo
-                        circleData.text = counter;
-
-                        // Atualiza o DOM
-                        const correspondingCircle = document.querySelector(
-                            `.circle[data-page="${circleData.page}"][data-x="${circleData.x}"][data-y="${circleData.y}"]`
-                        );
-
-                        if (correspondingCircle) {
-                            correspondingCircle.textContent = counter.toString();
+                    // Atualiza as marcações nas páginas
+                    pageCircles = allCircles.reduce((acc, circle) => {
+                        const {
+                            pageNum,
+                            ...data
+                        } = circle;
+                        if (!acc[pageNum]) {
+                            acc[pageNum] = [];
                         }
+                        acc[pageNum].push(data);
+                        return acc;
+                    }, {});
 
-                        counter++; // Incrementa o contador
-                    });
+                    console.log("Refatoração global concluída com base no timestamp.");
 
-                    console.log("Refatoração concluída.");
+                    // Atualiza a página atual
+                    renderPage(currentPage);
                 }
 
-
-                // Ação no botão de reordenar
-                document.getElementById('refactorButton').addEventListener('click', function() {
-                    refactorAllCircles(); // Chama a refatoração global
-                });
 
                 // Função para atualizar posições dos círculos
                 function updateCirclePositions() {
@@ -735,18 +735,18 @@
 
 
                 // Função para verificar se a nova posição do círculo sobrepõe outro
-                function isOverlapping(x, y) {
-                    const overlapThreshold = 20; // Distância mínima para considerar sobreposição
+                function isOverlapping(x, y, margin = 10) {
                     if (pageCircles[currentPage]) {
                         for (let circle of pageCircles[currentPage]) {
                             const distance = Math.sqrt(Math.pow(x - circle.x, 2) + Math.pow(y - circle.y, 2));
-                            if (distance < overlapThreshold) {
-                                return true; // Indica sobreposição
+                            if (distance < margin / scale) {
+                                return true; // Sobreposição detectada
                             }
                         }
                     }
                     return false; // Não há sobreposição
                 }
+
 
 
                 // Função para tornar os círculos arrastáveis
@@ -798,6 +798,7 @@
                     try {
                         console.log('Iniciando processo de salvamento do PDF...');
 
+                        // Carrega o PDF existente
                         const existingPdfBytes = await fetch(pdfUrl).then(res => res.arrayBuffer());
                         const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
                         const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
@@ -805,65 +806,89 @@
 
                         console.log('PDF carregado para edição.');
 
-                        // Salvar marcações conforme estão na visualização
+                        // Itera sobre todas as páginas e aplica as marcações
                         for (const [pageNum, circles] of Object.entries(pageCircles)) {
                             const selectedPage = pages[pageNum - 1];
 
+                            // Desenha as marcações
                             circles.forEach(circle => {
                                 const x = parseFloat(circle.x) * scale;
                                 const y = parseFloat(circle.y) * scale;
                                 const text = circle.text;
-                                const fontSize = 16 * circleScale;
 
-                                // Desenha o círculo no PDF
+                                // Ajusta tamanho da fonte com base no número de caracteres
+                                let fontSize = 16 * circleScale;
+                                let textOffsetX = fontSize * 0.3;
+                                let textOffsetY = fontSize * 0.35;
+
+                                // Ajusta tamanho e posição para números maiores
+                                if (text.length === 2) {
+                                    fontSize -= 1; // Reduz fonte para dois dígitos
+                                    textOffsetX += 3;
+                                } else if (text.length >= 3) {
+                                    fontSize -= 2; // Reduz mais para três ou mais dígitos
+                                    textOffsetX += 5;
+                                }
+
+                                // Desenha o círculo
                                 selectedPage.drawEllipse({
                                     x: x,
                                     y: selectedPage.getHeight() - y,
                                     xScale: 15 * circleScale,
                                     yScale: 15 * circleScale,
-                                    color: PDFLib.rgb(1, 1, 1),
-                                    borderColor: PDFLib.rgb(0, 75 / 255, 173 / 255),
+                                    color: PDFLib.rgb(1, 1, 1), // Branco
+                                    borderColor: PDFLib.rgb(0, 75 / 255, 173 / 255), // Azul
                                     borderWidth: 2,
                                 });
 
-                                // Adiciona o número no círculo
+                                // Desenha o número dentro do círculo
                                 selectedPage.drawText(text.toString(), {
-                                    x: x - fontSize * 0.3,
-                                    y: selectedPage.getHeight() - y - fontSize * 0.35,
+                                    x: x - textOffsetX,
+                                    y: selectedPage.getHeight() - y - textOffsetY,
                                     size: fontSize,
                                     font: font,
-                                    color: PDFLib.rgb(0, 75 / 255, 173 / 255),
+                                    color: PDFLib.rgb(0, 75 / 255, 173 / 255), // Azul
                                 });
                             });
 
-                            // Marca d'água
-                            selectedPage.drawText("WWW.TAGPDF.COM.BR", {
-                                x: selectedPage.getWidth() - 120,
-                                y: 20,
+                            // **Adiciona a Marca d'Água Sempre Dentro dos Limites**
+                            const watermarkText = "WWW.TAGPDF.COM.BR";
+                            const padding = 10; // Margem de segurança
+                            const textWidth = font.widthOfTextAtSize(watermarkText, 12); // Calcula a largura do texto
+                            const textHeight = 12; // Altura da fonte
+
+                            // Desenha a marca d'água ajustada com margem segura
+                            selectedPage.drawText(watermarkText, {
+                                x: Math.max(padding, selectedPage.getWidth() - textWidth - padding),
+                                y: padding, // Sempre acima do limite inferior
                                 size: 12,
                                 font: font,
-                                color: PDFLib.rgb(0, 75 / 255, 173 / 255),
+                                color: PDFLib.rgb(0, 75 / 255, 173 / 255), // Azul
                             });
                         }
 
+                        // Salva o documento
                         const pdfBytes = await pdfDoc.save();
                         const blob = new Blob([pdfBytes], {
                             type: 'application/pdf'
                         });
                         const url = URL.createObjectURL(blob);
+
+                        // Gera o link de download e baixa o arquivo
                         const downloadLink = document.createElement('a');
                         downloadLink.href = url;
                         downloadLink.download = `${pdfFilename.replace('.pdf', '_boleado.pdf')}`;
                         downloadLink.click();
 
+                        // Libera o URL gerado
                         URL.revokeObjectURL(url);
                         console.log('PDF salvo e baixado com sucesso.');
+
                     } catch (error) {
                         console.error('Erro ao salvar o PDF:', error);
-                        alert('Erro ao salvar o PDF. Veja o console para detalhes.');
+                        alert('Erro ao salvar o PDF. Veja o console para mais detalhes.');
                     }
                 });
-
 
             } else {
                 console.error("Nenhum arquivo PDF foi carregado.");
