@@ -717,6 +717,9 @@
                         return acc;
                     }, {});
 
+                    // Atualiza o contador global para o próximo número
+                    counter = globalCounter;
+
                     console.log("Refatoração global concluída com base no timestamp.");
 
                     // Atualiza a página atual
