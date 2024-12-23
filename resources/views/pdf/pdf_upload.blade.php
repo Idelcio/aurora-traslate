@@ -321,21 +321,31 @@
                 }
             });
 
+            let isDownloaded = false; // Variável para controlar se o PDF foi baixado
 
             document.getElementById('choose-file-btn').addEventListener('click', function() {
-                // Quando o botão com id 'choose-file-btn' é clicado,
-                // simula o clique no input de arquivo 'pdf-input'.
-                // Isso abre a janela para o usuário selecionar um arquivo PDF.
+                // Verifica se há edições no PDF e o download ainda não foi feito
+                if (!isDownloaded && Object.keys(pageCircles).length > 0) {
+                    // Exibe uma mensagem de confirmação
+                    const confirmUpload = confirm("Você tem alterações no PDF que ainda não foram salvas. Se continuar, seu progresso será perdido. Deseja continuar sem salvar?");
+                    if (!confirmUpload) {
+                        return; // Cancela o processo de upload
+                    }
+                }
+
+                // Se o usuário confirmar ou o download já foi feito, simula o clique no input de arquivo
                 document.getElementById('pdf-input').click();
             });
-
 
             document.getElementById('pdf-input').addEventListener('change', function() {
                 // Limpa os círculos ao carregar um novo arquivo
                 circles.forEach(circle => circle.remove());
                 circles = []; // Esvazia o array de círculos
-                // Reinicia o contador de círculos
+                pageCircles = {}; // Reinicia as marcações por página
+                counter = 1; // Reinicia o contador de círculos
+                isDownloaded = false; // Reinicia o estado de download para o novo arquivo
 
+                // Submete o formulário de upload
                 document.getElementById('pdf-upload-form').submit();
             });
 
@@ -887,12 +897,14 @@
                         URL.revokeObjectURL(url);
                         console.log('PDF salvo e baixado com sucesso.');
 
+                        // Marca o PDF como baixado
+                        isDownloaded = true;
+
                     } catch (error) {
                         console.error('Erro ao salvar o PDF:', error);
                         alert('Erro ao salvar o PDF. Veja o console para mais detalhes.');
                     }
                 });
-
             } else {
                 console.error("Nenhum arquivo PDF foi carregado.");
             }
