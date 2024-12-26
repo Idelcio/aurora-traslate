@@ -30,7 +30,7 @@ body {
     cursor: grabbing !important;
 }
 
-/* Círculos Numerados */
+
 /* Círculos Numerados */
 .circle {
     width: 40px;
@@ -43,9 +43,10 @@ body {
     display: flex;
     justify-content: center;
     align-items: center;
-    font-size: 20px; /* Padrão */
+    font-size: 20px;
     cursor: pointer;
     user-select: none;
+    pointer-events: auto; /* Para garantir a interação */
 }
 
 

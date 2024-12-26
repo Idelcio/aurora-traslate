@@ -163,55 +163,27 @@
         <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
 
         <script>
-            let pdfDoc = null;
-            // Armazena a referência ao documento PDF carregado. Inicialmente, não há PDF, portanto é nulo.
-
-            let currentPage = 1;
-            // Define o número da página atualmente exibida no PDF. Começa na página 1.
-
-            let scale = 0.3;
-            // Define o nível de zoom base para a renderização do PDF. O viewport da página será escalado por esse valor.
-
-            let circleScale = 1;
-            // Define a escala dos círculos (marcações) desenhados sobre o PDF. Ajusta o tamanho relativo deles.
-
-            let circles = [];
-            // Array para armazenar as referências aos elementos HTML (círculos) criados sobre o PDF, para manipulação futura.
-
-            let counter = 1;
-            // Contador usado para numerar os círculos em ordem crescente conforme eles são adicionados.
-
-            let targetCircle = null;
-            // Armazena a referência ao círculo atualmente selecionado (por exemplo, para remoção ou edição).
-
-            let pageCircles = {};
-            // Um objeto para armazenar os círculos por página. Cada chave seria um número de página, e o valor um array de círculos.
-            // (Pode não estar sendo usado agora, mas a intenção é agrupar círculos por página.)
-
-            window.pdfDoc = null;
-            // Define também a variável pdfDoc no escopo global (window), permitindo acessá-la de fora do escopo atual se necessário.
-
-            window.currentPage = 1;
-            // Define a variável currentPage também no escopo global, possibilitando acesso global ao número da página atual.
+            window.pdfDoc = null; // Documento PDF carregado
+            window.currentPage = 1; // Página atual exibida
+            let scale = 0.8; // Nível de zoom inicial
+            let circleScale = 1; // Escala inicial para círculos
+            let circles = []; // Array para círculos criados
+            let counter = 1; // Contador de círculos
+            let targetCircle = null; // Círculo atualmente selecionado
+            let pageCircles = {}; // Marcações de círculos por página
 
             const openModalBtn = document.getElementById('open-modal-btn');
-            // Obtém a referência ao botão que abre um modal (por exemplo, um seletor de páginas). Pode não estar em uso imediato.
-
             const closeModalBtn = document.getElementById('close-modal-btn');
-            // Referência ao botão que fecha o modal de seleção de página.
-
             const modal = document.getElementById('page-selector-modal');
-            // Referência ao elemento modal que permite selecionar uma página específica do PDF.
-
             const loadPageBtn = document.getElementById('load-page-btn');
-            // Referência ao botão que confirma o carregamento de uma página selecionada no modal.
 
             let currentBlockStart = 1;
             const pagesPerBlock = 5;
             const pageNumbersContainer = document.getElementById("page-numbers");
-
             const currentPageDisplay = document.getElementById('current-page');
-            // Referência ao elemento HTML que mostra o número da página atual para o usuário.
+
+            const minZoom = 1.4; // Zoom mínimo permitido
+            const maxZoom = 5.0; // Zoom máximo permitido
 
 
 
@@ -290,16 +262,6 @@
                 // Impede o menu de contexto padrão
                 pdfContainer.addEventListener("contextmenu", (e) => e.preventDefault());
             });
-
-
-            // Função para atualizar exibição de página
-            function updatePageDisplay() {
-                currentPageDisplay.textContent = currentPage;
-                // Zera o contador ao trocar de página
-                renderPage(currentPage);
-            }
-
-
 
 
             document.addEventListener('DOMContentLoaded', () => {
@@ -397,44 +359,45 @@
                             currentRenderTask.cancel();
                         }
 
-                        // Inicia uma nova tarefa de renderização
+                        // Inicia a renderização da página
                         currentRenderTask = page.render({
                             canvasContext: context,
                             viewport: viewport,
                         });
 
-                        currentRenderTask.promise.then(() => {
-                            console.log(`Página ${pageNum} renderizada com sucesso.`);
+                        currentRenderTask.promise
+                            .then(() => {
+                                console.log(`Página ${pageNum} renderizada com sucesso.`);
 
-                            // Remove todos os círculos antigos da página atual
-                            document.querySelectorAll(`.circle`).forEach(circle => circle.remove());
-                            circles = []; // Limpa a lista global de círculos
+                                // Remove círculos antigos da página atual
+                                document.querySelectorAll('.circle').forEach(circle => circle.remove());
+                                circles = []; // Limpa a lista de círculos
 
-                            // Restaura círculos salvos para a nova página
-                            if (pageCircles[pageNum]) {
-                                pageCircles[pageNum].forEach(circleData => {
-                                    const circle = createCircleElement(
-                                        circleData.text,
-                                        parseFloat(circleData.x),
-                                        parseFloat(circleData.y),
-                                        pageNum
-                                    );
-                                    document.getElementById('pdf-container').appendChild(circle);
-                                    circles.push(circle);
-                                    makeDraggable(circle); // Torna arrastável novamente
-                                });
-                            }
-                        }).catch(error => {
-                            if (error.name !== "RenderingCancelledException") {
-                                console.error('Erro ao renderizar página:', error);
-                            }
-                        });
-
+                                // Restaura os círculos salvos para a página atual
+                                if (pageCircles[pageNum]) {
+                                    pageCircles[pageNum].forEach(circleData => {
+                                        const circle = createCircleElement(
+                                            circleData.text,
+                                            parseFloat(circleData.x),
+                                            parseFloat(circleData.y),
+                                            pageNum
+                                        );
+                                        document.getElementById('pdf-container').appendChild(circle);
+                                        circles.push(circle);
+                                        updateCircleStyles(circle); // Atualiza estilos
+                                        makeDraggable(circle); // Torna arrastável
+                                    });
+                                }
+                            })
+                            .catch(error => {
+                                if (error.name !== 'RenderingCancelledException') {
+                                    console.error('Erro ao renderizar página:', error);
+                                }
+                            });
                     }).catch(error => {
                         console.error('Erro ao obter página:', error);
                     });
                 }
-
 
 
                 // Renderiza os números das páginas
@@ -522,7 +485,7 @@
                         showContextMenu(e);
                     }
                 });
-                let zoomScale = 1.0; // Zoom inicial
+                let zoomScale = 1.4; // Zoom inicial
                 let zoomTimeout = null; // Controlador de timeout
 
                 pdfContainer.addEventListener('wheel', function(e) {
@@ -533,20 +496,20 @@
 
                     e.preventDefault(); // Evita a rolagem padrão
 
-                    // Se já houver um timeout definido, cancela o anterior
-                    if (zoomTimeout) clearTimeout(zoomTimeout);
+                    // Ajusta o zoom com base na rolagem do mouse
+                    if (e.deltaY < 0 && zoomScale < maxZoom) {
+                        zoomScale = Math.min(zoomScale + 0.1, maxZoom); // Aumenta o zoom
+                    } else if (e.deltaY > 0 && zoomScale > minZoom) {
+                        zoomScale = Math.max(zoomScale - 0.1, minZoom); // Diminui o zoom
+                    }
 
-                    // Controla o zoom após parar de rolar
-                    zoomTimeout = setTimeout(() => {
-                        if (e.deltaY < 0 && zoomScale < 5.0) {
-                            zoomScale = Math.min(zoomScale + 0.1, 5.0); // Aumenta o zoom
-                        } else if (e.deltaY > 0 && zoomScale > 0.5) {
-                            zoomScale = Math.max(zoomScale - 0.5, 1.5); // Diminui o zoom
-                        }
+                    console.log(`Zoom Atual: ${zoomScale.toFixed(1)}`);
 
-                        console.log(`Zoom Atual: ${zoomScale.toFixed(1)}`);
-                        renderPage(currentPage); // Renderiza novamente com o novo zoom
-                    }, 200); // Define um atraso de 200 ms
+                    // Renderiza a página atual com o novo zoom
+                    renderPage(currentPage);
+
+                    // Reposiciona os círculos visíveis com base no novo zoom
+                    circles.forEach(circle => updateCircleStyles(circle));
                 });
 
                 function showContextMenu(e) {
@@ -615,6 +578,9 @@
                     });
 
                     makeDraggable(circle); // Torna o círculo arrastável
+
+                    // Re-renderiza a página para refletir o novo círculo
+                    renderPage(currentPage);
                 }
 
 
@@ -642,9 +608,24 @@
                     let y = parseFloat(circle.dataset.y);
                     let size = adjustCircleSizeForScale(scale * circleScale);
 
-                    circle.style.left = `${(x * scale) - size}px`;
-                    circle.style.top = `${(y * scale) - size}px`;
+                    // Ajusta tamanho da fonte com base no número de dígitos no texto
+                    const textLength = circle.textContent.length;
+                    let fontSize = 20; // Tamanho base da fonte
+
+                    if (textLength === 2) {
+                        fontSize -= 2; // Reduz para dois dígitos
+                    } else if (textLength === 3) {
+                        fontSize -= 4; // Reduz mais para três dígitos
+                    } else if (textLength >= 4) {
+                        fontSize -= 6; // Reduz ainda mais para quatro ou mais dígitos
+                    }
+
+                    // Aplica o estilo ajustado
+                    circle.style.left = `${(x * scale) - size / 1}px`;
+                    circle.style.top = `${(y * scale) - size / 1}px`;
                     circle.style.transform = `scale(${scale * circleScale})`;
+                    circle.style.fontSize = `${fontSize}px`; // Aplica o tamanho da fonte
+                    circle.style.lineHeight = `${size}px`; // Garante centralização vertical
                 }
 
 
@@ -677,8 +658,8 @@
                     // Cria um array de todas as marcações em todas as páginas
                     let allCircles = [];
 
-                    // Itera pelas páginas e adiciona os círculos ao array
-                    for (const pageNum of Object.keys(pageCircles)) {
+                    // Itera pelas páginas em ordem crescente e adiciona os círculos ao array
+                    for (const pageNum of Object.keys(pageCircles).sort((a, b) => a - b)) {
                         pageCircles[pageNum].forEach(circleData => {
                             allCircles.push({
                                 ...circleData,
@@ -687,34 +668,21 @@
                         });
                     }
 
-                    // Ordena todas as marcações por `timestamp`
-                    allCircles.sort((a, b) => a.createdAt - b.createdAt);
-
-                    // Reordena as marcações de acordo com o timestamp
-                    allCircles.forEach(circle => {
-                        const {
-                            pageNum,
-                            x,
-                            y,
-                            createdAt
-                        } = circle;
-
-                        // Atualiza o texto do círculo na estrutura de dados
-                        circle.text = globalCounter.toString();
-
-                        // Encontra o círculo correspondente no DOM e atualiza o texto
-                        const correspondingCircle = document.querySelector(
-                            `.circle[data-page="${pageNum}"][data-x="${x}"][data-y="${y}"][data-timestamp="${createdAt}"]`
-                        );
-
-                        if (correspondingCircle) {
-                            correspondingCircle.textContent = globalCounter.toString();
+                    // Ordena todas as marcações por página e depois por `createdAt`
+                    allCircles.sort((a, b) => {
+                        if (a.pageNum !== b.pageNum) {
+                            return a.pageNum - b.pageNum;
                         }
+                        return a.createdAt - b.createdAt;
+                    });
 
+                    // Reordena as marcações para manter a sequência contínua
+                    allCircles.forEach(circle => {
+                        circle.text = globalCounter.toString(); // Atualiza o número do círculo
                         globalCounter++; // Incrementa o contador global
                     });
 
-                    // Atualiza as marcações nas páginas
+                    // Atualiza a estrutura `pageCircles` para refletir as novas ordens
                     pageCircles = allCircles.reduce((acc, circle) => {
                         const {
                             pageNum,
@@ -727,10 +695,7 @@
                         return acc;
                     }, {});
 
-                    // Atualiza o contador global para o próximo número
-                    counter = globalCounter;
-
-                    console.log("Refatoração global concluída com base no timestamp.");
+                    console.log("Refatoração concluída. Sequência numérica atualizada.");
 
                     // Atualiza a página atual
                     renderPage(currentPage);
@@ -825,8 +790,8 @@
 
                             // Desenha as marcações
                             circles.forEach(circle => {
-                                const x = parseFloat(circle.x) * scale;
-                                const y = parseFloat(circle.y) * scale;
+                                const x = parseFloat(circle.x);
+                                const y = parseFloat(circle.y);
                                 const text = circle.text;
 
                                 // Ajusta tamanho da fonte com base no número de caracteres
@@ -837,11 +802,16 @@
                                 // Ajusta tamanho e posição para números maiores
                                 if (text.length === 2) {
                                     fontSize -= 1; // Reduz fonte para dois dígitos
-                                    textOffsetX += 3;
-                                } else if (text.length >= 3) {
-                                    fontSize -= 2; // Reduz mais para três ou mais dígitos
-                                    textOffsetX += 5;
+                                    textOffsetX += 4 * scale; // Move mais para a esquerda
+                                } else if (text.length === 3) {
+                                    fontSize -= 3; // Reduz fonte para três dígitos
+                                    textOffsetX += 4 * scale;
+                                } else if (text.length >= 4) {
+                                    fontSize -= 8; // Reduz fonte ainda mais para quatro ou mais dígitos
+                                    textOffsetX += 7 * scale; // Move mais para a esquerda
+                                    textOffsetY -= 2 * scale; // Ajusta levemente para baixo (se necessário)
                                 }
+
 
                                 // Desenha o círculo
                                 selectedPage.drawEllipse({
