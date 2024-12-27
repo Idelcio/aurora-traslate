@@ -157,10 +157,10 @@
 
 
         <!-- Scripts -->
-
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+        <script type="module" src="/js/app.js"></script> <!-- Certifique-se de que app.js está configurado corretamente -->
 
         <script>
             window.pdfDoc = null; // Documento PDF carregado
@@ -168,7 +168,7 @@
             let scale = 0.8; // Nível de zoom inicial
             let circleScale = 1; // Escala inicial para círculos
             let circles = []; // Array para círculos criados
-            let counter = 1; // Contador de círculos
+            let counter = 1199; // Contador de círculos
             let targetCircle = null; // Círculo atualmente selecionado
             let pageCircles = {}; // Marcações de círculos por página
 
@@ -776,10 +776,24 @@
                     try {
                         console.log('Iniciando processo de salvamento do PDF...');
 
+                        // Certifica-se de que o fontkit está disponível
+                        if (typeof fontkit === 'undefined') {
+                            console.error('Fontkit não está definido. Verifique a configuração no app.js.');
+                            alert('Erro ao salvar o PDF: Fontkit não carregado.');
+                            return;
+                        }
+
                         // Carrega o PDF existente
                         const existingPdfBytes = await fetch(pdfUrl).then(res => res.arrayBuffer());
                         const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
-                        const font = await pdfDoc.embedFont(PDFLib.StandardFonts.Helvetica);
+
+                        // Registra o Fontkit
+                        pdfDoc.registerFontkit(fontkit);
+
+                        // Carrega a fonte Montserrat-Regular
+                        const montserratFontBytes = await fetch('/fonts/Montserrat-Regular.ttf').then(res => res.arrayBuffer());
+                        const montserratFont = await pdfDoc.embedFont(montserratFontBytes);
+
                         const pages = pdfDoc.getPages();
 
                         console.log('PDF carregado para edição.');
@@ -788,30 +802,27 @@
                         for (const [pageNum, circles] of Object.entries(pageCircles)) {
                             const selectedPage = pages[pageNum - 1];
 
-                            // Desenha as marcações
                             circles.forEach(circle => {
                                 const x = parseFloat(circle.x);
                                 const y = parseFloat(circle.y);
                                 const text = circle.text;
 
                                 // Ajusta tamanho da fonte com base no número de caracteres
-                                let fontSize = 16 * circleScale;
+                                let fontSize = 15 * circleScale;
                                 let textOffsetX = fontSize * 0.3;
                                 let textOffsetY = fontSize * 0.35;
 
-                                // Ajusta tamanho e posição para números maiores
                                 if (text.length === 2) {
-                                    fontSize -= 1; // Reduz fonte para dois dígitos
+                                    fontSize -= 1;
                                     textOffsetX += 4 * scale; // Move mais para a esquerda
                                 } else if (text.length === 3) {
-                                    fontSize -= 3; // Reduz fonte para três dígitos
-                                    textOffsetX += 4 * scale;
+                                    fontSize -= 3;
+                                    textOffsetX += 7 * scale; // Ajusta 1 ponto para a esquerda
                                 } else if (text.length >= 4) {
-                                    fontSize -= 8; // Reduz fonte ainda mais para quatro ou mais dígitos
-                                    textOffsetX += 7 * scale; // Move mais para a esquerda
-                                    textOffsetY -= 2 * scale; // Ajusta levemente para baixo (se necessário)
+                                    fontSize -= 8;
+                                    textOffsetX += 7 * scale; // Move ainda mais para a esquerda
+                                    textOffsetY -= 2 * scale; // Ajusta levemente para baixo
                                 }
-
 
                                 // Desenha o círculo
                                 selectedPage.drawEllipse({
@@ -819,8 +830,8 @@
                                     y: selectedPage.getHeight() - y,
                                     xScale: 15 * circleScale,
                                     yScale: 15 * circleScale,
-                                    color: PDFLib.rgb(1, 1, 1), // Branco
-                                    borderColor: PDFLib.rgb(0, 75 / 255, 173 / 255), // Azul
+                                    color: PDFLib.rgb(1, 1, 1),
+                                    borderColor: PDFLib.rgb(0, 75 / 255, 173 / 255),
                                     borderWidth: 2,
                                 });
 
@@ -829,31 +840,29 @@
                                     x: x - textOffsetX,
                                     y: selectedPage.getHeight() - y - textOffsetY,
                                     size: fontSize,
-                                    font: font,
-                                    color: PDFLib.rgb(0, 75 / 255, 173 / 255), // Azul
+                                    font: montserratFont,
+                                    color: PDFLib.rgb(0, 75 / 255, 173 / 255),
                                 });
                             });
 
-                            // **Adiciona a Marca d'Água Sempre Dentro dos Limites**
-                            const watermarkText = "WWW.TAGPDF.COM.BR";
-                            const padding = 10; // Margem de segurança
-                            const textWidth = font.widthOfTextAtSize(watermarkText, 12); // Calcula a largura do texto
-                            const textHeight = 12; // Altura da fonte
+                            // Adiciona a marca d'água
+                            const watermarkText = 'WWW.TAGPDF.COM.BR';
+                            const padding = 10;
+                            const textWidth = montserratFont.widthOfTextAtSize(watermarkText, 12);
 
-                            // Desenha a marca d'água ajustada com margem segura
                             selectedPage.drawText(watermarkText, {
                                 x: Math.max(padding, selectedPage.getWidth() - textWidth - padding),
-                                y: padding, // Sempre acima do limite inferior
+                                y: padding,
                                 size: 12,
-                                font: font,
-                                color: PDFLib.rgb(0, 75 / 255, 173 / 255), // Azul
+                                font: montserratFont,
+                                color: PDFLib.rgb(0, 75 / 255, 173 / 255),
                             });
                         }
 
                         // Salva o documento
                         const pdfBytes = await pdfDoc.save();
                         const blob = new Blob([pdfBytes], {
-                            type: 'application/pdf'
+                            type: 'application/pdf',
                         });
                         const url = URL.createObjectURL(blob);
 
@@ -869,15 +878,16 @@
 
                         // Marca o PDF como baixado
                         isDownloaded = true;
-
                     } catch (error) {
                         console.error('Erro ao salvar o PDF:', error);
                         alert('Erro ao salvar o PDF. Veja o console para mais detalhes.');
                     }
                 });
+
             } else {
                 console.error("Nenhum arquivo PDF foi carregado.");
             }
+            console.log('Fontkit:', fontkit); // Adicione antes de registrar o Fontkit
 
             document.getElementById("prev-page-btn").addEventListener("click", () => {
                 if (currentBlockStart > 1) {

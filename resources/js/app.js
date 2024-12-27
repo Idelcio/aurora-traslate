@@ -1,16 +1,19 @@
 import './bootstrap';
-
 import { PDFDocument } from 'pdf-lib';
-
 import Alpine from 'alpinejs';
-
 import * as pdfjsLib from 'pdfjs-dist';
+import * as fontkit from 'fontkit';
 
+// Configura o worker para o pdfjs
 pdfjsLib.GlobalWorkerOptions.workerSrc = '/js/pdf.worker.min.js';
 
 window.Alpine = Alpine;
-
 Alpine.start();
+
+// Exporta o fontkit globalmente
+window.fontkit = fontkit; // Define no escopo global
+export { fontkit }; // Exporta explicitamente
+
 
 
 // zoom do PDF
