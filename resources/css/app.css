@@ -95,3 +95,24 @@ body {
         @apply p-1;
     }
 }
+/* Estilo responsivo para empilhar elementos em celulares e tablets */
+@media (max-width: 1024px) {
+    .flex-wrap-col {
+        @apply flex-col items-center justify-center w-full gap-y-4;
+    }
+
+    form#pdf-upload-form,
+    #page-selector {
+        @apply w-full;
+    }
+
+    #comandos-container {
+        @apply hidden; /* Oculta o "Comandos" em telas menores */
+    }
+}
+@media (max-width: 639px) {
+    #toggle-comandos {
+        display: none !important;
+        /* Garante que não será exibido */
+    }
+}

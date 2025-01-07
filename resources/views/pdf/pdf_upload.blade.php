@@ -104,7 +104,7 @@
                     <img src="{{ asset('icones/icones_comandos/icone_mover.png') }}" alt="Mover PDF" class="w-8 h-8">
                     <div>
                         <h3 class="font-bold text-[14px] text-gray-800">Mover PDF:</h3>
-                        <p class="text-gray-600 text-[12px]">Clique na roda do mouse.</p>
+                        <p class="text-gray-600 text-[12px]">Clique e segure o botão direito do mouse.</p>
                     </div>
                 </div>
 
@@ -157,10 +157,10 @@
 
 
         <!-- Scripts -->
+
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-        <script type="module" src="/js/app.js"></script>
 
         <script>
             window.pdfDoc = null; // Documento PDF carregado
@@ -489,14 +489,9 @@
                 let zoomTimeout = null; // Controlador de timeout
 
                 pdfContainer.addEventListener('wheel', function(e) {
-                    // Verifica se o alvo do evento é um círculo
-                    if (e.target.classList.contains('circle')) {
-                        return; // Ignora a rolagem sobre os círculos
-                    }
+                    e.preventDefault(); // Evita o comportamento padrão de rolagem
 
-                    e.preventDefault(); // Evita a rolagem padrão
-
-                    // Ajusta o zoom com base na rolagem do mouse
+                    // Ajusta o zoom com base na direção do scroll do mouse
                     if (e.deltaY < 0 && zoomScale < maxZoom) {
                         zoomScale = Math.min(zoomScale + 0.1, maxZoom); // Aumenta o zoom
                     } else if (e.deltaY > 0 && zoomScale > minZoom) {
@@ -505,66 +500,26 @@
 
                     console.log(`Zoom Atual: ${zoomScale.toFixed(1)}`);
 
-                    // Oculta o menu contextual ao realizar zoom
-                    hideContextMenu();
-
                     // Renderiza a página atual com o novo zoom
                     renderPage(currentPage);
 
-                    // Reposiciona os círculos visíveis com base no novo zoom
+                    // Atualiza a posição e o tamanho dos círculos com o novo zoom
                     circles.forEach(circle => updateCircleStyles(circle));
                 });
 
-                function hideContextMenu() {
-                    const contextMenu = document.getElementById('context-menu');
-                    if (contextMenu) {
-                        contextMenu.classList.add('hidden');
-                    }
-                }
 
                 function showContextMenu(e) {
                     const contextMenu = document.getElementById('context-menu');
                     contextMenu.style.left = `${e.pageX}px`;
                     contextMenu.style.top = `${e.pageY}px`;
                     contextMenu.classList.remove('hidden');
-
-                    // Adiciona ouvintes temporários para ocultar o menu em caso de interação fora
-                    document.addEventListener('click', hideContextMenuOnClick);
-                    document.addEventListener('contextmenu', hideContextMenuOnRightClick);
                 }
 
-                // Remove os ouvintes após ocultar o menu
-                function hideContextMenuOnClick(event) {
-                    const contextMenu = document.getElementById('context-menu');
-                    if (!contextMenu.contains(event.target) && !event.target.classList.contains('circle')) {
-                        hideContextMenu();
-                        document.removeEventListener('click', hideContextMenuOnClick);
-                        document.removeEventListener('contextmenu', hideContextMenuOnRightClick);
-                    }
-                }
-
-                function hideContextMenuOnRightClick(event) {
-                    const contextMenu = document.getElementById('context-menu');
-                    if (!contextMenu.contains(event.target) && !event.target.classList.contains('circle')) {
-                        hideContextMenu();
-                        document.removeEventListener('click', hideContextMenuOnClick);
-                        document.removeEventListener('contextmenu', hideContextMenuOnRightClick);
-                    }
-                }
-
-
-                pdfContainer.addEventListener('contextmenu', function(e) {
-                    e.preventDefault();
-                    let target = e.target;
-
-                    if (target.classList.contains('circle')) {
-                        targetCircle = target; // Define o círculo que será alvo da ação
-                        showContextMenu(e); // Mostra o menu contextual na posição do mouse
-                    } else {
-                        document.getElementById('context-menu').classList.add('hidden'); // Oculta o menu se não for um círculo
+                document.addEventListener('click', function(event) {
+                    if (!event.target.closest('#context-menu')) {
+                        document.getElementById('context-menu').classList.add('hidden');
                     }
                 });
-
 
                 // Exclusão simples ao clicar na opção
                 document.getElementById('remove-keep-numbering').addEventListener('click', function() {
@@ -602,11 +557,8 @@
                         return;
                     }
 
-                    // Usa o valor atual de `counter` como próximo número
-                    const circleNumber = counter++; // Incrementa o contador global após usar
-
                     const timestamp = Date.now();
-                    const circle = createCircleElement(circleNumber, x, y, currentPage, timestamp);
+                    const circle = createCircleElement(counter++, x, y, currentPage, timestamp);
                     container.appendChild(circle);
 
                     // Garante que a página atual tenha um array para armazenar círculos
@@ -623,10 +575,7 @@
 
                     makeDraggable(circle); // Torna o círculo arrastável
 
-                    // Re-renderiza a página para refletir o novo círculo
-                    renderPage(currentPage);
                 }
-
 
 
                 function createCircleElement(text, x, y, page, timestamp) {
@@ -673,6 +622,7 @@
                     circle.style.lineHeight = `${size}px`; // Garante centralização vertical
                 }
 
+
                 function removeCircle(circle) {
                     const pageNum = parseInt(circle.dataset.page);
                     const x = parseFloat(circle.dataset.x);
@@ -689,7 +639,6 @@
 
                     console.log(`Círculo removido na página ${pageNum}: X=${x}, Y=${y}`);
                 }
-
 
 
                 function refactorCircles() {
@@ -739,9 +688,6 @@
                         acc[pageNum].push(data);
                         return acc;
                     }, {});
-
-                    // Atualiza o contador global para o próximo número após refatorar
-                    counter = globalCounter;
 
                     console.log("Refatoração concluída. Sequência numérica atualizada.");
 
@@ -856,26 +802,21 @@
                                 const text = circle.text;
 
                                 // Ajusta tamanho da fonte com base no número de caracteres
-                                let fontSize = 15 * circleScale;
+                                let fontSize = 16 * circleScale;
                                 let textOffsetX = fontSize * 0.3;
-                                let textOffsetY = fontSize * 0.3;
+                                let textOffsetY = fontSize * 0.35;
 
                                 if (text.length === 2) {
                                     fontSize -= 1;
-                                    textOffsetX += 4 * scale; // Move mais para a esquerda
+                                    textOffsetX += 4 * scale;
                                 } else if (text.length === 3) {
                                     fontSize -= 3;
-                                    textOffsetX += 7 * scale; // Move mais para a esquerda
-                                } else if (text.length === 4) {
-                                    fontSize -= 6; // Reduz ainda mais o tamanho da fonte
-                                    textOffsetX += 10 * scale; // Move mais para a esquerda
-                                    textOffsetY -= 2 * scale; // Ajusta levemente para baixo
-                                } else if (text.length >= 5) {
-                                    fontSize -= 14; // Reduz ainda mais para caber 5 dígitos
-                                    textOffsetX += 13 * scale; // Move ainda mais para a esquerda
-                                    textOffsetY -= 3 * scale; // Ajusta mais para baixo
+                                    textOffsetX += 4 * scale;
+                                } else if (text.length >= 4) {
+                                    fontSize -= 8;
+                                    textOffsetX += 7 * scale;
+                                    textOffsetY -= 2 * scale;
                                 }
-
 
                                 // Desenha o círculo
                                 selectedPage.drawEllipse({
@@ -940,7 +881,7 @@
             } else {
                 console.error("Nenhum arquivo PDF foi carregado.");
             }
-            console.log('Fontkit:', fontkit); // Adicione antes de registrar o Fontkit
+
 
             document.getElementById("prev-page-btn").addEventListener("click", () => {
                 if (currentBlockStart > 1) {
