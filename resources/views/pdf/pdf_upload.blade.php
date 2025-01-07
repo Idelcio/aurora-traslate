@@ -536,23 +536,26 @@
 
                 function addCircle(event, container) {
                     let rect = document.getElementById('pdf-canvas').getBoundingClientRect();
-                    let x = event.clientX - rect.left;
-                    let y = event.clientY - rect.top;
 
-                    const margin = 40; // Margem de segurança em pixels
+                    // Ajusta para pegar a posição exata do cursor dentro do canvas
+                    let x = (event.clientX - rect.left) / scale;
+                    let y = (event.clientY - rect.top) / scale;
 
-                    // Verifica se está dentro dos limites permitidos
-                    if (x < margin || y < margin || x > rect.width - margin || y > rect.height - margin) {
+                    const margin = 20; // Margem de segurança em pixels
+
+                    // Verifica se está dentro dos limites do canvas
+                    if (x < margin / scale || y < margin / scale || x > rect.width / scale - margin || y > rect.height / scale - margin) {
                         console.log("Fora dos limites permitidos. Círculo não adicionado.");
                         return;
                     }
 
-                    // Ajusta coordenadas para o sistema de referência do PDF
-                    x /= scale;
-                    y /= scale;
+                    // Corrige a posição para ser precisa no centro do cursor
+                    const circleSize = adjustCircleSizeForScale(scale * circleScale);
+                    x = x - circleSize / 2 / scale; // Centraliza no X
+                    y = y - circleSize / 2 / scale; // Centraliza no Y
 
                     // Verifica sobreposição com outros círculos
-                    if (isOverlapping(x, y, margin)) {
+                    if (isOverlapping(x, y, circleSize / 1.5)) {
                         console.log("Sobreposição detectada. Círculo não adicionado.");
                         return;
                     }
@@ -561,20 +564,19 @@
                     const circle = createCircleElement(counter++, x, y, currentPage, timestamp);
                     container.appendChild(circle);
 
-                    // Garante que a página atual tenha um array para armazenar círculos
+                    // Adiciona ao array de marcações por página
                     if (!pageCircles[currentPage]) {
                         pageCircles[currentPage] = [];
                     }
 
                     pageCircles[currentPage].push({
                         text: circle.textContent,
-                        x: parseFloat(circle.dataset.x), // Garante que seja armazenado como número
-                        y: parseFloat(circle.dataset.y), // Garante que seja armazenado como número
+                        x: parseFloat(circle.dataset.x),
+                        y: parseFloat(circle.dataset.y),
                         createdAt: timestamp
                     });
 
                     makeDraggable(circle); // Torna o círculo arrastável
-
                 }
 
 
