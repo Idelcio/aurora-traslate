@@ -822,8 +822,8 @@
                                 selectedPage.drawEllipse({
                                     x: x,
                                     y: selectedPage.getHeight() - y,
-                                    xScale: 15 * circleScale,
-                                    yScale: 15 * circleScale,
+                                    xScale: 20 * circleScale,
+                                    yScale: 20 * circleScale,
                                     color: PDFLib.rgb(1, 1, 1),
                                     borderColor: PDFLib.rgb(0, 75 / 255, 173 / 255),
                                     borderWidth: 2,
