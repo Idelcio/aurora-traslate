@@ -541,7 +541,7 @@
                     let x = (event.clientX - rect.left) / scale;
                     let y = (event.clientY - rect.top) / scale;
 
-                    const margin = 20; // Margem de segurança em pixels
+                    const margin = 40; // Margem de segurança unificada (mesma do primeiro código)
 
                     // Verifica se está dentro dos limites do canvas
                     if (x < margin / scale || y < margin / scale || x > rect.width / scale - margin || y > rect.height / scale - margin) {
@@ -555,7 +555,7 @@
                     y = y - circleSize / 2 / scale; // Centraliza no Y
 
                     // Verifica sobreposição com outros círculos
-                    if (isOverlapping(x, y, circleSize / 1.5)) {
+                    if (isOverlapping(x, y, margin)) { // Aqui também usamos o `margin` unificado
                         console.log("Sobreposição detectada. Círculo não adicionado.");
                         return;
                     }
@@ -810,7 +810,7 @@
 
                                 if (text.length === 2) {
                                     fontSize -= 1;
-                                    textOffsetX += 4 * scale;
+                                    textOffsetX += 3 * scale;
                                 } else if (text.length === 3) {
                                     fontSize -= 3;
                                     textOffsetX += 4 * scale;
@@ -842,17 +842,40 @@
                             });
 
                             // Adiciona a marca d'água
-                            const watermarkText = 'WWW.TAGPDF.COM.BR';
-                            const padding = 10;
-                            const textWidth = montserratFont.widthOfTextAtSize(watermarkText, 12);
+                            // Texto principal visível
+                            const watermarkText = 'Criado por TagPDF';
+                            const transparentLinkText = 'www.tagpdf.com.br'; // Texto "invisível" com o link
+                            const padding = 10; // Espaçamento das bordas
+                            const fontSize = 12; // Tamanho da fonte
 
+                            // Calcula largura e altura do texto
+                            const textWidth = montserratFont.widthOfTextAtSize(watermarkText, fontSize);
+                            const textHeight = montserratFont.heightAtSize(fontSize);
+
+                            // Posição no canto inferior direito
+                            const xPosition = selectedPage.getWidth() - textWidth - padding; // Direita
+                            const yPosition = padding; // Inferior
+
+                            // Desenha o texto visível "Criado por TagPDF"
                             selectedPage.drawText(watermarkText, {
-                                x: Math.max(padding, selectedPage.getWidth() - textWidth - padding),
-                                y: padding,
-                                size: 12,
+                                x: xPosition,
+                                y: yPosition,
+                                size: fontSize,
                                 font: montserratFont,
-                                color: PDFLib.rgb(0, 75 / 255, 173 / 255),
+                                color: PDFLib.rgb(0, 75 / 255, 173 / 255), // Azul padrão
+                                opacity: 0.8, // Transparência sutil
                             });
+
+                            // Desenha o texto com o link invisível
+                            selectedPage.drawText(transparentLinkText, {
+                                x: xPosition,
+                                y: yPosition,
+                                size: fontSize,
+                                font: montserratFont,
+                                color: PDFLib.rgb(1, 1, 1), // Cor branca (invisível em fundo branco)
+                                opacity: 0.01, // Quase totalmente transparente
+                            });
+
                         }
 
                         // Salva o documento
