@@ -1,0 +1,26 @@
+<?php
+
+return [
+    'profile_info' => 'Profile Information',
+    'update_your_profile' => 'Update your profile.',
+    'update_password' => 'Update Password',
+    'delete_account' => 'Delete Account',
+    'delete_account_warning' => 'Once your account is deleted, all of its resources and data will be permanently deleted. Before deleting your account, download any data or information you wish to retain.',
+    'confirm_delete_account' => 'Are you sure you want to delete your account?',
+    'password_placeholder' => 'Password',
+    'cancel' => 'Cancel',
+    'delete_account_button' => 'Delete Account',
+    'name' => 'Name',
+    'email' => 'Email',
+    'phone' => 'Phone',
+    'company_name' => 'Company Name',
+    'unverified_email' => 'Your email address is unverified.',
+    'resend_verification' => 'Click here to re-send the verification email.',
+    'verification_link_sent' => 'A new verification link has been sent to your email address.',
+    'current_password' => 'Current Password',
+    'new_password' => 'New Password',
+    'confirm_password' => 'Confirm New Password',
+    'password_instructions' => 'Ensure your account is using a long, random password to stay secure.',
+    'save' => 'Save',
+    'saved' => 'Saved.',
+];
