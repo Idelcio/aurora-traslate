@@ -21,5 +21,8 @@ class AppServiceProvider extends ServiceProvider
     public function boot(): void
     {
         Schema::defaultStringLength(191);
+
+        // Registrar diretório de traduções
+        $this->loadTranslationsFrom(base_path('lang'), 'custom');
     }
 }

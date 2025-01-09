@@ -8,48 +8,48 @@
 
             <!-- Email Address -->
             <div>
-                <x-input-label for="email" :value="__('E-mail')" class="text-[18px] font-normal" />
+                <x-input-label for="email" :value="__('messages.email')" class="text-[18px] font-normal" />
                 <x-text-input id="email" class="block mt-1 w-full text-[16px] font-normal" type="email" name="email" :value="old('email')" required autofocus autocomplete="username" />
                 <x-input-error :messages="$errors->get('email')" class="mt-2 text-[14px] font-normal" />
             </div>
 
             <!-- Password -->
             <div class="mt-4">
-                <x-input-label for="password" :value="__('Senha')" class="text-[18px] font-normal" />
+                <x-input-label for="password" :value="__('messages.password')" class="text-[18px] font-normal" />
                 <x-text-input id="password" class="block mt-1 w-full text-[16px] font-normal" type="password" name="password" required autocomplete="current-password" />
                 <x-input-error :messages="$errors->get('password')" class="mt-2 text-[14px] font-normal" />
             </div>
 
-            <!-- remembrer-me -->
+            <!-- Remember Me -->
             <div class="block mt-4">
                 <label for="remember_me" class="inline-flex items-center">
                     <input id="remember_me" type="checkbox" class="rounded border-gray-300 text-indigo-600 shadow-sm focus:ring-indigo-500" name="remember">
-                    <span class="ms-2 text-sm text-gray-600">{{ __('Lembrar senha') }}</span>
+                    <span class="ms-2 text-sm text-gray-600">{{ __('messages.remember_me') }}</span>
                 </label>
             </div>
 
-            <!-- cadastre-se -->
+            <!-- Register -->
             <div class="flex items-center justify-end mt-4">
                 @if (Route::has('password.request'))
                 <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('register') }}">
-                    {{ __('Cadastre-se') }}
+                    {{ __('messages.register') }}
                 </a>
                 @endif
 
                 <x-primary-button class="ms-3">
-                    {{ __('Entrar') }}
+                    {{ __('messages.login') }}
                 </x-primary-button>
             </div>
 
+            <!-- Forgot Password -->
             <div class="flex items-center justify-end mt-4">
                 @if (Route::has('password.request'))
                 <a class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500" href="{{ route('password.request') }}">
-                    {{ __('Esqueceu a senha?') }}
+                    {{ __('messages.forgot_password') }}
                 </a>
                 @endif
             </div>
 
         </form>
     </div>
-
 </x-guest-layout>

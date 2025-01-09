@@ -4,6 +4,8 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Foundation\Auth\AuthenticatesUsers;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Session;
 
 class LoginController extends Controller
 {
@@ -21,7 +23,7 @@ class LoginController extends Controller
     use AuthenticatesUsers;
 
     /**
-     * Where to redirect users after login.
+     * Onde redirecionar após login.
      *
      * @var string
      */
@@ -36,5 +38,14 @@ class LoginController extends Controller
     {
         $this->middleware('guest')->except('logout');
         $this->middleware('auth')->only('logout');
+    }
+
+    /**
+     * Redireciona após login com o idioma correto.
+     */
+    protected function authenticated(Request $request, $user)
+    {
+        $locale = Session::get('lang', config('app.locale')); // Pega o idioma atual na sessão
+        return redirect()->intended("/home?lang={$locale}");  // Redireciona com o idioma na URL
     }
 }

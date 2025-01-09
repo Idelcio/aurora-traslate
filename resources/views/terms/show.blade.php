@@ -88,7 +88,23 @@
         </div>
 
         <!-- Botão Voltar -->
-        <button type="button" class="logout-btn" onclick="history.back()">Voltar</button>
+        @php
+        // Mapeamento das traduções do botão "Voltar"
+        $backButtonText = [
+        'pt_BR' => 'Voltar',
+        'en' => 'Back',
+        'es' => 'Regresar',
+        ];
+
+        // Obtém o idioma atual e a tradução correspondente
+        $locale = app()->getLocale();
+        $backText = $backButtonText[$locale] ?? 'Voltar'; // Fallback para "Voltar"
+        @endphp
+
+        <button type="button" class="logout-btn" onclick="history.back()">
+            {{ $backText }}
+        </button>
+
     </div>
 </body>
 
