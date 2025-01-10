@@ -69,6 +69,28 @@ Route::middleware('auth')->group(function () {
 
     // Rota para comandos
     Route::get('/comandos', [ComandosController::class, 'index'])->name('comandos.modal');
+
+    // Rota para alert
+    Route::get('/translations/pdf_upload', function () {
+        return response()->json([
+            'unsaved_changes' => __('pdf_upload.unsaved_changes'),
+        ]);
+    });
+
+    Route::get('/translations/pdf_navigation', function () {
+        return response()->json([
+            'first_page_alert' => __('pdf_upload.first_page_alert'),
+            'last_page_alert' => __('pdf_upload.last_page_alert'),
+        ]);
+    });
+    Route::get('/translations/pdf_save', function () {
+        return response()->json([
+            'save_pdf_error' => __('pdf_upload.save_pdf_error'),
+            'fontkit_missing' => __('pdf_upload.fontkit_missing'),
+            'pdf_saved_success' => __('pdf_upload.pdf_saved_success'),
+            'watermark_text' => __('pdf_upload.watermark_text'),
+        ]);
+    });
 });
 
 // Incluindo as rotas de autenticação

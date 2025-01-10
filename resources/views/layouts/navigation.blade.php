@@ -61,7 +61,7 @@
 
                 <!-- Language Switcher Manual -->
                 <div class="ml-4 relative">
-                    <button @click="langOpen = !langOpen" class="flex items-center px-3 py-2">
+                    <button @click="langOpen = !langOpen" class="flex items-center px-3 py-2  rounded-md hover:bg-gray-100">
                         <div class="w-6 h-6 rounded-full overflow-hidden">
                             @php
                             $flagMap = [
@@ -71,18 +71,23 @@
                             ];
                             $currentLocale = app()->getLocale();
                             $currentFlag = $flagMap[$currentLocale]['img'] ?? 'flags/br.png';
+                            $currentLabel = $flagMap[$currentLocale]['label'] ?? 'BR';
                             @endphp
                             <img src="{{ asset($currentFlag) }}" alt="Idioma Atual">
                         </div>
+                        <span class="ml-2 text-sm font-medium">{{ $currentLabel }}</span>
+                        <svg class="ml-1 w-4 h-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
                     </button>
 
                     <!-- Dropdown Manual de Idiomas -->
-                    <div x-show="langOpen" @click.away="langOpen = false" class="absolute right-0 mt-2">
-                        <div class="flex flex-col gap-1">
+                    <div x-show="langOpen" @click.away="langOpen = false" class="absolute right-0 mt-2 w-28 bg-white rounded-lg shadow-lg border border-gray-200">
+                        <div class="flex flex-col gap-1 p-2">
                             @foreach ($flagMap as $locale => $flag)
                             @if ($locale !== $currentLocale)
                             <form method="GET" action="{{ url()->current() }}" class="block">
-                                <button type="submit" name="lang" value="{{ $locale }}" class="flex items-center space-x-2">
+                                <button type="submit" name="lang" value="{{ $locale }}" class="flex items-center space-x-2 p-1 hover:bg-gray-100 rounded-lg">
                                     <div class="w-5 h-5 rounded-full overflow-hidden">
                                         <img src="{{ asset($flag['img']) }}" alt="{{ $flag['label'] }}">
                                     </div>

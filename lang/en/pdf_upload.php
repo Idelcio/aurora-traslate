@@ -1,0 +1,38 @@
+<?php
+
+return [
+    'upload_pdf' => 'Upload PDF',
+    'download' => 'Download',
+    'reorder' => 'Reorder',
+    'refactor' => 'Refactor',
+    'page' => 'Page',
+    'prev_page' => '< Previous',
+    'next_page' => 'Next >',
+    'commands' => 'Commands',
+    'set_tag_size' => 'Set tag size',
+    'tag_size' => 'Tag size',
+    'scroll_tag_size' => 'Scroll the mouse wheel up or down over the tag.',
+    'zoom' => 'Zoom',
+    'scroll_zoom' => 'Scroll the mouse wheel up or down.',
+    'move_pdf' => 'Move PDF',
+    'right_click_move' => 'Right-click and hold to move the PDF.',
+    'add_tag' => 'Add tag',
+    'left_click_to_mark' => 'Left-click on the point you want to mark.',
+    'delete_tag' => 'Delete tag',
+    'right_click_to_delete' => 'Right-click on the tag you want to delete.',
+    'move_tag' => 'Move tag',
+    'hold_right_click_move' => 'Click and hold with the right mouse button to move the tag.',
+    'unsaved_changes' => 'You have unsaved changes in the PDF. If you continue, your progress will be lost. Do you want to proceed without saving?',
+    'first_page_alert' => 'You are already on the first page.',
+    'last_page_alert' => 'You are already on the last page.',
+    'save_pdf_error' => 'Error saving the PDF. Check the console for details.',
+    'fontkit_missing' => 'Error saving the PDF: Fontkit not loaded.',
+    'pdf_saved_success' => 'PDF saved and downloaded successfully!',
+    'watermark_text' => 'Marked with TagPDF',
+
+    // Additional keys
+    'right_click_drag' => 'Right-click and drag to move.',
+    'left_click_tag' => 'Left-click to add a tag.',
+    'right_click_delete' => 'Right-click to delete the tag.',
+    'right_click_hold_tag' => 'Click and hold the right mouse button to move the tag.',
+];

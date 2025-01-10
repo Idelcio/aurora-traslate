@@ -10,8 +10,9 @@
                 href="#"
                 onclick="document.getElementById('pdf-input').click(); return false;"
                 class="inline-flex items-center justify-center bg-[#004BAD] text-white px-2 py-1.5 rounded-md leading-none text-lg font-semibold hover:bg-[#333333] hover:text-white text-center h-10 font-[Montserrat] ml-10">
-                {{ __('Upload de PDF') }}
+                {{ __('pdf_upload.upload_pdf') }}
             </x-nav-link>
+
         </h2>
     </div>
 

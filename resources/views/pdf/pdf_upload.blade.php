@@ -24,26 +24,25 @@
                 <img src="{{ asset('icones/logo/tagpdf_icone.png') }}" alt="User Logo" class="w-[40px]">
             </a>
 
-
             @csrf
             <input type="file" name="pdf" id="pdf-input" accept="application/pdf" required class="hidden">
 
             <!-- Botões de Ação -->
             <button type="button" id="choose-file-btn" class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-[#004BAD] font-normal">
-                Upload de PDF
+                {{ __('pdf_upload.upload_pdf') }}
             </button>
 
             <button id="saveButton" class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-[#004BAD] font-normal">
-                Download
+                {{ __('pdf_upload.download') }}
             </button>
 
             <button id="refactorButton" class="bg-gray-800 text-white rounded px-4 py-2 hover:bg-[#004BAD] font-normal">
-                Reordenar
+                {{ __('pdf_upload.refactor') }}
             </button>
 
             <!-- Navegação de Página -->
             <div id="page-selector" class="flex items-center justify-center space-x-4">
-                <h3 class="text-lg font-normal text-gray-800">Página</h3>
+                <h3 class="text-lg font-normal text-gray-800">{{ __('pdf_upload.page') }}</h3>
                 <button id="prev-page-btn" class="px-2 py-1 bg-gray-300 text-gray-800 text-sm rounded-md hover:bg-gray-400 font-normal">&lt;</button>
 
                 <div id="page-numbers" class="flex space-x-2"></div>
@@ -56,12 +55,11 @@
         <!-- Terceira Div: Botão Comandos no Canto Direito -->
         <div class="ml-auto">
             <button id="toggle-comandos" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-[#004BAD] hidden font-normal">
-                Comandos
+                {{ __('pdf_upload.commands') }}
             </button>
         </div>
 
     </div>
-
 
     <!-- Exibição do PDF -->
     @if (isset($pdf_filename))
@@ -71,70 +69,69 @@
         </div>
         @endif
 
-
         <!-- Área de Comandos -->
-        <div id="comandos-container" class="w-[320px] h-auto ml-auto bg-white shadow-md border-l-2  rounded-lg">
+        <div id="comandos-container" class="w-[320px] h-auto ml-auto bg-white shadow-md border-l-2 rounded-lg">
             <div class="bg-[#333333] text-white font-bold text-[18px] p-2 flex items-center justify-between rounded-t-lg">
-                <span>Comandos:</span>
+                <span>{{ __('pdf_upload.commands') }}</span>
                 <button id="close-comandos" class="text-white text-xl rounded-full w-8 h-8 flex items-center justify-center hover:bg-white hover:text-black transition">
                     &times;
                 </button>
             </div>
 
-
-            <!-- Conteúdo dos Comandos (Sem rolagem) -->
+            <!-- Conteúdo dos Comandos -->
             <div class="ml-auto space-y-2 p-2">
                 <div class="flex items-start space-x-2">
                     <img src="{{ asset('icones/icones_comandos/icone_tamanho_tag_(1).png') }}" alt="Definir Tamanho" class="w-8 h-8">
                     <div>
-                        <h3 class="font-bold text-[14px] text-gray-800">Definir tamanho da tag:</h3>
-                        <p class="text-gray-600 text-[12px]">Roda do mouse para cima ou para baixo sobre a tag.</p>
+                        <h3 class="font-bold text-[14px] text-gray-800">{{ __('pdf_upload.tag_size') }}</h3>
+                        <p class="text-gray-600 text-[12px]">{{ __('pdf_upload.scroll_tag_size') }}</p>
                     </div>
                 </div>
 
                 <div class="flex items-start space-x-2">
                     <img src="{{ asset('icones/icones_comandos/icone_zom.png') }}" alt="Zoom" class="w-8 h-8">
                     <div>
-                        <h3 class="font-bold text-[14px] text-gray-800">Zoom:</h3>
-                        <p class="text-gray-600 text-[12px]">Roda do mouse para cima ou para baixo.</p>
+                        <h3 class="font-bold text-[14px] text-gray-800">{{ __('pdf_upload.zoom') }}</h3>
+                        <p class="text-gray-600 text-[12px]">{{ __('pdf_upload.scroll_zoom') }}</p>
                     </div>
                 </div>
 
                 <div class="flex items-start space-x-2">
                     <img src="{{ asset('icones/icones_comandos/icone_mover.png') }}" alt="Mover PDF" class="w-8 h-8">
                     <div>
-                        <h3 class="font-bold text-[14px] text-gray-800">Mover PDF:</h3>
-                        <p class="text-gray-600 text-[12px]">Clique e segure o botão direito do mouse.</p>
+                        <h3 class="font-bold text-[14px] text-gray-800">{{ __('pdf_upload.move_pdf') }}</h3>
+                        <p class="text-gray-600 text-[12px]">{{ __('pdf_upload.right_click_drag') }}</p>
                     </div>
                 </div>
 
                 <div class="flex items-start space-x-2">
                     <img src="{{ asset('icones/icones_comandos/icone_clique_mouse.png') }}" alt="Adicionar Tag" class="w-8 h-8">
                     <div>
-                        <h3 class="font-bold text-[14px] text-gray-800">Adicionar tag:</h3>
-                        <p class="text-gray-600 text-[12px]">Clique com botão esquerdo na cota que deseja marcar.</p>
+                        <h3 class="font-bold text-[14px] text-gray-800">{{ __('pdf_upload.add_tag') }}</h3>
+                        <p class="text-gray-600 text-[12px]">{{ __('pdf_upload.left_click_tag') }}</p>
                     </div>
                 </div>
 
                 <div class="flex items-start space-x-2">
                     <img src="{{ asset('icones/icones_comandos/icone_clique_direito_mouse.png') }}" alt="Excluir Tag" class="w-8 h-8">
                     <div>
-                        <h3 class="font-bold text-[14px] text-gray-800">Excluir tag:</h3>
-                        <p class="text-gray-600 text-[12px]">Clique com botão direito sobre a tag que deseja excluir.</p>
+                        <h3 class="font-bold text-[14px] text-gray-800">{{ __('pdf_upload.delete_tag') }}</h3>
+                        <p class="text-gray-600 text-[12px]">{{ __('pdf_upload.right_click_delete') }}</p>
                     </div>
                 </div>
 
                 <div class="flex items-start space-x-2">
                     <img src="{{ asset('icones/icones_comandos/icone_clique_e_segure_mouse_(1).png') }}" alt="Mover Tag" class="w-8 h-8">
                     <div>
-                        <h3 class="font-bold text-[14px] text-gray-800">Mover tag:</h3>
-                        <p class="text-gray-600 text-[12px]">Clique e segure com botão direito sobre a tag.</p>
+                        <h3 class="font-bold text-[14px] text-gray-800">{{ __('pdf_upload.move_tag') }}</h3>
+                        <p class="text-gray-600 text-[12px]">{{ __('pdf_upload.right_click_hold_tag') }}</p>
                     </div>
                 </div>
             </div>
         </div>
 
     </div>
+
 
     <!-- Contêiner para botões de zoom no canto inferior direito
         oculto
@@ -161,6 +158,8 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+        <script src="{{ asset('js/custom.js') }}"></script>
+
 
         <script>
             window.pdfDoc = null; // Documento PDF carregado
@@ -185,7 +184,7 @@
             const minZoom = 1.4; // Zoom mínimo permitido
             const maxZoom = 5.0; // Zoom máximo permitido
 
-
+            const locale = "{{ app()->getLocale() }}";
 
             // comandos
             document.addEventListener("DOMContentLoaded", () => {
@@ -285,18 +284,29 @@
 
             let isDownloaded = false; // Variável para controlar se o PDF foi baixado
 
+            // Inicialização com placeholder temporário
+            const translations = {
+                unsavedChanges: "Carregando mensagem..." // Mensagem temporária
+            };
+
+            // Faz o fetch das traduções
+            fetch('/translations/pdf_upload')
+                .then(response => response.json())
+                .then(data => {
+                    translations.unsavedChanges = data.unsaved_changes; // Substitui pelo texto traduzido
+                })
+                .catch(() => {
+                    translations.unsavedChanges = "Erro ao carregar a tradução. Verifique sua conexão.";
+                });
+
             document.getElementById('choose-file-btn').addEventListener('click', function() {
-                // Verifica se há edições no PDF e o download ainda não foi feito
                 if (!isDownloaded && Object.keys(pageCircles).length > 0) {
-                    // Exibe uma mensagem de confirmação
-                    const confirmUpload = confirm("Você tem alterações no PDF que ainda não foram salvas. Se continuar, seu progresso será perdido. Deseja continuar sem salvar?");
+                    const confirmUpload = confirm(translations.unsavedChanges); // Exibe a mensagem traduzida
                     if (!confirmUpload) {
-                        return; // Cancela o processo de upload
+                        return; // Cancela se o usuário não confirmar
                     }
                 }
-
-                // Se o usuário confirmar ou o download já foi feito, simula o clique no input de arquivo
-                document.getElementById('pdf-input').click();
+                document.getElementById('pdf-input').click(); // Simula clique no input de arquivo
             });
 
             document.getElementById('pdf-input').addEventListener('change', function() {
@@ -791,8 +801,19 @@
                         const montserratFont = await pdfDoc.embedFont(montserratFontBytes);
 
                         const pages = pdfDoc.getPages();
-
                         console.log('PDF carregado para edição.');
+
+                        // Define o idioma e o texto da marca d'água
+                        const locale = "{{ app()->getLocale() }}"; // O idioma atual vindo do backend
+                        let watermarkText;
+
+                        if (locale === 'pt_BR') {
+                            watermarkText = 'Criado por TagPDF';
+                        } else if (locale === 'es') {
+                            watermarkText = 'Creado por TagPDF';
+                        } else {
+                            watermarkText = 'Marked with TagPDF'; // Inglês como padrão
+                        }
 
                         // Itera sobre todas as páginas e aplica as marcações
                         for (const [pageNum, circles] of Object.entries(pageCircles)) {
@@ -842,25 +863,22 @@
                             });
 
                             // Adiciona a marca d'água
-                            // Texto principal visível
-                            const watermarkText = 'Criado por TagPDF';
                             const transparentLinkText = 'www.tagpdf.com.br'; // Texto "invisível" com o link
                             const padding = 10; // Espaçamento das bordas
-                            const fontSize = 12; // Tamanho da fonte
+                            const fontSizeWatermark = 12; // Tamanho da fonte da marca d'água
 
                             // Calcula largura e altura do texto
-                            const textWidth = montserratFont.widthOfTextAtSize(watermarkText, fontSize);
-                            const textHeight = montserratFont.heightAtSize(fontSize);
+                            const textWidth = montserratFont.widthOfTextAtSize(watermarkText, fontSizeWatermark);
 
                             // Posição no canto inferior direito
                             const xPosition = selectedPage.getWidth() - textWidth - padding; // Direita
                             const yPosition = padding; // Inferior
 
-                            // Desenha o texto visível "Criado por TagPDF"
+                            // Desenha o texto visível
                             selectedPage.drawText(watermarkText, {
                                 x: xPosition,
                                 y: yPosition,
-                                size: fontSize,
+                                size: fontSizeWatermark,
                                 font: montserratFont,
                                 color: PDFLib.rgb(0, 75 / 255, 173 / 255), // Azul padrão
                                 opacity: 0.8, // Transparência sutil
@@ -870,18 +888,17 @@
                             selectedPage.drawText(transparentLinkText, {
                                 x: xPosition,
                                 y: yPosition,
-                                size: fontSize,
+                                size: fontSizeWatermark,
                                 font: montserratFont,
                                 color: PDFLib.rgb(1, 1, 1), // Cor branca (invisível em fundo branco)
                                 opacity: 0.01, // Quase totalmente transparente
                             });
-
                         }
 
                         // Salva o documento
                         const pdfBytes = await pdfDoc.save();
                         const blob = new Blob([pdfBytes], {
-                            type: 'application/pdf',
+                            type: 'application/pdf'
                         });
                         const url = URL.createObjectURL(blob);
 
@@ -903,26 +920,42 @@
                     }
                 });
 
+
             } else {
                 console.error("Nenhum arquivo PDF foi carregado.");
             }
 
 
+
+            // Requisição para obter as traduções do backend
+            fetch('/translations/pdf_navigation')
+                .then(response => response.json())
+                .then(data => {
+                    translations.firstPageAlert = data.first_page_alert; // Carrega a tradução correta
+                    translations.lastPageAlert = data.last_page_alert; // Carrega a tradução correta
+                })
+                .catch(() => {
+                    translations.firstPageAlert = "Erro ao carregar tradução para a primeira página.";
+                    translations.lastPageAlert = "Erro ao carregar tradução para a última página.";
+                });
+
+            // Botão para página anterior
             document.getElementById("prev-page-btn").addEventListener("click", () => {
                 if (currentBlockStart > 1) {
                     currentBlockStart -= pagesPerBlock;
                     renderPageNumbers();
                 } else {
-                    alert("Você já está na primeira página.");
+                    alert(translations.firstPageAlert); // Mostra a tradução da primeira página
                 }
             });
 
+            // Botão para próxima página
             document.getElementById("next-page-btn").addEventListener("click", () => {
                 if (currentBlockStart + pagesPerBlock <= pdfDoc.numPages) {
                     currentBlockStart += pagesPerBlock;
                     renderPageNumbers();
                 } else {
-                    alert("Você já está na última página.");
+                    alert(translations.lastPageAlert); // Mostra a tradução da última página
                 }
             });
         </script>

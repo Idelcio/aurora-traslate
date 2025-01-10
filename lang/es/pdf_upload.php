@@ -1,0 +1,38 @@
+<?php
+
+return [
+    'upload_pdf' => 'Subir PDF',
+    'download' => 'Descargar',
+    'reorder' => 'Reordenar',
+    'refactor' => 'Refactorizar',
+    'page' => 'Página',
+    'prev_page' => '< Anterior',
+    'next_page' => 'Siguiente >',
+    'commands' => 'Comandos',
+    'set_tag_size' => 'Definir tamaño de etiqueta',
+    'tag_size' => 'Tamaño de la etiqueta',
+    'scroll_tag_size' => 'Desplaza la rueda del mouse hacia arriba o abajo sobre la etiqueta.',
+    'zoom' => 'Zoom',
+    'scroll_zoom' => 'Desplaza la rueda del mouse hacia arriba o abajo.',
+    'move_pdf' => 'Mover PDF',
+    'right_click_move' => 'Haz clic derecho y mantén presionado para mover el PDF.',
+    'add_tag' => 'Agregar etiqueta',
+    'left_click_to_mark' => 'Haz clic izquierdo en el punto que deseas marcar.',
+    'delete_tag' => 'Eliminar etiqueta',
+    'right_click_to_delete' => 'Haz clic derecho sobre la etiqueta que deseas eliminar.',
+    'move_tag' => 'Mover etiqueta',
+    'hold_right_click_move' => 'Haz clic y mantén presionado con el botón derecho sobre la etiqueta.',
+    'unsaved_changes' => 'Tienes cambios sin guardar en el PDF. Si continúas, tu progreso se perderá. ¿Deseas continuar sin guardar?',
+    'first_page_alert' => 'Ya estás en la primera página.',
+    'last_page_alert' => 'Ya estás en la última página.',
+    'save_pdf_error' => 'Error al guardar el PDF. Consulte la consola para más detalles.',
+    'fontkit_missing' => 'Error al guardar el PDF: Fontkit no cargado.',
+    'pdf_saved_success' => '¡PDF guardado y descargado con éxito!',
+    'watermark_text' => 'Creado por TagPDF',
+
+    // Additional keys
+    'right_click_drag' => 'Haz clic derecho y arrastra para mover.',
+    'left_click_tag' => 'Haz clic izquierdo para agregar una etiqueta.',
+    'right_click_delete' => 'Haz clic derecho para eliminar la etiqueta.',
+    'right_click_hold_tag' => 'Haz clic y mantén presionado con el botón derecho para mover la etiqueta.',
+];
