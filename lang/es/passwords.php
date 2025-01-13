@@ -4,19 +4,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Líneas de lenguaje para la restauración de contraseñas
+    | Password Reset Language Lines
     |--------------------------------------------------------------------------
     |
-    | Las siguientes líneas de idioma son los mensajes predeterminados para
-    | los intentos de restablecimiento de contraseña exitosos o fallidos.
+    | Las siguientes líneas de idioma son los mensajes predeterminados que coinciden
+    | con las razones que se dan para un intento de restablecimiento de contraseña
+    | que ha fallado o tenido éxito.
     |
     */
 
-    'password' => 'Las contraseñas deben tener al menos seis caracteres y coincidir con la confirmación.',
+    'password' => 'La contraseña y la confirmación deben coincidir y tener al menos seis caracteres.',
     'reset' => '¡Tu contraseña ha sido restablecida con éxito!',
-    'sent' => '¡Hemos enviado por correo electrónico el enlace para restablecer tu contraseña! Revisa tu carpeta de spam si es necesario.',
-    'throttled' => 'Por favor, espera antes de volver a intentarlo.',
-    'token' => 'Este token de restablecimiento de contraseña es inválido.',
-    'user' => 'No encontramos un usuario con esa dirección de correo electrónico.',
+    'sent' => '¡Te hemos enviado un enlace para restablecer tu contraseña por correo electrónico! Revisa tu carpeta de spam si es necesario.',
+    'throttled' => 'Por favor, espera un momento antes de intentar nuevamente.',
+    'token' => 'El token de restablecimiento de contraseña no es válido.',
+    'user' => 'No pudimos encontrar un usuario con esa dirección de correo electrónico.',
 
 ];
