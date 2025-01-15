@@ -52,6 +52,8 @@
 
         </form>
 
+
+
         <!-- Terceira Div: Botão Comandos no Canto Direito -->
         <div class="ml-auto">
             <button id="toggle-comandos" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-[#004BAD] hidden font-normal">
@@ -97,7 +99,7 @@
                 </div>
 
                 <div class="flex items-start space-x-2">
-                    <img src="{{ asset('icones/icones_comandos/icone_mover.png') }}" alt="Mover PDF" class="w-8 h-8">
+                    <img src="{{ asset('icones/icones_comandos/icone_mover1.png') }}" alt="Mover PDF" class="w-8 h-8">
                     <div>
                         <h3 class="font-bold text-[14px] text-gray-800">{{ __('pdf_upload.move_pdf') }}</h3>
                         <p class="text-gray-600 text-[12px]">{{ __('pdf_upload.right_click_drag') }}</p>
@@ -131,6 +133,15 @@
         </div>
 
     </div>
+    <!-- Overlay de carregamento -->
+    <div id="loading-overlay" class="hidden fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+        <svg class="animate-spin h-10 w-10 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+            <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+            <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8v4a4 4 0 00-4 4H4z"></path>
+        </svg>
+    </div>
+
+
 
 
     <!-- Contêiner para botões de zoom no canto inferior direito
@@ -164,7 +175,7 @@
         <script>
             window.pdfDoc = null; // Documento PDF carregado
             window.currentPage = 1; // Página atual exibida
-            let scale = 0.8; // Nível de zoom inicial
+            let scale = 1.4; // Nível de zoom inicial
             let circleScale = 1; // Escala inicial para círculos
             let circles = []; // Array para círculos criados
             let counter = 1; // Contador de círculos
@@ -181,10 +192,21 @@
             const pageNumbersContainer = document.getElementById("page-numbers");
             const currentPageDisplay = document.getElementById('current-page');
 
-            const minZoom = 1.4; // Zoom mínimo permitido
+            const minZoom = 2.5; // Zoom mínimo permitido
             const maxZoom = 5.0; // Zoom máximo permitido
 
             const locale = "{{ app()->getLocale() }}";
+
+            function showLoadingOverlay() {
+                const overlay = document.getElementById('loading-overlay');
+                overlay.style.display = 'flex'; // Mostra o overlay
+            }
+
+            function hideLoadingOverlay() {
+                const overlay = document.getElementById('loading-overlay');
+                overlay.style.display = 'none'; // Oculta o overlay
+            }
+
 
             // comandos
             document.addEventListener("DOMContentLoaded", () => {
@@ -310,6 +332,9 @@
             });
 
             document.getElementById('pdf-input').addEventListener('change', function() {
+                // Mostra o overlay de carregamento
+                showLoadingOverlay();
+
                 // Limpa os círculos ao carregar um novo arquivo
                 circles.forEach(circle => circle.remove());
                 circles = []; // Esvazia o array de círculos
@@ -318,8 +343,11 @@
                 isDownloaded = false; // Reinicia o estado de download para o novo arquivo
 
                 // Submete o formulário de upload
-                document.getElementById('pdf-upload-form').submit();
+                setTimeout(() => {
+                    document.getElementById('pdf-upload-form').submit();
+                }, 500); // Adiciona um pequeno delay para garantir que o overlay seja exibido
             });
+
 
             function updatePageDisplay() {
                 // Reinicia o contador ao trocar de página
@@ -495,7 +523,7 @@
                         showContextMenu(e);
                     }
                 });
-                let zoomScale = 1.4; // Zoom inicial
+                let zoomScale = 1.5; // Zoom inicial
                 let zoomTimeout = null; // Controlador de timeout
 
                 pdfContainer.addEventListener('wheel', function(e) {
@@ -547,42 +575,49 @@
                 function addCircle(event, container) {
                     let rect = document.getElementById('pdf-canvas').getBoundingClientRect();
 
-                    // Ajusta para pegar a posição exata do cursor dentro do canvas
+                    // Calcula a posição relativa do clique
                     let x = (event.clientX - rect.left) / scale;
                     let y = (event.clientY - rect.top) / scale;
 
-                    const margin = 40; // Margem de segurança unificada (mesma do primeiro código)
+                    const margin = 40;
 
-                    // Verifica se está dentro dos limites do canvas
+                    // Verifica se o clique está dentro dos limites
                     if (x < margin / scale || y < margin / scale || x > rect.width / scale - margin || y > rect.height / scale - margin) {
                         console.log("Fora dos limites permitidos. Círculo não adicionado.");
                         return;
                     }
 
-                    // Corrige a posição para ser precisa no centro do cursor
-                    const circleSize = adjustCircleSizeForScale(scale * circleScale);
-                    x = x - circleSize / 2 / scale; // Centraliza no X
-                    y = y - circleSize / 2 / scale; // Centraliza no Y
+                    // Verifica o próximo número na sequência
+                    const lastNumber = Math.max(
+                        ...Object.values(pageCircles).flat().map(circle => parseInt(circle.text)),
+                        0
+                    );
+                    const nextNumber = lastNumber + 1;
 
-                    // Verifica sobreposição com outros círculos
-                    if (isOverlapping(x, y, margin)) { // Aqui também usamos o `margin` unificado
+                    // Corrige a posição do círculo para centralizar
+                    const circleSize = adjustCircleSizeForScale(scale * circleScale);
+                    x = x - circleSize / 2 / scale;
+                    y = y - circleSize / 2 / scale;
+
+                    // Verifica se está sobrepondo outros círculos
+                    if (isOverlapping(x, y, margin)) {
                         console.log("Sobreposição detectada. Círculo não adicionado.");
                         return;
                     }
 
                     const timestamp = Date.now();
-                    const circle = createCircleElement(counter++, x, y, currentPage, timestamp);
+                    const circle = createCircleElement(nextNumber, x, y, currentPage, timestamp);
                     container.appendChild(circle);
 
-                    // Adiciona ao array de marcações por página
+                    // Adiciona o círculo ao array de marcações
                     if (!pageCircles[currentPage]) {
                         pageCircles[currentPage] = [];
                     }
 
                     pageCircles[currentPage].push({
                         text: circle.textContent,
-                        x: parseFloat(circle.dataset.x),
-                        y: parseFloat(circle.dataset.y),
+                        x: parseFloat(circle.dataset.x).toFixed(6),
+                        y: parseFloat(circle.dataset.y).toFixed(6),
                         createdAt: timestamp
                     });
 
@@ -594,14 +629,17 @@
                     const circle = document.createElement('div');
                     circle.className = 'circle';
                     circle.textContent = text;
-                    circle.dataset.x = x;
-                    circle.dataset.y = y;
+
+                    // Armazena as coordenadas com precisão
+                    circle.dataset.x = x.toFixed(6); // 6 casas decimais para mais precisão
+                    circle.dataset.y = y.toFixed(6);
                     circle.dataset.page = page;
                     circle.dataset.timestamp = timestamp; // Adiciona o timestamp como identificador único
 
-                    updateCircleStyles(circle);
-                    return circle;
+                    updateCircleStyles(circle); // Aplica os estilos para posicionar
+                    return circle; // Retorna o elemento criado
                 }
+
 
 
 
@@ -610,29 +648,32 @@
                 }
 
                 function updateCircleStyles(circle) {
-                    let x = parseFloat(circle.dataset.x);
-                    let y = parseFloat(circle.dataset.y);
-                    let size = adjustCircleSizeForScale(scale * circleScale);
+                    let x = parseFloat(circle.dataset.x); // Posição original X
+                    let y = parseFloat(circle.dataset.y); // Posição original Y
 
-                    // Ajusta tamanho da fonte com base no número de dígitos no texto
-                    const textLength = circle.textContent.length;
-                    let fontSize = 20; // Tamanho base da fonte
+                    // Multiplica o tamanho pelo zoom atual
+                    let size = adjustCircleSizeForScale(circleScale) * scale; // Ajusta o tamanho com o zoom atual
 
-                    if (textLength === 2) {
-                        fontSize -= 2; // Reduz para dois dígitos
-                    } else if (textLength === 3) {
-                        fontSize -= 4; // Reduz mais para três dígitos
-                    } else if (textLength >= 4) {
-                        fontSize -= 6; // Reduz ainda mais para quatro ou mais dígitos
-                    }
+                    // Tamanho base para o círculo
+                    const baseSize = 40; // Tamanho base do círculo em pixels
+                    const zoomedSize = baseSize * scale * circleScale; // Tamanho do círculo ajustado pelo zoom
 
-                    // Aplica o estilo ajustado
-                    circle.style.left = `${(x * scale) - size / 1}px`;
-                    circle.style.top = `${(y * scale) - size / 1}px`;
-                    circle.style.transform = `scale(${scale * circleScale})`;
-                    circle.style.fontSize = `${fontSize}px`; // Aplica o tamanho da fonte
-                    circle.style.lineHeight = `${size}px`; // Garante centralização vertical
+                    // Ajusta o tamanho do círculo
+                    circle.style.width = `${zoomedSize}px`;
+                    circle.style.height = `${zoomedSize}px`;
+
+                    // Ajusta a posição para manter a proporção no zoom
+                    circle.style.left = `${(x * scale - zoomedSize / 2).toFixed(2)}px`; // Ajusta X
+                    circle.style.top = `${(y * scale - zoomedSize / 2).toFixed(2)}px`; // Ajusta Y
+
+                    // Ajusta a fonte proporcionalmente ao tamanho do círculo
+                    let fontSize = 20 * scale * circleScale; // Tamanho proporcional ao zoom
+                    circle.style.fontSize = `${fontSize}px`; // Tamanho da fonte
+                    circle.style.lineHeight = `${zoomedSize}px`; // Centraliza verticalmente o número
+                    circle.style.borderRadius = "50%"; // Garante que o círculo permaneça circular
                 }
+
+
 
 
                 function removeCircle(circle) {
@@ -659,7 +700,7 @@
                         return;
                     }
 
-                    let globalCounter = 1; // Contador global para reordenar os círculos
+                    let globalCounter = 1; // Sempre começa a partir de 1
 
                     // Cria um array de todas as marcações em todas as páginas
                     let allCircles = [];
@@ -682,7 +723,7 @@
                         return a.createdAt - b.createdAt;
                     });
 
-                    // Reordena as marcações para manter a sequência contínua
+                    // Reordena as marcações para manter a sequência contínua a partir de 1
                     allCircles.forEach(circle => {
                         circle.text = globalCounter.toString(); // Atualiza o número do círculo
                         globalCounter++; // Incrementa o contador global
@@ -701,11 +742,12 @@
                         return acc;
                     }, {});
 
-                    console.log("Refatoração concluída. Sequência numérica atualizada.");
+                    console.log("Refatoração concluída. Sequência numérica reiniciada a partir de 1.");
 
                     // Atualiza a página atual
                     renderPage(currentPage);
                 }
+
 
 
                 // Função para atualizar posições dos círculos
@@ -780,12 +822,16 @@
 
                 document.getElementById('saveButton').addEventListener('click', async function() {
                     try {
+                        // Mostra o overlay de carregamento
+                        showLoadingOverlay();
+
                         console.log('Iniciando processo de salvamento do PDF...');
 
                         // Certifica-se de que o fontkit está disponível
                         if (typeof fontkit === 'undefined') {
                             console.error('Fontkit não está definido. Verifique a configuração no app.js.');
                             alert('Erro ao salvar o PDF: Fontkit não carregado.');
+                            hideLoadingOverlay(); // Esconde o overlay em caso de erro
                             return;
                         }
 
@@ -914,9 +960,13 @@
 
                         // Marca o PDF como baixado
                         isDownloaded = true;
+
+                        // Esconde o overlay após o download
+                        hideLoadingOverlay();
                     } catch (error) {
                         console.error('Erro ao salvar o PDF:', error);
                         alert('Erro ao salvar o PDF. Veja o console para mais detalhes.');
+                        hideLoadingOverlay(); // Esconde o overlay em caso de erro
                     }
                 });
 
