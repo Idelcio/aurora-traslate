@@ -119,6 +119,46 @@
         .language-switcher button:hover .flag-container {
             box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
         }
+
+        /* Oculta o conteúdo principal em dispositivos móveis e tablets */
+        @media (max-width: 1024px) {
+            .content {
+                display: none;
+            }
+
+            .mobile-message {
+                display: flex;
+            }
+        }
+
+        /* Exibe o conteúdo principal em dispositivos maiores */
+        @media (min-width: 1025px) {
+            .mobile-message {
+                display: none;
+            }
+        }
+
+        /* Estilo para a mensagem amigável */
+        .mobile-message {
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #f3f4f6;
+            text-align: center;
+            padding: 20px;
+        }
+
+        .mobile-message h1 {
+            font-size: 1.5rem;
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .mobile-message p {
+            font-size: 1rem;
+            color: #666;
+        }
     </style>
 </head>
 
@@ -170,16 +210,14 @@
             <!-- Termos de Uso -->
             <div class="mt-4 text-center">
                 @php
-                // Mapeamento de IDs dos termos por idioma
                 $termsMap = [
-                'pt_BR' => 1, // ID 1: Português
-                'en' => 3, // ID 3: Inglês
-                'es' => 4, // ID 4: Espanhol
+                'pt_BR' => 1,
+                'en' => 3,
+                'es' => 4,
                 ];
 
-                // Pegar o idioma atual e o ID correspondente
                 $locale = app()->getLocale();
-                $termId = $termsMap[$locale] ?? 1; // Fallback para o ID 1 se o idioma não existir
+                $termId = $termsMap[$locale] ?? 1;
                 @endphp
 
                 <h3 class="text-sm text-gray-600 font-medium">
@@ -196,15 +234,32 @@
             </div>
         </div>
 
+
+        <!-- Mensagem para dispositivos móveis -->
+        <div class="mobile-message">
+            @if ($locale == 'pt_BR')
+            <h1>Ops! Programa para Computadores</h1>
+            <p>Este programa foi desenvolvido para uso em computadores.</p>
+            <p>Por favor, acesse a partir de um dispositivo desktop para uma melhor experiência.</p>
+            @elseif ($locale == 'es')
+            <h1>¡Ups! Programa para Computadoras</h1>
+            <p>Este programa fue desarrollado para usarse en computadoras.</p>
+            <p>Por favor, accede desde un dispositivo de escritorio para una mejor experiencia.</p>
+            @else
+            <h1>Oops! Program for Computers</h1>
+            <p>This program was developed for use on computers.</p>
+            <p>Please access it from a desktop device for a better experience.</p>
+            @endif
+        </div>
+
+
         <!-- Rodapé -->
         <footer class="w-full bg-white py-4 text-center">
             <div class="flex justify-center items-center gap-4">
-                <!-- LinkedIn -->
                 <a href="https://www.linkedin.com/company/tagpdf" target="_blank" class="hover:opacity-80">
                     <img src="{{ asset('icones/linkedIn/linkedin_Black.png') }}" alt="Logo LinkedIn"
                         class="h-7 w-auto aspect-square" />
                 </a>
-                <!-- Instagram -->
                 <a href="https://www.instagram.com/tagpdf/" target="_blank" class="hover:opacity-80">
                     <img src="{{ asset('icones/instagram/instagram_black.png') }}" alt="Logo Instagram"
                         class="h-7 w-auto aspect-square" />
