@@ -53,7 +53,6 @@
         </form>
 
 
-
         <!-- Terceira Div: Botão Comandos no Canto Direito -->
         <div class="ml-auto">
             <button id="toggle-comandos" class="bg-gray-800 text-white px-4 py-2 rounded hover:bg-[#004BAD] hidden font-normal">
@@ -169,7 +168,7 @@
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/2.12.313/pdf.min.js"></script>
         <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf-lib/1.17.1/pdf-lib.min.js"></script>
         <script src="https://cdn.jsdelivr.net/npm/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
-        <script src="{{ asset('js/custom.js') }}"></script>
+
 
 
         <script>
@@ -529,21 +528,43 @@
                 pdfContainer.addEventListener('wheel', function(e) {
                     e.preventDefault(); // Evita o comportamento padrão de rolagem
 
-                    // Ajusta o zoom com base na direção do scroll do mouse
-                    if (e.deltaY < 0 && zoomScale < maxZoom) {
-                        zoomScale = Math.min(zoomScale + 0.1, maxZoom); // Aumenta o zoom
-                    } else if (e.deltaY > 0 && zoomScale > minZoom) {
-                        zoomScale = Math.max(zoomScale - 0.1, minZoom); // Diminui o zoom
-                    }
+                    const rect = pdfContainer.getBoundingClientRect();
 
-                    console.log(`Zoom Atual: ${zoomScale.toFixed(1)}`);
+                    // Posição do mouse em relação ao container
+                    const mouseX = e.clientX - rect.left;
+                    const mouseY = e.clientY - rect.top;
 
-                    // Renderiza a página atual com o novo zoom
+                    // Posição de scroll atual
+                    const scrollLeftBefore = pdfContainer.scrollLeft;
+                    const scrollTopBefore = pdfContainer.scrollTop;
+
+                    // Proporção de deslocamento com base no zoom atual
+                    const xRatio = (mouseX + scrollLeftBefore) / pdfContainer.scrollWidth;
+                    const yRatio = (mouseY + scrollTopBefore) / pdfContainer.scrollHeight;
+
+                    // Calcula o novo zoom
+                    const zoomDelta = e.deltaY < 0 ? 0.1 : -0.1;
+                    const newZoomScale = Math.min(maxZoom, Math.max(minZoom, zoomScale + zoomDelta));
+
+                    if (newZoomScale === zoomScale) return; // Se o zoom não mudou, não atualiza
+
+                    // Atualiza o zoom
+                    zoomScale = newZoomScale;
+
+                    // Renderiza a página com o novo zoom
                     renderPage(currentPage);
 
-                    // Atualiza a posição e o tamanho dos círculos com o novo zoom
-                    circles.forEach(circle => updateCircleStyles(circle));
+                    // Aguarda renderização para aplicar scroll ajustado
+                    setTimeout(() => {
+                        const newScrollWidth = pdfContainer.scrollWidth;
+                        const newScrollHeight = pdfContainer.scrollHeight;
+
+                        // Recalcula o scroll para manter a centralização
+                        pdfContainer.scrollLeft = xRatio * newScrollWidth - mouseX;
+                        pdfContainer.scrollTop = yRatio * newScrollHeight - mouseY;
+                    }, 0); // Tempo mínimo para garantir a atualização do layout
                 });
+
 
 
                 function showContextMenu(e) {
@@ -579,7 +600,7 @@
                     let x = (event.clientX - rect.left) / scale;
                     let y = (event.clientY - rect.top) / scale;
 
-                    const margin = 40;
+                    const margin = 20;
 
                     // Verifica se o clique está dentro dos limites
                     if (x < margin / scale || y < margin / scale || x > rect.width / scale - margin || y > rect.height / scale - margin) {
@@ -781,14 +802,16 @@
                     let offsetX, offsetY;
 
                     circle.addEventListener('mousedown', function(e) {
+                        if (e.button !== 0) return; // Certifica-se de que apenas o botão esquerdo ativa o drag
                         isDragging = true;
-                        offsetX = e.clientX - parseFloat(circle.style.left);
-                        offsetY = e.clientY - parseFloat(circle.style.top);
+                        offsetX = e.clientX - parseFloat(circle.style.left); // Captura o deslocamento X
+                        offsetY = e.clientY - parseFloat(circle.style.top); // Captura o deslocamento Y
                         circle.classList.add('dragging');
                     });
 
                     document.addEventListener('mousemove', function(e) {
                         if (isDragging) {
+                            // Calcula as novas coordenadas
                             let x = (e.clientX - offsetX) / scale;
                             let y = (e.clientY - offsetY) / scale;
 
@@ -796,18 +819,16 @@
                             circle.style.left = `${x * scale}px`;
                             circle.style.top = `${y * scale}px`;
 
-                            // Atualiza coordenadas reais do círculo
-                            circle.dataset.x = x.toFixed(2);
-                            circle.dataset.y = y.toFixed(2);
+                            // Atualiza coordenadas reais no dataset do círculo
+                            circle.dataset.x = x.toFixed(6); // Armazena com alta precisão
+                            circle.dataset.y = y.toFixed(6);
 
-                            // Atualiza a posição na estrutura de dados
-                            const pageNum = parseInt(circle.dataset.page);
-                            const index = pageCircles[pageNum].findIndex(
-                                c => c.text === circle.textContent
-                            );
+                            // Atualiza a posição na estrutura de dados (pageCircles)
+                            const pageNum = parseInt(circle.dataset.page, 10);
+                            const index = pageCircles[pageNum].findIndex(c => c.text === circle.textContent);
                             if (index !== -1) {
-                                pageCircles[pageNum][index].x = x.toFixed(2);
-                                pageCircles[pageNum][index].y = y.toFixed(2);
+                                pageCircles[pageNum][index].x = x.toFixed(6); // Alta precisão
+                                pageCircles[pageNum][index].y = y.toFixed(6); // Alta precisão
                             }
                         }
                     });
@@ -816,9 +837,23 @@
                         if (isDragging) {
                             isDragging = false;
                             circle.classList.remove('dragging');
+
+                            // Após o soltar do mouse, certifique-se de que as coordenadas finais estão salvas
+                            const pageNum = parseInt(circle.dataset.page, 10);
+                            const x = parseFloat(circle.dataset.x).toFixed(6);
+                            const y = parseFloat(circle.dataset.y).toFixed(6);
+
+                            const index = pageCircles[pageNum].findIndex(c => c.text === circle.textContent);
+                            if (index !== -1) {
+                                pageCircles[pageNum][index].x = x;
+                                pageCircles[pageNum][index].y = y;
+                            }
+
+                            console.log(`Círculo solto na página ${pageNum}: X=${x}, Y=${y}`);
                         }
                     });
                 }
+
 
                 document.getElementById('saveButton').addEventListener('click', async function() {
                     try {
@@ -866,8 +901,9 @@
                             const selectedPage = pages[pageNum - 1];
 
                             circles.forEach(circle => {
-                                const x = parseFloat(circle.x);
-                                const y = parseFloat(circle.y);
+                                // Calcula as posições com precisão definida (6 casas decimais, por exemplo)
+                                const x = parseFloat(circle.x).toFixed(6);
+                                const y = parseFloat(circle.y).toFixed(6);
                                 const text = circle.text;
 
                                 // Ajusta tamanho da fonte com base no número de caracteres
@@ -889,8 +925,8 @@
 
                                 // Desenha o círculo
                                 selectedPage.drawEllipse({
-                                    x: x,
-                                    y: selectedPage.getHeight() - y,
+                                    x: parseFloat(x),
+                                    y: selectedPage.getHeight() - parseFloat(y),
                                     xScale: 20 * circleScale,
                                     yScale: 20 * circleScale,
                                     color: PDFLib.rgb(1, 1, 1),
@@ -900,8 +936,8 @@
 
                                 // Desenha o número dentro do círculo
                                 selectedPage.drawText(text.toString(), {
-                                    x: x - textOffsetX,
-                                    y: selectedPage.getHeight() - y - textOffsetY,
+                                    x: parseFloat(x) - textOffsetX,
+                                    y: selectedPage.getHeight() - parseFloat(y) - textOffsetY,
                                     size: fontSize,
                                     font: montserratFont,
                                     color: PDFLib.rgb(0, 75 / 255, 173 / 255),
