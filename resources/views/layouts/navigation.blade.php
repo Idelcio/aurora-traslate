@@ -1,54 +1,97 @@
-<nav x-data="{ open: false, langOpen: false }" class="bg-white border-b border-gray-100 pb-0">
+<nav x-data="{ open: false, langOpen: false }" class="border-b border-slate-200 bg-white shadow-sm">
     <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
-        <div class="flex justify-between h-16">
+    <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+        <div class="flex h-16 justify-between">
             <!-- Logo -->
-            <div class="absolute left-0 flex items-center h-full">
-                <a href="{{ route('dashboard') }}">
-                    <img src="{{ asset('icones/logo/tagpdf_logo.png') }}" alt="User Logo" class="w-[130px] ml-0">
+            <div class="flex shrink-0 items-center">
+                <a href="{{ route('dashboard') }}" class="flex items-center gap-3">
+                    <img src="{{ asset('branding/aurora-mark.svg') }}" alt="Aurora Translate" class="h-8 w-8">
+                    <span class="hidden text-lg font-bold text-slate-900 sm:block">Aurora Translate</span>
                 </a>
             </div>
 
             <!-- Navigation Links -->
-            <div class="hidden space-x-8 sm:-my-px sm:ml-auto sm:flex">
+            <div class="hidden space-x-8 sm:-my-px sm:ml-10 sm:flex">
                 @can('level')
                 <a href="{{ route('dashboard') }}"
-                    class="{{ request()->routeIs('dashboard') ? 'border-b-4 border-[#004BAD] text-gray-900' : 'border-b-4 border-transparent text-gray-500 hover:border-[#004BAD] hover:text-gray-700' }} inline-flex items-center px-3 pt-1 text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
+                    class="{{ request()->routeIs('dashboard') ? 'border-indigo-500 text-slate-900' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700' }} inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium transition duration-150 ease-in-out">
                     {{ __('Home') }}
                 </a>
 
                 <a href="{{ route('users.index') }}"
-                    class="{{ request()->routeIs('users.index') ? 'border-b-4 border-[#004BAD] text-gray-900' : 'border-b-4 border-transparent text-gray-500 hover:border-[#004BAD] hover:text-gray-700' }} inline-flex items-center px-3 pt-1 text-sm font-medium leading-5 focus:outline-none transition duration-150 ease-in-out">
+                    class="{{ request()->routeIs('users.index') ? 'border-indigo-500 text-slate-900' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700' }} inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium transition duration-150 ease-in-out">
                     {{ __('Lista de usuários') }}
                 </a>
                 @endcan
             </div>
 
             <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ml-6">
-                <div class="relative">
-                    <button @click="open = !open" class="flex items-center px-3 py-2 text-sm leading-4 font-medium text-gray-500 hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                        <img src="{{ asset('icones/usuario/user.png') }}" alt="User Logo" class="h-6 w-6 mr-2">
-                        <div>{{ Auth::user()->name }}</div>
-                        <svg class="ml-1 w-5 h-5 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <div class="hidden sm:ml-6 sm:flex sm:items-center">
+                <!-- Language Switcher -->
+                <div class="relative z-50 mr-4">
+                    <button @click="langOpen = !langOpen" class="flex items-center gap-2 rounded-lg px-3 py-2 transition hover:bg-slate-100">
+                        <div class="h-5 w-5 overflow-hidden rounded-full">
+                            @php
+                            $flagMap = [
+                                'pt_BR' => ['img' => 'flags/br.png', 'label' => 'BR'],
+                                'en' => ['img' => 'flags/en.png', 'label' => 'EN'],
+                                'es' => ['img' => 'flags/es.png', 'label' => 'ES'],
+                            ];
+                            $currentLocale = app()->getLocale();
+                            $currentFlag = $flagMap[$currentLocale]['img'] ?? 'flags/br.png';
+                            $currentLabel = $flagMap[$currentLocale]['label'] ?? 'BR';
+                            @endphp
+                            <img src="{{ asset($currentFlag) }}" alt="Idioma Atual" class="h-full w-full object-cover">
+                        </div>
+                        <span class="text-sm font-medium text-slate-700">{{ $currentLabel }}</span>
+                        <svg class="h-4 w-4 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+                        </svg>
+                    </button>
+
+                    <!-- Dropdown de Idiomas -->
+                    <div x-show="langOpen" @click.away="langOpen = false" x-transition class="absolute right-0 mt-2 w-32 rounded-lg border border-slate-200 bg-white shadow-lg z-50">
+                        <div class="flex flex-col gap-1 p-2">
+                            @foreach ($flagMap as $locale => $flag)
+                            @if ($locale !== $currentLocale)
+                            <form method="GET" action="{{ url()->current() }}" class="block">
+                                <button type="submit" name="lang" value="{{ $locale }}" class="flex w-full items-center gap-2 rounded-lg p-2 text-sm transition hover:bg-slate-100">
+                                    <div class="h-5 w-5 overflow-hidden rounded-full">
+                                        <img src="{{ asset($flag['img']) }}" alt="{{ $flag['label'] }}" class="h-full w-full object-cover">
+                                    </div>
+                                    <span>{{ $flag['label'] }}</span>
+                                </button>
+                            </form>
+                            @endif
+                            @endforeach
+                        </div>
+                    </div>
+                </div>
+
+                <!-- User Dropdown -->
+                <div class="relative z-50">
+                    <button @click="open = !open" class="flex items-center gap-2 rounded-lg px-3 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-100">
+                        <div class="flex h-8 w-8 items-center justify-center rounded-full bg-indigo-600">
+                            <span class="text-sm font-semibold text-white">{{ substr(Auth::user()->name, 0, 1) }}</span>
+                        </div>
+                        <span class="hidden md:block">{{ Auth::user()->name }}</span>
+                        <svg class="h-5 w-5 text-slate-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                         </svg>
                     </button>
 
                     <!-- Dropdown de Usuário -->
-                    <div x-show="open" @click.away="open = false" class="absolute right-0 mt-2 w-48 bg-white border border-gray-200 shadow-lg rounded-md">
-                        <!-- Link Perfil -->
-                        <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900">
+                    <div x-show="open" @click.away="open = false" x-transition class="absolute right-0 mt-2 w-48 rounded-lg border border-slate-200 bg-white shadow-lg z-50">
+                        <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-sm text-slate-700 transition hover:bg-slate-100">
                             @if (app()->getLocale() == 'pt_BR') Perfil
                             @elseif (app()->getLocale() == 'en') Profile
                             @else Perfil
                             @endif
                         </a>
 
-                        <!-- Botão Sair -->
                         <form method="POST" action="{{ route('logout') }}">
                             @csrf
-                            <button class="block w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100 hover:text-gray-900"
+                            <button class="block w-full px-4 py-2 text-left text-sm text-slate-700 transition hover:bg-slate-100"
                                 onclick="event.preventDefault(); this.closest('form').submit();">
                                 @if (app()->getLocale() == 'pt_BR') Sair
                                 @elseif (app()->getLocale() == 'en') Logout
@@ -58,54 +101,12 @@
                         </form>
                     </div>
                 </div>
-
-                <!-- Language Switcher Manual -->
-                <div class="ml-4 relative">
-                    <button @click="langOpen = !langOpen" class="flex items-center px-3 py-2  rounded-md hover:bg-gray-100">
-                        <div class="w-6 h-6 rounded-full overflow-hidden">
-                            @php
-                            $flagMap = [
-                            'pt_BR' => ['img' => 'flags/br.png', 'label' => 'BR'],
-                            'en' => ['img' => 'flags/en.png', 'label' => 'EN'],
-                            'es' => ['img' => 'flags/es.png', 'label' => 'ES'],
-                            ];
-                            $currentLocale = app()->getLocale();
-                            $currentFlag = $flagMap[$currentLocale]['img'] ?? 'flags/br.png';
-                            $currentLabel = $flagMap[$currentLocale]['label'] ?? 'BR';
-                            @endphp
-                            <img src="{{ asset($currentFlag) }}" alt="Idioma Atual">
-                        </div>
-                        <span class="ml-2 text-sm font-medium">{{ $currentLabel }}</span>
-                        <svg class="ml-1 w-4 h-4 text-gray-500" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-                        </svg>
-                    </button>
-
-                    <!-- Dropdown Manual de Idiomas -->
-                    <div x-show="langOpen" @click.away="langOpen = false" class="absolute right-0 mt-2 w-28 bg-white rounded-lg shadow-lg border border-gray-200">
-                        <div class="flex flex-col gap-1 p-2">
-                            @foreach ($flagMap as $locale => $flag)
-                            @if ($locale !== $currentLocale)
-                            <form method="GET" action="{{ url()->current() }}" class="block">
-                                <button type="submit" name="lang" value="{{ $locale }}" class="flex items-center space-x-2 p-1 hover:bg-gray-100 rounded-lg">
-                                    <div class="w-5 h-5 rounded-full overflow-hidden">
-                                        <img src="{{ asset($flag['img']) }}" alt="{{ $flag['label'] }}">
-                                    </div>
-                                    <span class="text-sm">{{ $flag['label'] }}</span>
-                                </button>
-                            </form>
-                            @endif
-                            @endforeach
-                        </div>
-                    </div>
-                </div>
-
             </div>
 
             <!-- Hamburger -->
             <div class="-mr-2 flex items-center sm:hidden">
                 <button @click="open = ! open"
-                    class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
+                    class="inline-flex items-center justify-center rounded-md p-2 text-slate-400 transition hover:bg-slate-100 hover:text-slate-500 focus:bg-slate-100 focus:text-slate-500 focus:outline-none">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex"
                             stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -115,6 +116,51 @@
                             d="M6 18L18 6M6 6l12 12" />
                     </svg>
                 </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Responsive Navigation Menu -->
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
+        <div class="space-y-1 pb-3 pt-2">
+            @can('level')
+            <a href="{{ route('dashboard') }}"
+                class="{{ request()->routeIs('dashboard') ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-transparent text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800' }} block border-l-4 py-2 pl-3 pr-4 text-base font-medium transition">
+                {{ __('Home') }}
+            </a>
+
+            <a href="{{ route('users.index') }}"
+                class="{{ request()->routeIs('users.index') ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-transparent text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800' }} block border-l-4 py-2 pl-3 pr-4 text-base font-medium transition">
+                {{ __('Lista de usuários') }}
+            </a>
+            @endcan
+        </div>
+
+        <!-- Responsive Settings Options -->
+        <div class="border-t border-slate-200 pb-1 pt-4">
+            <div class="px-4">
+                <div class="text-base font-medium text-slate-800">{{ Auth::user()->name }}</div>
+                <div class="text-sm font-medium text-slate-500">{{ Auth::user()->email }}</div>
+            </div>
+
+            <div class="mt-3 space-y-1">
+                <a href="{{ route('profile.edit') }}" class="block px-4 py-2 text-base font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800">
+                    @if (app()->getLocale() == 'pt_BR') Perfil
+                    @elseif (app()->getLocale() == 'en') Profile
+                    @else Perfil
+                    @endif
+                </a>
+
+                <form method="POST" action="{{ route('logout') }}">
+                    @csrf
+                    <button class="block w-full px-4 py-2 text-left text-base font-medium text-slate-500 transition hover:bg-slate-100 hover:text-slate-800"
+                        onclick="event.preventDefault(); this.closest('form').submit();">
+                        @if (app()->getLocale() == 'pt_BR') Sair
+                        @elseif (app()->getLocale() == 'en') Logout
+                        @else Salir
+                        @endif
+                    </button>
+                </form>
             </div>
         </div>
     </div>

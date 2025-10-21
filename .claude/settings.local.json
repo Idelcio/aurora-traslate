@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(php artisan:*)",
+      "Bash(curl:*)",
+      "Bash(php test_translate.php:*)",
+      "Bash(php setup_admin.php:*)"
+    ],
+    "deny": [],
+    "ask": []
+  }
+}

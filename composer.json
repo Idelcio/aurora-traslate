@@ -17,7 +17,9 @@
         "laravel/ui": "^4.5",
         "setasign/fpdf": "^1.8",
         "setasign/fpdi": "^2.6",
-        "setasign/fpdi-fpdf": "^2.3"
+        "setasign/fpdi-fpdf": "^2.3",
+        "spatie/pdf-to-text": "^1.54",
+        "thiagoalessio/tesseract_ocr": "^2.13"
     },
     "require-dev": {
         "barryvdh/laravel-ide-helper": "^3.1",

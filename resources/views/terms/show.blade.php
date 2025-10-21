@@ -4,9 +4,9 @@
 <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Termos de Uso</title>
+    <title>Termos de Uso • Aurora Translate</title>
     <!-- Favicon -->
-    <link rel="icon" href="{{ asset('icones/logo/simbolo_tag.png') }}" type="image/png">
+    <link rel="icon" href="{{ asset('branding/aurora-favicon.svg') }}" type="image/svg+xml">
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap" rel="stylesheet">
 
     <style>
@@ -77,7 +77,7 @@
 
         <a href="{{ url('/') }}">
             <div class="logo">
-                <img src="{{ asset('icones/logo/tagpdf_logo.png') }}" alt="Logo TagPDF">
+                <img src="{{ asset('branding/aurora-logotype.svg') }}" alt="Aurora Translate" style="max-width: 200px;">
             </div>
         </a>
 

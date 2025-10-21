@@ -1,0 +1,30 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 520 160">
+    <defs>
+        <linearGradient id="aurora-logo-gradient" x1="5%" y1="10%" x2="95%" y2="90%">
+            <stop offset="0%" stop-color="#38bdf8"/>
+            <stop offset="45%" stop-color="#6366f1"/>
+            <stop offset="100%" stop-color="#312e81"/>
+        </linearGradient>
+        <linearGradient id="aurora-logo-page" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f8fafc"/>
+            <stop offset="100%" stop-color="#e0e7ff"/>
+        </linearGradient>
+    </defs>
+    <g transform="translate(10 10)">
+        <rect x="0" y="0" width="140" height="140" rx="38" fill="url(#aurora-logo-gradient)"/>
+        <g transform="translate(32 32)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M48 76c-15.4-13.8-31-13.8-37.2-13.8V25.4c12.2-1.2 25.9 3 37.2 11.2V76z" fill="url(#aurora-logo-page)"/>
+            <path d="M48 36.6c11.8-8.8 25.5-12.4 37.2-11.2v37.4c-6.2 0-21.8 0-37.2 13.2V36.6z" fill="rgba(248,250,252,0.63)"/>
+            <path d="M10.8 25c10.1-.9 24.5 2.2 37.2 11C60.7 27.2 75.1 24 85.2 25" stroke="rgba(248,250,252,0.9)" stroke-width="5.5"/>
+            <path d="M10.8 63c6.2 0 21.8 0 37.2 13.2 15.4-13.2 31-13.2 37.2-13.2" stroke="rgba(255,255,255,0.9)" stroke-width="5.5"/>
+            <path d="M48 36v53" stroke="#4f46e5" stroke-width="5" opacity="0.7" stroke-linecap="square"/>
+            <circle cx="48" cy="22" r="9" fill="#22d3ee" opacity="0.75"/>
+            <path d="M48 12c14.8-13.6 35.6-10.4 43.2-7.6" stroke="rgba(248,250,252,0.45)" stroke-width="4.5" stroke-dasharray="7 10"/>
+        </g>
+    </g>
+    <g transform="translate(170 48)" fill="#0f172a">
+        <text font-family="Poppins, 'Segoe UI', sans-serif" font-size="48" font-weight="700" letter-spacing="-0.02em">Aurora</text>
+        <text font-family="Poppins, 'Segoe UI', sans-serif" font-size="48" font-weight="400" x="180" letter-spacing="-0.015em">Translate</text>
+        <text font-family="Poppins, 'Segoe UI', sans-serif" font-size="16" font-weight="400" fill="#475569" y="52" x="0" letter-spacing="0.26em">INTELIGÊNCIA EM TRADUÇÃO DE PDF</text>
+    </g>
+</svg>

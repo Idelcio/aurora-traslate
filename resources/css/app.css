@@ -2,36 +2,16 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Estilo de movimento ativo */
-
-
-/* Fonte principal */
+/* ========================
+   Fonte Principal
+========================= */
 body {
     font-family: 'Montserrat', sans-serif;
 }
 
-/* Botão de Página */
-.page-btn {
-    @apply px-4 py-2 rounded-md text-sm font-medium transition;
-}
-
-.page-btn:hover {
-    @apply bg-gray-300 cursor-pointer;
-}
-
-.page-btn.active {
-    @apply bg-[#004BAD] text-white;
-}
-#pdf-container {
-    cursor: grab;
-}
-
-#pdf-container.grabbing {
-    cursor: grabbing !important;
-}
-
-
-/* Círculos Numerados */
+/* ========================
+   Círculos Numerados
+========================= */
 .circle {
     width: 40px;
     height: 40px;
@@ -46,8 +26,51 @@ body {
     font-size: 20px;
     cursor: pointer;
     user-select: none;
-    pointer-events: auto; /* Para garantir a interação */
+    pointer-events: auto; /* Garante a interação */
 }
+
+/* ========================
+   Botões de Página
+========================= */
+.page-btn {
+    @apply px-4 py-2 rounded-md text-sm font-medium transition;
+}
+
+.page-btn:hover {
+    @apply bg-gray-300 cursor-pointer;
+}
+
+.page-btn.active {
+    @apply bg-[#004BAD] text-white;
+}
+
+/* ========================
+   Contêiner PDF
+========================= */
+#pdf-container {
+    overflow: hidden;
+    position: relative;
+    width: 100%;
+    height: 100vh;
+    cursor: crosshair; /* Cursor tipo mira */
+    touch-action: none; /* Previne gestos padrão em dispositivos móveis */
+}
+
+#pdf-container.grabbing {
+    cursor: grabbing !important;
+}
+
+#pdf-canvas {
+    position: absolute;
+    top: 0;
+    left: 0;
+    transform: scale(1);
+    transform-origin: center center;
+}
+
+/* ========================
+   Overlay de Carregamento
+========================= */
 .spinner {
     border: 4px solid #f3f3f3;
     border-top: 4px solid #3498db;
@@ -62,59 +85,14 @@ body {
     100% { transform: rotate(360deg); }
 }
 
-
 #loading-overlay.show {
     visibility: visible;
     opacity: 1;
 }
 
-
-/* Contêiner do PDF - Cursor de Mira */
-#pdf-container {
-    @apply max-h-[calc(100vh-170px)];
-    cursor: crosshair;
-}
-#pdf-container {
-    overflow: hidden;
-    position: relative;
-    width: 100%;
-    height: 100vh;
-    touch-action: none; /* Previne gestos padrão em dispositivos móveis */
-}
-
-#pdf-canvas {
-    position: absolute;
-    top: 0;
-    left: 0;
-    transform: scale(1);
-    transform-origin: center center;
-}
-
-/* Botões de Navegação */
-/* Estilo de Botão */
-.page-btn {
-    @apply px-4 py-2 rounded-md text-sm font-medium transition;
-}
-
-.page-btn:hover {
-    @apply bg-gray-300 cursor-pointer;
-}
-
-.page-btn.active {
-    @apply bg-[#004BAD] text-white;
-}
-
-/* Responsividade */
-@media (max-width: 640px) {
-    #pdf-container {
-        @apply p-3;
-    }
-
-    #zoom-buttons-container {
-        @apply p-1;
-    }
-}
-/* Estilo responsivo para empilhar elementos em celulares e tablets */
+/* ========================
+   Responsividade
+========================= */
 @media (max-width: 1024px) {
     .flex-wrap-col {
         @apply flex-col items-center justify-center w-full gap-y-4;
@@ -126,12 +104,22 @@ body {
     }
 
     #comandos-container {
-        @apply hidden; /* Oculta o "Comandos" em telas menores */
+        @apply hidden; /* Oculta "Comandos" em telas menores */
     }
 }
+
+@media (max-width: 640px) {
+    #pdf-container {
+        @apply p-3;
+    }
+
+    #zoom-buttons-container {
+        @apply p-1;
+    }
+}
+
 @media (max-width: 639px) {
     #toggle-comandos {
-        display: none !important;
-        /* Garante que não será exibido */
+        display: none !important; /* Garante que não será exibido */
     }
 }

@@ -593,14 +593,29 @@
                 });
 
 
+                let isAddCircleAllowed = true; // Variável para controlar o intervalo
+
                 function addCircle(event, container) {
+                    // Verifica se o intervalo de 1 segundo foi respeitado
+                    if (!isAddCircleAllowed) {
+                        console.log("Aguarde 1 segundo antes de adicionar outro círculo.");
+                        return;
+                    }
+
+                    // Bloqueia a adição de novos círculos por 1 segundo
+                    isAddCircleAllowed = false;
+                    setTimeout(() => {
+                        isAddCircleAllowed = true;
+                    }, 500);
+
+                    // Calcula as dimensões e posição do clique
                     let rect = document.getElementById('pdf-canvas').getBoundingClientRect();
 
                     // Calcula a posição relativa do clique
                     let x = (event.clientX - rect.left) / scale;
                     let y = (event.clientY - rect.top) / scale;
 
-                    const margin = 20;
+                    const margin = 40;
 
                     // Verifica se o clique está dentro dos limites
                     if (x < margin / scale || y < margin / scale || x > rect.width / scale - margin || y > rect.height / scale - margin) {
@@ -646,6 +661,7 @@
                 }
 
 
+
                 function createCircleElement(text, x, y, page, timestamp) {
                     const circle = document.createElement('div');
                     circle.className = 'circle';
@@ -689,10 +705,22 @@
 
                     // Ajusta a fonte proporcionalmente ao tamanho do círculo
                     let fontSize = 20 * scale * circleScale; // Tamanho proporcional ao zoom
+                    let textLength = circle.textContent.length;
+
+                    // Ajusta o tamanho da fonte com base no número de dígitos
+                    if (textLength === 2) {
+                        fontSize -= 2; // Reduz para dois dígitos
+                    } else if (textLength === 3) {
+                        fontSize -= 4; // Reduz mais para três dígitos
+                    } else if (textLength >= 4) {
+                        fontSize -= 6; // Reduz ainda mais para quatro ou mais dígitos
+                    }
+
                     circle.style.fontSize = `${fontSize}px`; // Tamanho da fonte
                     circle.style.lineHeight = `${zoomedSize}px`; // Centraliza verticalmente o número
                     circle.style.borderRadius = "50%"; // Garante que o círculo permaneça circular
                 }
+
 
 
 
@@ -802,16 +830,14 @@
                     let offsetX, offsetY;
 
                     circle.addEventListener('mousedown', function(e) {
-                        if (e.button !== 0) return; // Certifica-se de que apenas o botão esquerdo ativa o drag
                         isDragging = true;
-                        offsetX = e.clientX - parseFloat(circle.style.left); // Captura o deslocamento X
-                        offsetY = e.clientY - parseFloat(circle.style.top); // Captura o deslocamento Y
+                        offsetX = e.clientX - parseFloat(circle.style.left);
+                        offsetY = e.clientY - parseFloat(circle.style.top);
                         circle.classList.add('dragging');
                     });
 
                     document.addEventListener('mousemove', function(e) {
                         if (isDragging) {
-                            // Calcula as novas coordenadas
                             let x = (e.clientX - offsetX) / scale;
                             let y = (e.clientY - offsetY) / scale;
 
@@ -819,16 +845,18 @@
                             circle.style.left = `${x * scale}px`;
                             circle.style.top = `${y * scale}px`;
 
-                            // Atualiza coordenadas reais no dataset do círculo
-                            circle.dataset.x = x.toFixed(6); // Armazena com alta precisão
-                            circle.dataset.y = y.toFixed(6);
+                            // Atualiza coordenadas reais do círculo
+                            circle.dataset.x = x.toFixed(2);
+                            circle.dataset.y = y.toFixed(2);
 
-                            // Atualiza a posição na estrutura de dados (pageCircles)
-                            const pageNum = parseInt(circle.dataset.page, 10);
-                            const index = pageCircles[pageNum].findIndex(c => c.text === circle.textContent);
+                            // Atualiza a posição na estrutura de dados
+                            const pageNum = parseInt(circle.dataset.page);
+                            const index = pageCircles[pageNum].findIndex(
+                                c => c.text === circle.textContent
+                            );
                             if (index !== -1) {
-                                pageCircles[pageNum][index].x = x.toFixed(6); // Alta precisão
-                                pageCircles[pageNum][index].y = y.toFixed(6); // Alta precisão
+                                pageCircles[pageNum][index].x = x.toFixed(2);
+                                pageCircles[pageNum][index].y = y.toFixed(2);
                             }
                         }
                     });
@@ -837,23 +865,9 @@
                         if (isDragging) {
                             isDragging = false;
                             circle.classList.remove('dragging');
-
-                            // Após o soltar do mouse, certifique-se de que as coordenadas finais estão salvas
-                            const pageNum = parseInt(circle.dataset.page, 10);
-                            const x = parseFloat(circle.dataset.x).toFixed(6);
-                            const y = parseFloat(circle.dataset.y).toFixed(6);
-
-                            const index = pageCircles[pageNum].findIndex(c => c.text === circle.textContent);
-                            if (index !== -1) {
-                                pageCircles[pageNum][index].x = x;
-                                pageCircles[pageNum][index].y = y;
-                            }
-
-                            console.log(`Círculo solto na página ${pageNum}: X=${x}, Y=${y}`);
                         }
                     });
                 }
-
 
                 document.getElementById('saveButton').addEventListener('click', async function() {
                     try {

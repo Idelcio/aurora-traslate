@@ -10,6 +10,7 @@ use Barryvdh\DomPDF\Facade\Pdf;
 use App\Http\Controllers\AnnotationController;
 use App\Http\Controllers\TermsOfUseController;
 use App\Http\Controllers\ComandosController;
+use Illuminate\Support\Facades\Auth;
 
 /*
 |----------------------------------------------------------------------
@@ -22,8 +23,11 @@ use App\Http\Controllers\ComandosController;
 
 // Rota para a página inicial
 Route::get('/', function () {
-    return view('auth.login');
-});
+    if (Auth::check()) {
+        return redirect()->route('dashboard');
+    }
+    return view('welcome');
+})->name('welcome');
 
 // Rota para o dashboard
 Route::get('/dashboard', function () {
@@ -66,6 +70,29 @@ Route::middleware('auth')->group(function () {
         Route::post('/save-annotations', [PdfController::class, 'savePdfWithAnnotations'])->name('saveAnnotations');
         Route::post('/save-with-annotations', [PdfController::class, 'savePdfWithAnnotations'])->name('save_with_annotations');
     });
+
+    // Rota para download de livros traduzidos
+    Route::get('/books/{book}/download', function ($bookId) {
+        $book = \App\Models\Book::findOrFail($bookId);
+
+        // Verifica se o livro pertence ao usuário autenticado
+        if ($book->user_id !== auth()->id()) {
+            abort(403, 'Você não tem permissão para baixar este livro.');
+        }
+
+        // Verifica se o livro foi traduzido
+        if ($book->status !== 'translated' || !$book->translated_pdf_path) {
+            abort(404, 'Este livro ainda não foi traduzido.');
+        }
+
+        $filePath = storage_path('app/public/' . $book->translated_pdf_path);
+
+        if (!file_exists($filePath)) {
+            abort(404, 'Arquivo traduzido não encontrado.');
+        }
+
+        return response()->download($filePath, $book->title . '_traduzido.pdf');
+    })->name('books.download');
 
     // Rota para comandos
     Route::get('/comandos', [ComandosController::class, 'index'])->name('comandos.modal');

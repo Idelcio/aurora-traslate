@@ -7,35 +7,61 @@ use Illuminate\Support\Facades\Storage;
 
 class PdfController extends Controller
 {
-    // Exibe o formulário de upload
+    // Redireciona para o dashboard (antiga página de upload foi removida)
     public function showUploadForm()
     {
-        return view('pdf.pdf_upload');
+        return redirect()->route('dashboard');
     }
 
-    // Processa o upload do PDF e exibe na mesma página
-
+    // Processa o upload do PDF e inicia a tradução
     public function upload(Request $request)
     {
-        // Valida o upload, sem limite de tamanho
+        // Valida o upload
         $request->validate([
-            'pdf' => 'required|mimes:pdf',
+            'pdf' => 'required|mimes:pdf|max:51200', // max 50MB
+            'source_language' => 'nullable|string|max:10',
+            'target_language' => 'required|string|max:10',
         ]);
+
+        $user = auth()->user();
+        $subscription = $user->activeSubscription;
+
+        // Verifica se o usuário tem plano ativo
+        if (!$subscription || !$subscription->isActive()) {
+            return back()->with('error', 'Você precisa de um plano ativo para traduzir livros.');
+        }
 
         // Obtém o arquivo PDF
         $pdf = $request->file('pdf');
+        $filename = time() . '_' . $pdf->getClientOriginalName();
 
-        // Obtém o nome original do arquivo
-        $filename = $pdf->getClientOriginalName();
+        // Salva o PDF original
+        $path = $pdf->storeAs('pdfs/originals', $filename, 'public');
 
-        // Salva o arquivo no diretório 'pdfs' sem modificar o nome original
-        $pdf->storeAs('pdfs', $filename, 'public');
+        // TODO: Implementar contagem de páginas do PDF
+        // Por enquanto, vamos usar um valor fictício
+        $pageCount = 100; // Será implementado com uma biblioteca PDF
 
-        // Define uma variável de sessão para indicar que o upload foi bem-sucedido
-        session()->flash('pdf_uploaded', true);
+        // Verifica se o usuário pode fazer upload com base no plano
+        if (!$user->canUploadBook($pageCount)) {
+            Storage::disk('public')->delete($path);
+            return back()->with('error', "Este livro tem {$pageCount} páginas, mas seu plano permite no máximo {$subscription->plan->max_pages} páginas.");
+        }
 
-        // Retorna para a mesma view, passando o nome do arquivo
-        return view('pdf.pdf_upload', ['pdf_filename' => $filename]);
+        // Cria o registro do livro
+        $book = $user->books()->create([
+            'title' => pathinfo($pdf->getClientOriginalName(), PATHINFO_FILENAME),
+            'original_filename' => $pdf->getClientOriginalName(),
+            'pdf_path' => $path,
+            'source_language' => $request->source_language ?? 'auto',
+            'target_language' => $request->target_language,
+            'total_pages' => $pageCount,
+            'status' => 'processing',
+        ]);
+
+        // TODO: Implementar job de tradução em background
+        // Por enquanto, retorna sucesso
+        return redirect()->route('dashboard')->with('success', 'Upload realizado com sucesso! A tradução será processada em breve.');
     }
 
 

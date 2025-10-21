@@ -30,22 +30,27 @@ class RegisteredUserController extends Controller
      */
     public function store(Request $request): RedirectResponse
     {
-        // Adicionando as validações para company_name e phone
+        // Adicionando as validações para company_name, phone e cpf
         $request->validate([
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:' . User::class],
+            'cpf' => ['required', 'string', 'max:14', 'unique:' . User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
             'company_name' => ['nullable', 'string', 'max:255'],
             'phone' => ['nullable', 'string', 'max:20'],
         ]);
 
+        // Remover formatação do CPF (manter apenas números)
+        $cpf = preg_replace('/[^0-9]/', '', $request->cpf);
+
         // Criando o usuário com os novos campos
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
+            'cpf' => $cpf,
             'password' => Hash::make($request->password),
-            'company_name' => $request->company_name, // Adicione este campo
-            'phone' => $request->phone, // Adicione este campo
+            'company_name' => $request->company_name,
+            'phone' => $request->phone,
         ]);
 
         event(new Registered($user));

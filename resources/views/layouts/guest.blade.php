@@ -1,275 +1,158 @@
 <!DOCTYPE html>
-<html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
-<head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
 
-    <title>TagPdf</title>
+        <title>Aurora Translate</title>
 
-    <!-- Favicon -->
-    <link rel="icon" href="{{ asset('icones/logo/simbolo_tag.png') }}" type="image/png">
+        <link rel="icon" href="{{ asset('branding/aurora-favicon.svg') }}" type="image/svg+xml">
+        <link rel="preconnect" href="https://fonts.googleapis.com">
+        <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+        <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;700&display=swap" rel="stylesheet">
+        <style>
+            [x-cloak] { display: none !important; }
+        </style>
 
-    <!-- Fonts -->
-    <link rel="preconnect" href="https://fonts.bunny.net">
-    <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
-
-    <!-- Scripts -->
-    @vite(['resources/css/app.css', 'resources/js/app.js'])
-
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        html,
-        body {
-            height: 100%;
-            width: 100%;
-            overflow: hidden;
-            font-family: 'Figtree', sans-serif;
-        }
-
-        .main-container {
-            display: flex;
-            flex-direction: column;
-            min-height: 100vh;
-        }
-
-        .content {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            background-color: #f3f4f6;
-            padding: 20px;
-        }
-
-        footer {
-            width: 100%;
-            background-color: #fff;
-            padding: 10px 0;
-            text-align: center;
-        }
-
-        .footer-content {
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            gap: 10px;
-        }
-
-        .footer-content img {
-            height: 24px;
-        }
-
-        .footer-content h2 {
-            font-size: 1rem;
-            font-weight: bold;
-            color: #333;
-        }
-
-        /* Estilo da barra de seleção de idioma */
-        .language-switcher {
-            position: absolute;
-            top: 10px;
-            right: 20px;
-            display: flex;
-            gap: 15px;
-        }
-
-        .language-switcher form {
-            margin: 0;
-        }
-
-        .language-switcher button {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border: none;
-            background-color: transparent;
-            cursor: pointer;
-        }
-
-        .flag-container {
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
-            overflow: hidden;
-            border: 2px solid white;
-            box-shadow: 0 0 3px rgba(0, 0, 0, 0.1);
-        }
-
-        .flag-container img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-        }
-
-        .language-label {
-            font-size: 16px;
-            font-weight: bold;
-            color: #333;
-        }
-
-        .language-switcher button:hover .flag-container {
-            box-shadow: 0 0 8px rgba(0, 0, 0, 0.3);
-        }
-
-        /* Oculta o conteúdo principal em dispositivos móveis e tablets */
-        @media (max-width: 1024px) {
-            .content {
-                display: none;
-            }
-
-            .mobile-message {
-                display: flex;
-            }
-        }
-
-        /* Exibe o conteúdo principal em dispositivos maiores */
-        @media (min-width: 1025px) {
-            .mobile-message {
-                display: none;
-            }
-        }
-
-        /* Estilo para a mensagem amigável */
-        .mobile-message {
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
-            background-color: #f3f4f6;
-            text-align: center;
-            padding: 20px;
-        }
-
-        .mobile-message h1 {
-            font-size: 1.5rem;
-            color: #333;
-            margin-bottom: 10px;
-        }
-
-        .mobile-message p {
-            font-size: 1rem;
-            color: #666;
-        }
-    </style>
-</head>
-
-<body class="font-sans text-gray-900 antialiased">
-
-    <div class="main-container">
-        <!-- Barra de seleção de idioma no topo direito -->
-        <div class="language-switcher">
-            <form method="GET" action="{{ url()->current() }}">
-                <button type="submit" name="lang" value="pt_BR" title="Português">
-                    <div class="flag-container">
-                        <img src="{{ asset('flags/br.png') }}" alt="Bandeira do Brasil">
-                    </div>
-                    <span class="language-label">BR</span>
-                </button>
-            </form>
-            <form method="GET" action="{{ url()->current() }}">
-                <button type="submit" name="lang" value="en" title="English">
-                    <div class="flag-container">
-                        <img src="{{ asset('flags/en.png') }}" alt="Bandeira do Reino Unido">
-                    </div>
-                    <span class="language-label">EN</span>
-                </button>
-            </form>
-            <form method="GET" action="{{ url()->current() }}">
-                <button type="submit" name="lang" value="es" title="Español">
-                    <div class="flag-container">
-                        <img src="{{ asset('flags/es.png') }}" alt="Bandeira da Espanha">
-                    </div>
-                    <span class="language-label">ES</span>
-                </button>
-            </form>
-        </div>
-
-        <!-- Conteúdo Principal -->
-        <div class="content">
-            <!-- Logo -->
-            <div>
-                <a href="{{ url('/') }}">
-                    <img src="{{ asset('icones/logo/tagpdf_logo.png') }}" alt="Logo" style="max-width: 200px;">
-                </a>
-            </div>
-
-            <!-- Conteúdo Principal -->
-            <div class="w-full sm:max-w-md mt-6 px-6 py-4 bg-white shadow-md overflow-hidden sm:rounded-lg">
-                {{ $slot }}
-            </div>
-
-            <!-- Termos de Uso -->
-            <div class="mt-4 text-center">
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
+    </head>
+    <body class="bg-slate-950 font-['Poppins',sans-serif] text-slate-50 antialiased">
                 @php
-                $termsMap = [
-                'pt_BR' => 1,
-                'en' => 3,
-                'es' => 4,
-                ];
+            $flagMap = [
+                'pt_BR' => ['img' => 'flags/br.png', 'label' => 'BR', 'title' => 'Português'],
+                'en' => ['img' => 'flags/en.png', 'label' => 'EN', 'title' => 'English'],
+                'es' => ['img' => 'flags/es.png', 'label' => 'ES', 'title' => 'Español'],
+            ];
+            $currentLocale = app()->getLocale();
+            $currentFlag = $flagMap[$currentLocale]['img'] ?? 'flags/br.png';
+            $currentLabel = $flagMap[$currentLocale]['label'] ?? 'BR';
+            $isRegister = request()->routeIs('register');
+            $headline = $isRegister
+                ? __('guest.layout.headline.register')
+                : __('guest.layout.headline.login');
+            $subhead = $isRegister
+                ? __('guest.layout.subhead.register')
+                : __('guest.layout.subhead.login');
+        @endphp
 
-                $locale = app()->getLocale();
-                $termId = $termsMap[$locale] ?? 1;
+
+        <div class="relative flex min-h-screen flex-col overflow-hidden">
+            <div class="pointer-events-none absolute inset-0 -z-10">
+                <div class="absolute inset-0 bg-gradient-to-br from-slate-950 via-indigo-950 to-slate-900"></div>
+                <div class="absolute -top-32 -left-24 h-80 w-80 rounded-full bg-sky-500/25 blur-3xl"></div>
+                <div class="absolute top-40 -right-16 h-72 w-72 rounded-full bg-indigo-500/20 blur-3xl"></div>
+                <div class="absolute bottom-12 left-1/3 h-64 w-64 rounded-full bg-cyan-400/10 blur-3xl"></div>
+            </div>
+
+            <header class="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-8 sm:px-10">
+                <a href="{{ url('/') }}" class="flex items-center gap-3 text-lg font-semibold tracking-tight text-white">
+                    <img src="{{ asset('branding/aurora-mark.svg') }}" alt="Aurora Translate" class="h-9 w-9">
+                    <span class="text-xl">{{ __('guest.layout.tagline') }}</span>
+                </a>
+                <div class="flex items-center gap-3">
+                    <div class="flex items-center gap-1 rounded-full bg-white/10 px-2 py-1 text-xs font-semibold tracking-wide">
+                        @foreach ($flagMap as $locale => $flag)
+                            <a href="{{ request()->fullUrlWithQuery(['lang' => $locale]) }}"
+                               title="{{ $flag['title'] }}"
+                               class="flex items-center gap-1 rounded-full px-2 py-1 transition {{ $locale === $currentLocale ? 'bg-white text-slate-900 shadow' : 'text-white/80 hover:bg-white/15' }}">
+                                <img src="{{ asset($flag['img']) }}" alt="{{ $flag['label'] }}" class="h-4 w-4 rounded-full object-cover">
+                                <span>{{ $flag['label'] }}</span>
+                            </a>
+                        @endforeach
+                    </div>
+                    @if (Route::has('login'))
+                        <div class="hidden text-sm font-medium text-slate-200 sm:flex sm:items-center sm:gap-4">
+                            @auth
+                                <a href="{{ route('dashboard') }}" class="transition hover:text-white/80">
+                                    {{ __('guest.layout.nav.dashboard') }}
+                                </a>
+                            @else
+                                <a href="{{ route('login') }}" class="transition hover:text-white/80">
+                                    {{ __('guest.layout.nav.login') }}
+                                </a>
+                                @if (Route::has('register'))
+                                    <a href="{{ route('register') }}" class="transition hover:text-white/80">
+                                        {{ __('guest.layout.nav.register') }}
+                                    </a>
+                                @endif
+                            @endauth
+                        </div>
+                    @endif
+                </div>
+            </header>
+
+            <main class="flex flex-1 items-center justify-center px-4 pb-12 pt-4 sm:px-8">
+                <div class="mx-auto flex w-full max-w-6xl flex-col gap-10 rounded-[2.75rem] border border-white/5 bg-white/5 p-6 shadow-2xl shadow-indigo-950/40 backdrop-blur-2xl sm:p-10 lg:grid lg:grid-cols-[1.1fr_0.9fr] lg:gap-16">
+                    <section class="flex flex-col justify-between gap-12">
+                        <div class="space-y-6">
+                            <span class="inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/10 px-4 py-1 text-xs font-semibold uppercase tracking-[0.4em] text-white/80">
+                                {{ __('guest.layout.tagline') }}
+                            </span>
+                            <h1 class="text-4xl font-semibold leading-tight text-white sm:text-5xl">
+                                {{ $headline }}
+                            </h1>
+                            <p class="max-w-xl text-base text-slate-200">
+                                {{ $subhead }}
+                            </p>
+                        </div>
+
+                        <div class="grid gap-4 text-sm text-slate-200/90 sm:text-base">
+                            <div class="rounded-3xl border border-white/10 bg-slate-900/50 px-5 py-4 backdrop-blur">
+                                <p class="font-semibold text-white">{{ __('guest.layout.features.upload_title') }}</p>
+                                <p class="mt-1 text-slate-300/80">{{ __('guest.layout.features.upload_body') }}</p>
+                            </div>
+                            <div class="rounded-3xl border border-white/10 bg-slate-900/50 px-5 py-4 backdrop-blur">
+                                <p class="font-semibold text-white">{{ __('guest.layout.features.cloud_title') }}</p>
+                                <p class="mt-1 text-slate-300/80">{{ __('guest.layout.features.cloud_body') }}</p>
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="relative">
+                        <div class="absolute -top-16 right-8 hidden h-32 w-32 rounded-full bg-indigo-400/30 blur-3xl lg:block"></div>
+                        <div class="absolute -bottom-20 left-8 hidden h-28 w-28 rounded-full bg-cyan-400/25 blur-3xl lg:block"></div>
+
+                        <div class="relative rounded-[2.25rem] border border-white/15 bg-white/95 p-6 shadow-2xl shadow-slate-900/30 sm:p-10">
+                            {{ $slot }}
+                        </div>
+                    </section>
+                </div>
+            </main>
+
+            <footer class="mx-auto w-full max-w-6xl px-6 pb-10 pt-6 text-center text-sm text-slate-400 sm:px-10">
+                @php
+                    $termsMap = [
+                        'pt_BR' => 1,
+                        'en' => 3,
+                        'es' => 4,
+                    ];
+                    $locale = app()->getLocale();
+                    $termId = $termsMap[$locale] ?? 1;
                 @endphp
-
-                <h3 class="text-sm text-gray-600 font-medium">
-                    <a href="{{ route('terms.show', ['id' => $termId]) }}" class="text-indigo-600 underline hover:text-indigo-800">
-                        @if ($locale == 'pt_BR')
-                        Termos de Uso de Dados
-                        @elseif ($locale == 'es')
-                        Términos de Uso de Datos
-                        @else
-                        Terms of Data Use
-                        @endif
-                    </a>
-                </h3>
-            </div>
-        </div>
-
-
-        <!-- Mensagem para dispositivos móveis -->
-        <div class="mobile-message">
-            @if ($locale == 'pt_BR')
-            <h1>Ops! Programa para Computadores</h1>
-            <p>Este programa foi desenvolvido para uso em computadores.</p>
-            <p>Por favor, acesse a partir de um dispositivo desktop para uma melhor experiência.</p>
-            @elseif ($locale == 'es')
-            <h1>¡Ups! Programa para Computadoras</h1>
-            <p>Este programa fue desarrollado para usarse en computadoras.</p>
-            <p>Por favor, accede desde un dispositivo de escritorio para una mejor experiencia.</p>
-            @else
-            <h1>Oops! Program for Computers</h1>
-            <p>This program was developed for use on computers.</p>
-            <p>Please access it from a desktop device for a better experience.</p>
-            @endif
-        </div>
-
-
-        <!-- Rodapé -->
-        <footer class="w-full bg-white py-4 text-center">
-            <div class="flex justify-center items-center gap-4">
-                <a href="https://www.linkedin.com/company/tagpdf" target="_blank" class="hover:opacity-80">
-                    <img src="{{ asset('icones/linkedIn/linkedin_Black.png') }}" alt="Logo LinkedIn"
-                        class="h-7 w-auto aspect-square" />
+                <p class="mb-3 text-xs uppercase tracking-[0.35em] text-white/60">
+                    {{ __('guest.layout.footer') }}
+                </p>
+                <a href="{{ route('terms.show', ['id' => $termId]) }}" class="text-sm font-medium text-white/70 underline-offset-4 transition hover:text-white">
+                    {{ __('guest.layout.terms_link') }}
                 </a>
-                <a href="https://www.instagram.com/tagpdf/" target="_blank" class="hover:opacity-80">
-                    <img src="{{ asset('icones/instagram/instagram_black.png') }}" alt="Logo Instagram"
-                        class="h-7 w-auto aspect-square" />
-                </a>
-
-                <h2 class="text-lg font-regular text-gray-800">TagPDF</h2>
-            </div>
-        </footer>
-    </div>
-
-</body>
-
+            </footer>
+        </div>
+    </body>
 </html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

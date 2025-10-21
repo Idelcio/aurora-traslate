@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200">
+    <defs>
+        <linearGradient id="aurora-mark-gradient" x1="10%" y1="15%" x2="90%" y2="85%">
+            <stop offset="0%" stop-color="#38bdf8"/>
+            <stop offset="45%" stop-color="#6366f1"/>
+            <stop offset="100%" stop-color="#312e81"/>
+        </linearGradient>
+        <linearGradient id="aurora-mark-page" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#f8fafc"/>
+            <stop offset="100%" stop-color="#e0e7ff"/>
+        </linearGradient>
+        <filter id="aurora-mark-shadow" x="-15%" y="-15%" width="130%" height="130%" color-interpolation-filters="sRGB">
+            <feDropShadow dx="0" dy="12" stdDeviation="14" flood-color="#0f172acc" flood-opacity="0.55"/>
+        </filter>
+    </defs>
+    <rect x="14" y="14" width="172" height="172" rx="46" fill="url(#aurora-mark-gradient)" filter="url(#aurora-mark-shadow)"/>
+    <g transform="translate(40 46)" fill="none" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M60 100c-20-18-40-18-48-18V32c15.8-1.5 33.5 3.8 48 14.5V100z" fill="url(#aurora-mark-page)"/>
+        <path d="M60 46.5C74.5 35.8 92.2 30.5 108 32v50c-8 0-28 0-48 18V46.5z" fill="rgba(248,250,252,0.65)"/>
+        <path d="M12 32C25 30 44 34 60 46c16-12 35-16 48-14" stroke="rgba(248,250,252,0.9)" stroke-width="6"/>
+        <path d="M12 82c8 0 28 0 48 18 20-18 40-18 48-18" stroke="rgba(255,255,255,0.85)" stroke-width="6"/>
+        <path d="M60 46v72" stroke="#4f46e5" stroke-width="6" stroke-linecap="square" opacity="0.65"/>
+        <circle cx="60" cy="28" r="12" fill="#22d3ee" opacity="0.8"/>
+        <path d="M60 16c20-18 48-14 58-10" stroke="rgba(248,250,252,0.45)" stroke-width="5" stroke-dasharray="8 10" stroke-linecap="round"/>
+    </g>
+</svg>
