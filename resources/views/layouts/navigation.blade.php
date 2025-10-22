@@ -23,6 +23,12 @@
                     {{ __('Lista de usuários') }}
                 </a>
                 @endcan
+                @if(auth()->user()?->is_admin)
+                <a href="{{ route('admin.dashboard') }}"
+                    class="{{ request()->routeIs('admin.dashboard') ? 'border-indigo-500 text-slate-900' : 'border-transparent text-slate-500 hover:border-slate-300 hover:text-slate-700' }} inline-flex items-center border-b-2 px-1 pt-1 text-sm font-medium transition duration-150 ease-in-out">
+                    Admin
+                </a>
+                @endif
             </div>
 
             <!-- Settings Dropdown -->
@@ -134,6 +140,12 @@
                 {{ __('Lista de usuários') }}
             </a>
             @endcan
+            @if(auth()->user()?->is_admin)
+            <a href="{{ route('admin.dashboard') }}"
+                class="{{ request()->routeIs('admin.dashboard') ? 'border-indigo-500 bg-indigo-50 text-indigo-700' : 'border-transparent text-slate-600 hover:border-slate-300 hover:bg-slate-50 hover:text-slate-800' }} block border-l-4 py-2 pl-3 pr-4 text-base font-medium transition">
+                Admin
+            </a>
+            @endif
         </div>
 
         <!-- Responsive Settings Options -->

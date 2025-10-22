@@ -16,6 +16,10 @@ class PdfController extends Controller
     // Processa o upload do PDF e inicia a tradução
     public function upload(Request $request)
     {
+        // Aumenta o timeout para PDFs grandes
+        set_time_limit(0); // Sem limite de tempo
+        ini_set('max_execution_time', '0');
+
         // Valida o upload
         $request->validate([
             'pdf' => 'required|mimes:pdf|max:51200', // max 50MB
@@ -37,10 +41,15 @@ class PdfController extends Controller
 
         // Salva o PDF original
         $path = $pdf->storeAs('pdfs/originals', $filename, 'public');
+        $fullPdfPath = storage_path('app/public/' . $path);
 
-        // TODO: Implementar contagem de páginas do PDF
-        // Por enquanto, vamos usar um valor fictício
-        $pageCount = 100; // Será implementado com uma biblioteca PDF
+        // Conta o número real de páginas do PDF
+        $pageCount = $this->countPdfPages($fullPdfPath);
+
+        if ($pageCount === false) {
+            Storage::disk('public')->delete($path);
+            return back()->with('error', 'Não foi possível ler o arquivo PDF. Verifique se o arquivo está corrompido.');
+        }
 
         // Verifica se o usuário pode fazer upload com base no plano
         if (!$user->canUploadBook($pageCount)) {
@@ -59,9 +68,10 @@ class PdfController extends Controller
             'status' => 'processing',
         ]);
 
-        // TODO: Implementar job de tradução em background
-        // Por enquanto, retorna sucesso
-        return redirect()->route('dashboard')->with('success', 'Upload realizado com sucesso! A tradução será processada em breve.');
+        // Dispara a tradução em background usando um job
+        \App\Jobs\TranslatePdfJob::dispatch($book);
+
+        return redirect()->route('dashboard')->with('success', 'Upload realizado com sucesso! A tradução está sendo processada.');
     }
 
 
@@ -101,5 +111,41 @@ class PdfController extends Controller
             'pdfPath' => $path,
             'annotationsPath' => $annotationsPath
         ], 200);
+    }
+
+    /**
+     * Conta o número de páginas de um PDF usando Node.js
+     */
+    private function countPdfPages($pdfPath)
+    {
+        $scriptPath = base_path('scripts/countPdfPages.cjs');
+
+        $command = sprintf(
+            'node "%s" "%s" 2>&1',
+            $scriptPath,
+            $pdfPath
+        );
+
+        exec($command, $output, $returnCode);
+
+        if ($returnCode !== 0) {
+            \Log::error('Erro ao contar páginas do PDF', [
+                'path' => $pdfPath,
+                'output' => implode("\n", $output)
+            ]);
+            return false;
+        }
+
+        $pageCount = intval(trim($output[0]));
+
+        if ($pageCount <= 0) {
+            \Log::error('Contagem de páginas inválida', [
+                'path' => $pdfPath,
+                'pageCount' => $pageCount
+            ]);
+            return false;
+        }
+
+        return $pageCount;
     }
 }

@@ -3,7 +3,7 @@
         $user = Auth::user();
         $subscription = $user->activeSubscription;
         $plan = $subscription?->plan;
-        $books = $user->books()->latest()->get();
+        $books = $user->books()->latest()->paginate(10);
         $languageOptions = trans('dashboard.form.language_options');
         $targetLanguageOptions = trans('dashboard.form.target_language_options');
     @endphp
@@ -242,7 +242,7 @@
                         <div class="rounded-2xl border border-slate-200 bg-slate-50 p-4 transition hover:border-indigo-300 hover:shadow-md">
                             <div class="flex items-start justify-between gap-4">
                                 <div class="flex-1">
-                                    <h3 class="font-semibold text-slate-900">{{ $book->title }}</h3>
+                                    <h3 class="text-sm font-semibold text-slate-900 truncate">{{ $book->title }}</h3>
                                     <div class="mt-2 flex flex-wrap gap-2 text-xs text-slate-500">
                                         <span class="inline-flex items-center gap-1">
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -255,7 +255,7 @@
                                         <span>•</span>
                                         <span>{{ $book->created_at->format('d/m/Y') }}</span>
                                     </div>
-                                    <div class="mt-3">
+                                    <div class="mt-3 flex items-center gap-3">
                                         @if($book->status === 'translated')
                                             <span class="inline-flex items-center gap-1 rounded-full bg-green-100 px-3 py-1 text-xs font-semibold text-green-700">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
@@ -263,6 +263,16 @@
                                                 </svg>
                                                 Concluído
                                             </span>
+
+                                            @if($book->translated_pdf_path)
+                                                <a href="{{ route('books.download', $book->id) }}"
+                                                    class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-3 py-1.5 text-xs font-semibold text-white transition hover:bg-indigo-500">
+                                                    <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+                                                    </svg>
+                                                    Baixar
+                                                </a>
+                                            @endif
                                         @elseif($book->status === 'processing')
                                             <span class="inline-flex items-center gap-1 rounded-full bg-blue-100 px-3 py-1 text-xs font-semibold text-blue-700">
                                                 <svg class="h-3 w-3 animate-spin" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -281,15 +291,6 @@
                                         @endif
                                     </div>
                                 </div>
-                                @if($book->status === 'translated' && $book->translated_pdf_path)
-                                    <a href="{{ route('books.download', $book->id) }}"
-                                        class="inline-flex items-center gap-2 rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-500">
-                                        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
-                                        </svg>
-                                        Baixar
-                                    </a>
-                                @endif
                             </div>
                         </div>
                     @empty
@@ -302,6 +303,13 @@
                         </div>
                     @endforelse
                 </div>
+
+                {{-- Paginação --}}
+                @if($books->hasPages())
+                    <div class="mt-4 flex justify-center">
+                        {{ $books->links() }}
+                    </div>
+                @endif
             </div>
         </div>
     </div>

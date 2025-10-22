@@ -18,11 +18,11 @@ export { fontkit }; // Exporta explicitamente
 
 // zoom do PDF
 
+// Verifica se o elemento existe antes de adicionar event listener
+const pdfContainer = document.getElementById('pdf-container');
 
-
-
-
-document.getElementById('pdf-container').addEventListener('wheel', function(e) {
+if (pdfContainer) {
+    pdfContainer.addEventListener('wheel', function(e) {
     e.preventDefault(); // Impede que o scroll afete a rolagem da página
 
     // Verifica se o evento foi disparado sobre um círculo
@@ -46,9 +46,8 @@ document.getElementById('pdf-container').addEventListener('wheel', function(e) {
         }
         renderPage(currentPage); // Renderiza a página com a nova escala
     }
-
-
 });
+}
 
 
 // modal comandos
