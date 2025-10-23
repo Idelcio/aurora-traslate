@@ -6,6 +6,11 @@
         $books = $user->books()->latest()->paginate(10);
         $languageOptions = trans('dashboard.form.language_options');
         $targetLanguageOptions = trans('dashboard.form.target_language_options');
+
+        // Calculate total translated pages (considering max_pages limit)
+        $totalTranslatedPages = $user->books()->get()->sum(function($book) {
+            return $book->max_pages ?? $book->total_pages;
+        });
     @endphp
 
     {{-- Hero Section com Boas-vindas --}}
@@ -126,7 +131,7 @@
                     </div>
                     <div>
                         <p class="text-sm font-medium text-slate-500">Páginas Traduzidas</p>
-                        <p class="text-2xl font-bold text-slate-900">{{ number_format($books->sum('total_pages'), 0, ',', '.') }}</p>
+                        <p class="text-2xl font-bold text-slate-900">{{ number_format($totalTranslatedPages, 0, ',', '.') }}</p>
                     </div>
                 </div>
             </div>
@@ -206,6 +211,19 @@
                         </div>
                     </div>
 
+                    {{-- Limite de Páginas (opcional) --}}
+                    <div>
+                        <label for="max_pages" class="mb-2 block text-sm font-semibold text-slate-700">
+                            Limitar Páginas (opcional)
+                            <span class="text-xs font-normal text-slate-500">- deixe vazio para traduzir todas</span>
+                        </label>
+                        <input type="number" id="max_pages" name="max_pages" min="1" max="1000" placeholder="Ex: 10"
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
+                        <p class="mt-1 text-xs text-slate-500">
+                            💡 Para testes rápidos, use 10 páginas (~25 segundos)
+                        </p>
+                    </div>
+
                     {{-- Botão de Envio --}}
                     <button type="submit" @if(!$subscription || !$subscription->isActive()) disabled @endif
                         class="group relative inline-flex w-full items-center justify-center gap-3 rounded-xl bg-indigo-600 px-6 py-3 text-base font-semibold text-white shadow-lg shadow-indigo-500/30 transition hover:-translate-y-0.5 hover:bg-indigo-500 disabled:cursor-not-allowed disabled:opacity-50 disabled:hover:translate-y-0">
@@ -248,7 +266,11 @@
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
-                                            {{ $book->total_pages }} páginas
+                                            @if($book->max_pages)
+                                                {{ $book->max_pages }} de {{ $book->total_pages }} páginas
+                                            @else
+                                                {{ $book->total_pages }} páginas
+                                            @endif
                                         </span>
                                         <span>•</span>
                                         <span>{{ strtoupper($book->source_language) }} → {{ strtoupper($book->target_language) }}</span>

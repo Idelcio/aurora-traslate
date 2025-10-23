@@ -7,6 +7,7 @@ No fancy layout - just clean, readable translated content.
 import argparse
 import json
 import sys
+import textwrap
 
 try:
     import fitz  # PyMuPDF
@@ -29,44 +30,76 @@ def create_simple_pdf(translated_json_path, output_pdf_path):
     # Create new PDF
     doc = fitz.open()
 
-    # Process each page
+    # Page dimensions (A4)
+    page_width = 595
+    page_height = 842
+
+    # Margins in points (~1.8cm each side)
+    left_margin = 50
+    right_margin = 50
+    top_margin = 50
+    bottom_margin = 50
+
+    # Usable area width
+    usable_width = page_width - left_margin - right_margin
+
+    # Font settings
+    font_size = 11
+    line_height = font_size * 1.6  # 1.6 line spacing for readability
+
+    # Create first page
+    page = doc.new_page(width=page_width, height=page_height)
+    current_y = top_margin
+
+    # Process each page of translated content
+    page_count = 0
     for page_data in translated.get("pages", []):
-        # Create new page (A4 size)
-        page = doc.new_page(width=595, height=842)  # A4 in points
+        page_count += 1
 
-        # Start position
-        y_position = 50
-        x_margin = 50
-        line_height = 15
-
-        # Get all translated texts
+        # Get all translated texts from this page
         text_items = page_data.get("textItems", [])
 
+        # Combine all text items with paragraph breaks
+        full_text = ""
         for item in text_items:
-            translated_text = item.get("translatedText", "")
+            translated_text = item.get("translatedText", "").strip()
+            if translated_text:
+                full_text += translated_text + "\n\n"
 
-            if not translated_text:
-                continue
+        if not full_text.strip():
+            continue
 
-            # Insert text (simple, clean formatting)
-            try:
-                page.insert_text(
-                    (x_margin, y_position),
-                    translated_text,
-                    fontsize=11,
-                    fontname="helv",
-                    color=(0, 0, 0),
-                )
-                y_position += line_height
+        # Split text into paragraphs
+        paragraphs = [p.strip() for p in full_text.split('\n\n') if p.strip()]
 
-                # Start new page if we're at the bottom
-                if y_position > 800:
-                    page = doc.new_page(width=595, height=842)
-                    y_position = 50
+        for paragraph in paragraphs:
+            # Wrap text to fit within usable width
+            # Approximate: 60 characters per line for 11pt font
+            wrapped_lines = textwrap.wrap(paragraph, width=70)
 
-            except Exception as e:
-                # Skip if text insertion fails
-                continue
+            for line in wrapped_lines:
+                # Check if we need a new page
+                if current_y + line_height > page_height - bottom_margin:
+                    page = doc.new_page(width=page_width, height=page_height)
+                    current_y = top_margin
+
+                # Insert line of text
+                try:
+                    page.insert_text(
+                        (left_margin, current_y),
+                        line,
+                        fontsize=font_size,
+                        fontname="helv",
+                        color=(0, 0, 0),
+                    )
+                except Exception as e:
+                    print(f"Warning: Failed to insert line: {e}", file=sys.stderr)
+
+                # Move to next line
+                current_y += line_height
+
+            # Add extra spacing after paragraph
+            current_y += line_height * 0.5
 
     # Save PDF
     doc.save(output_pdf_path, garbage=4, deflate=True)

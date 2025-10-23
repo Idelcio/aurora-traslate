@@ -18,6 +18,7 @@ class Book extends Model
         'translated_pdf_path',
         'audio_path',
         'total_pages',
+        'max_pages',
         'status',
         'source_language',
         'target_language',

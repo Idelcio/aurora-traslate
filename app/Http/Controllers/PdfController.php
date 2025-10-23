@@ -25,6 +25,7 @@ class PdfController extends Controller
             'pdf' => 'required|mimes:pdf|max:51200', // max 50MB
             'source_language' => 'nullable|string|max:10',
             'target_language' => 'required|string|max:10',
+            'max_pages' => 'nullable|integer|min:1|max:1000',
         ]);
 
         $user = auth()->user();
@@ -65,6 +66,7 @@ class PdfController extends Controller
             'source_language' => $request->source_language ?? 'auto',
             'target_language' => $request->target_language,
             'total_pages' => $pageCount,
+            'max_pages' => $request->max_pages,
             'status' => 'processing',
         ]);
 

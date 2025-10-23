@@ -65,11 +65,16 @@ class BookTranslateController extends Controller
             // Google Translate API needs source language for accurate translations
             $sourceLanguage = $book->source_language === 'auto' ? 'pt-BR' : $book->source_language;
 
+            // Get max_pages from request (optional page limit)
+            $maxPages = request()->input('max_pages') ? (int) request()->input('max_pages') : null;
+
             $result = $this->pythonPdfService->translatePdf(
                 $originalPdfPath,
                 $outputPdfPath,
                 $book->target_language,
-                $sourceLanguage
+                $sourceLanguage,
+                null, // progressCallback
+                $maxPages
             );
 
             $book->update([

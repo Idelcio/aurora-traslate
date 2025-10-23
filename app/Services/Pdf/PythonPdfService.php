@@ -34,6 +34,7 @@ class PythonPdfService
      * @param string $targetLanguage Target language code (e.g., 'pt', 'en')
      * @param string|null $sourceLanguage Source language code or null for auto-detect
      * @param callable|null $progressCallback Optional callback for progress updates
+     * @param int|null $maxPages Maximum number of pages to translate (null = all pages)
      * @return array{success: bool, stats: array}
      */
     public function translatePdf(
@@ -41,7 +42,8 @@ class PythonPdfService
         string $outputPdfPath,
         string $targetLanguage,
         ?string $sourceLanguage = null,
-        ?callable $progressCallback = null
+        ?callable $progressCallback = null,
+        ?int $maxPages = null
     ): array {
         $timestamp = time();
         $tempDir = storage_path('app/public/pdfs/temp');
@@ -55,8 +57,11 @@ class PythonPdfService
 
         try {
             // Step 1: Extract PDF text
-            Log::info('Step 1/3: Extracting PDF text', ['pdf' => $originalPdfPath]);
-            $this->extractPdfText($originalPdfPath, $extractedJsonPath);
+            Log::info('Step 1/3: Extracting PDF text', [
+                'pdf' => $originalPdfPath,
+                'max_pages' => $maxPages ?? 'all',
+            ]);
+            $this->extractPdfText($originalPdfPath, $extractedJsonPath, $maxPages);
 
             // Step 2: Translate texts
             Log::info('Step 2/3: Translating text');
@@ -93,11 +98,22 @@ class PythonPdfService
     }
 
     /**
-     * Extract text and metadata from PDF using Python/PyMuPDF.
+     * Extract text and metadata from PDF using Python/PyMuPDF with OCR.
      */
-    private function extractPdfText(string $pdfPath, string $outputJsonPath): void
+    private function extractPdfText(string $pdfPath, string $outputJsonPath, ?int $maxPages = null): void
     {
-        $scriptPath = "{$this->scriptsPath}/extract_pdf_text.py";
+        // Use OCR-always script for best results with scanned/image PDFs
+        $scriptPath = "{$this->scriptsPath}/extract_pdf_with_ocr_always.py";
+
+        // Fallback to hybrid OCR
+        if (!file_exists($scriptPath)) {
+            $scriptPath = "{$this->scriptsPath}/extract_pdf_text_with_ocr.py";
+        }
+
+        // Final fallback to regular extraction
+        if (!file_exists($scriptPath)) {
+            $scriptPath = "{$this->scriptsPath}/extract_pdf_text.py";
+        }
 
         if (!file_exists($scriptPath)) {
             throw new RuntimeException("Python extraction script not found: {$scriptPath}");
@@ -108,14 +124,27 @@ class PythonPdfService
         $pdfPathNorm = str_replace('/', DIRECTORY_SEPARATOR, $pdfPath);
         $outputJsonPathNorm = str_replace('/', DIRECTORY_SEPARATOR, $outputJsonPath);
 
-        $process = new Process([
+        $command = [
             $this->pythonBinary,
             $scriptPathNorm,
             $pdfPathNorm,
             $outputJsonPathNorm,
-        ], base_path()); // Set working directory to project root
+        ];
 
-        $process->setTimeout(300); // 5 minutes
+        // Add OCR parameters for the always-OCR script
+        if (str_contains($scriptPath, 'ocr_always')) {
+            $command[] = '2.0';  // zoom
+            $command[] = '4';    // max workers for parallel OCR
+
+            // Add max_pages if specified
+            if ($maxPages !== null) {
+                $command[] = (string) $maxPages;
+            }
+        }
+
+        $process = new Process($command, base_path());
+
+        $process->setTimeout(1800); // 30 minutes for large PDFs with OCR
         $process->run();
 
         // Log the command and output for debugging

@@ -62,7 +62,8 @@ class TranslatePdfJob implements ShouldQueue
                         'completed' => $progress['completedBatches'] ?? 0,
                         'total' => $progress['totalBatches'] ?? 0,
                     ]);
-                }
+                },
+                $this->book->max_pages
             );
 
             $this->book->update([
