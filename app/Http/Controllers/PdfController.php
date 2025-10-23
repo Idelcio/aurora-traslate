@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Validation\Rule;
 
 class PdfController extends Controller
 {
@@ -20,11 +21,24 @@ class PdfController extends Controller
         set_time_limit(0); // Sem limite de tempo
         ini_set('max_execution_time', '0');
 
+        $allowedSourceLanguages = config('translation.source_languages', []);
+        $allowedTargetLanguages = config('translation.target_languages', []);
+
         // Valida o upload
         $request->validate([
             'pdf' => 'required|mimes:pdf|max:51200', // max 50MB
-            'source_language' => 'nullable|string|max:10',
-            'target_language' => 'required|string|max:10',
+            'source_language' => [
+                'nullable',
+                'string',
+                'max:10',
+                Rule::in($allowedSourceLanguages),
+            ],
+            'target_language' => [
+                'required',
+                'string',
+                'max:10',
+                Rule::in($allowedTargetLanguages),
+            ],
             'max_pages' => 'nullable|integer|min:1|max:1000',
         ]);
 
@@ -63,7 +77,7 @@ class PdfController extends Controller
             'title' => pathinfo($pdf->getClientOriginalName(), PATHINFO_FILENAME),
             'original_filename' => $pdf->getClientOriginalName(),
             'pdf_path' => $path,
-            'source_language' => $request->source_language ?? 'auto',
+            'source_language' => $request->source_language ?? config('translation.defaults.source_language', 'auto'),
             'target_language' => $request->target_language,
             'total_pages' => $pageCount,
             'max_pages' => $request->max_pages,

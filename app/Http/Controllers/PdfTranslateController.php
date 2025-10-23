@@ -7,6 +7,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use Illuminate\Validation\Rule;
 
 class PdfTranslateController extends Controller
 {
@@ -20,16 +21,30 @@ class PdfTranslateController extends Controller
      */
     public function translate(Request $request)
     {
+        $allowedSourceLanguages = config('translation.source_languages', []);
+        $allowedTargetLanguages = config('translation.target_languages', []);
+
         $request->validate([
             'pdf' => 'required|mimes:pdf|max:51200', // 50MB
-            'target_language' => 'required|string|max:10',
-            'source_language' => 'nullable|string|max:10',
+            'target_language' => [
+                'required',
+                'string',
+                'max:10',
+                Rule::in($allowedTargetLanguages),
+            ],
+            'source_language' => [
+                'nullable',
+                'string',
+                'max:10',
+                Rule::in($allowedSourceLanguages),
+            ],
         ]);
 
         try {
             $pdf = $request->file('pdf');
             $targetLang = $request->target_language;
-            $sourceLang = $request->source_language ?? 'auto';
+            $defaultSource = config('translation.defaults.source_language', 'auto');
+            $sourceLang = $request->source_language ?? $defaultSource;
 
             $originalBaseName = pathinfo($pdf->getClientOriginalName(), PATHINFO_FILENAME);
             $safeBaseName = Str::slug($originalBaseName, '-') ?: 'documento';

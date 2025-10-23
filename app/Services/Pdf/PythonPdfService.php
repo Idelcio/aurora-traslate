@@ -379,7 +379,7 @@ class PythonPdfService
     }
 
     /**
-     * Rebuild PDF with translated text using Python/PyMuPDF.
+     * Rebuild PDF with translated text using Python/PyMuPDF or fpdf2.
      */
     private function rebuildPdf(
         string $originalPdfPath,

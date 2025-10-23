@@ -4,6 +4,7 @@ namespace App\Services;
 
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use RuntimeException;
 
 class GoogleTranslateService
 {
@@ -186,11 +187,20 @@ class GoogleTranslateService
             return [];
         }
 
+        $apiTargetLang = $this->normalizeApiLanguageCode($targetLang);
+        $apiSourceLang = $this->normalizeApiLanguageCode($sourceLang);
+
+        if (empty($apiTargetLang)) {
+            throw new RuntimeException('Invalid target language code provided.');
+        }
+
         Log::info('PHP Translation - Starting', [
             'total_texts' => count($texts),
             'non_empty' => count($nonEmptyTexts),
             'target' => $targetLang,
+            'target_api' => $apiTargetLang,
             'source' => $sourceLang ?? 'auto',
+            'source_api' => $apiSourceLang ?? 'auto',
         ]);
 
         // Deduplicate - normalize and map
@@ -219,7 +229,7 @@ class GoogleTranslateService
         // Translate batches
         $translationCache = [];
         foreach ($batches as $index => $batch) {
-            $batchResult = $this->translateBatchInternal($batch, $targetLang, $sourceLang);
+            $batchResult = $this->translateBatchInternal($batch, $apiTargetLang, $apiSourceLang);
 
             foreach ($batch as $i => $originalText) {
                 $translationCache[$originalText] = $batchResult[$i] ?? $originalText;
@@ -241,6 +251,37 @@ class GoogleTranslateService
 
             $normalized = $this->normalizeText($originalText);
             $results[$originalText] = $translationCache[$normalized] ?? $originalText;
+        }
+
+        $truncate = static function (string $text): string {
+            $clean = trim(preg_replace('/\s+/', ' ', $text));
+            if (function_exists('mb_substr')) {
+                return mb_substr($clean, 0, 80);
+            }
+
+            return substr($clean, 0, 80);
+        };
+
+        $samplePairs = [];
+        foreach ($results as $originalText => $translatedText) {
+            if (empty(trim($originalText))) {
+                continue;
+            }
+
+            $samplePairs[] = [
+                'original' => $truncate($originalText),
+                'translated' => $truncate((string) $translatedText),
+            ];
+
+            if (count($samplePairs) >= 3) {
+                break;
+            }
+        }
+
+        if (!empty($samplePairs)) {
+            Log::debug('PHP Translation - Sample pairs', [
+                'pairs' => $samplePairs,
+            ]);
         }
 
         $elapsed = microtime(true) - $startTime;
@@ -280,7 +321,32 @@ class GoogleTranslateService
                 $data = $response->json();
                 $translations = $data['data']['translations'] ?? [];
 
-                return array_map(fn($t) => $t['translatedText'] ?? '', $translations);
+                $translatedTexts = array_map(fn($t) => $t['translatedText'] ?? '', $translations);
+
+                $truncate = static function (string $text): string {
+                    $clean = trim(preg_replace('/\s+/', ' ', $text));
+                    if (function_exists('mb_substr')) {
+                        return mb_substr($clean, 0, 80);
+                    }
+
+                    return substr($clean, 0, 80);
+                };
+
+                $sample = [];
+                foreach (array_slice($texts, 0, 3) as $index => $originalText) {
+                    $sample[] = [
+                        'original' => $truncate(is_string($originalText) ? $originalText : ''),
+                        'translated' => $truncate((string) ($translatedTexts[$index] ?? '')),
+                    ];
+                }
+
+                Log::debug('PHP Translation - Batch success', [
+                    'target_api' => $targetLang,
+                    'source_api' => $sourceLang ?? 'auto',
+                    'sample' => $sample,
+                ]);
+
+                return $translatedTexts;
             }
 
             Log::error('PHP Translation - Batch failed', [
@@ -297,6 +363,43 @@ class GoogleTranslateService
 
             return $texts;
         }
+    }
+
+    /**
+     * Normalize language codes to the format expected by Google Translation API.
+     */
+    private function normalizeApiLanguageCode(?string $code): ?string
+    {
+        if ($code === null) {
+            return null;
+        }
+
+        $trimmed = trim($code);
+
+        if ($trimmed === '') {
+            return null;
+        }
+
+        $normalized = str_replace('_', '-', $trimmed);
+        $lower = strtolower($normalized);
+
+        $mapping = [
+            'pt-br' => 'pt',
+            'en-us' => 'en',
+            'en-gb' => 'en',
+            'he' => 'iw',
+            'iw' => 'iw',
+        ];
+
+        if (isset($mapping[$lower])) {
+            return $mapping[$lower];
+        }
+
+        if (strlen($lower) === 2) {
+            return $lower;
+        }
+
+        return $lower;
     }
 
     /**
@@ -329,7 +432,11 @@ class GoogleTranslateService
         $maxTexts = 128;
 
         foreach ($texts as $text) {
-            $textLength = strlen($text);
+            if (function_exists('mb_strlen')) {
+                $textLength = mb_strlen($text, 'UTF-8');
+            } else {
+                $textLength = strlen($text);
+            }
 
             if (!empty($currentBatch) &&
                 ($currentChars + $textLength > $maxChars || count($currentBatch) >= $maxTexts)) {

@@ -78,8 +78,9 @@ return [
             'it' => 'Italian',
             'de' => 'German',
             'la' => 'Latin',
-            'he' => 'Hebrew',
-            'el' => 'Greek',
+            // Greek and Hebrew temporarily removed (special font issues in output PDF)
+            // 'he' => 'Hebrew',
+            // 'el' => 'Greek',
         ],
         'output_format_label' => 'Output format',
         'output_format_options' => [
