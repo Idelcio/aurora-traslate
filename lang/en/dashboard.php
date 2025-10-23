@@ -4,6 +4,8 @@ return [
     'hero' => [
         'badge' => 'Intelligent translation platform',
         'title' => 'Translate PDF books in just a few clicks',
+        'greeting' => 'Hello, :name!',
+        'welcome_message' => 'Welcome to your translation dashboard',
         'description' => 'Convert single pages or entire works and receive reviewed versions while preserving formatting, table of contents, and annotations.',
         'primary_cta' => 'Get started',
         'secondary_cta' => 'Connect Google Cloud',
@@ -20,9 +22,24 @@ return [
         'next_step_title' => 'Next step',
         'next_step_body' => 'Define API credentials and map the translation pipeline for production.',
     ],
+    'subscription' => [
+        'current_plan' => 'Current plan',
+        'limit_label' => 'Page limit',
+        'unlimited' => 'Unlimited',
+        'limit_value' => 'up to :pages pages per book',
+        'inactive_title' => 'No active plan',
+        'inactive_description' => 'Activate a plan to start translating',
+        'view_plans' => 'View plans',
+    ],
+    'stats' => [
+        'total_books' => 'Total books',
+        'translated_pages' => 'Translated pages',
+        'languages_used' => 'Languages used',
+    ],
     'form' => [
         'section_title' => 'Configure translation',
         'section_description' => 'Upload your PDF, choose the translation scope, and set the target language. For specific pages, provide a single number or a range.',
+        'new_book_title' => 'New book',
         'pdf_label' => 'PDF file',
         'drag_prompt' => 'Drag the PDF here or',
         'drag_action' => 'select a file',
@@ -38,6 +55,10 @@ return [
         'page_end_placeholder' => 'e.g. 12',
         'source_language_label' => 'Source language',
         'target_language_label' => 'Target language',
+        'limit_label' => 'Limit pages (optional)',
+        'limit_hint' => 'leave blank to translate everything',
+        'limit_placeholder' => 'e.g. 10',
+        'limit_helper' => 'Tip: for quick tests, try 10 pages (~25 seconds)',
         'language_autodetect' => 'Detect automatically',
         'language_options' => [
             'pt-BR' => 'Portuguese (Brazil)',
@@ -45,6 +66,9 @@ return [
             'es' => 'Spanish',
             'fr' => 'French',
             'de' => 'German',
+            'la' => 'Latin',
+            'he' => 'Hebrew',
+            'el' => 'Greek',
         ],
         'target_language_options' => [
             'en' => 'English',
@@ -53,6 +77,9 @@ return [
             'fr' => 'French',
             'it' => 'Italian',
             'de' => 'German',
+            'la' => 'Latin',
+            'he' => 'Hebrew',
+            'el' => 'Greek',
         ],
         'output_format_label' => 'Output format',
         'output_format_options' => [
@@ -63,6 +90,7 @@ return [
         'glossary_label' => 'Glossary (optional)',
         'glossary_placeholder' => 'Terminology base ID',
         'submit' => 'Send for translation',
+        'subscription_required' => 'You need an active plan to translate books',
     ],
     'preview' => [
         'title' => 'Preview and review',
@@ -82,7 +110,18 @@ return [
         'title' => 'Translation history',
         'description' => 'Review recent files, trigger new exports, and monitor long-running jobs.',
         'download' => 'Download',
+        'recent_books' => 'Your books',
+        'pages_limited' => ':current of :total pages',
+        'pages_total' => ':total pages',
+        'language_pair' => ':source → :target',
+        'status' => [
+            'translated' => 'Completed',
+            'processing' => 'Processing',
+            'failed' => 'Error',
+        ],
         'empty' => 'No translations completed yet.',
+        'empty_books' => 'No books translated yet',
+        'empty_hint' => 'Upload your first PDF to get started',
         'default_name' => 'Document',
     ],
     'integration' => [
@@ -103,6 +142,10 @@ return [
                 'body' => 'Install the official client or SDK of your choice and adjust jobs to call translateText and translateDocument endpoints.',
             ],
         ],
+    ],
+    'loading' => [
+        'title' => 'Processing your book...',
+        'subtitle' => 'This may take a few minutes',
     ],
     'loading_overlay' => 'Processing PDF and preparing translation...',
     'js' => [

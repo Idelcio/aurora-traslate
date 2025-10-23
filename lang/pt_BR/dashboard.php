@@ -4,6 +4,8 @@ return [
     'hero' => [
         'badge' => 'Plataforma inteligente de tradução',
         'title' => 'Traduza livros em PDF com poucos cliques',
+        'greeting' => 'Olá, :name!',
+        'welcome_message' => 'Bem-vindo ao seu painel de traduções',
         'description' => 'Converta páginas individuais ou obras completas e receba versões revisadas, mantendo formatação, sumário e notas.',
         'primary_cta' => 'Começar agora',
         'secondary_cta' => 'Integrar com Google Cloud',
@@ -20,9 +22,24 @@ return [
         'next_step_title' => 'Próximo passo',
         'next_step_body' => 'Definir credenciais da API e mapear o pipeline de tradução para produção.',
     ],
+    'subscription' => [
+        'current_plan' => 'Plano atual',
+        'limit_label' => 'Limite de páginas',
+        'unlimited' => 'Ilimitado',
+        'limit_value' => 'até :pages páginas/livro',
+        'inactive_title' => 'Nenhum plano ativo',
+        'inactive_description' => 'Contrate um plano para começar',
+        'view_plans' => 'Ver planos',
+    ],
+    'stats' => [
+        'total_books' => 'Total de livros',
+        'translated_pages' => 'Páginas traduzidas',
+        'languages_used' => 'Idiomas usados',
+    ],
     'form' => [
         'section_title' => 'Configurar tradução',
         'section_description' => 'Faça o upload do seu PDF, escolha o escopo da tradução e defina o idioma de destino. Para páginas específicas, informe faixa ou número individual.',
+        'new_book_title' => 'Novo livro',
         'pdf_label' => 'Arquivo PDF',
         'drag_prompt' => 'Arraste o PDF aqui ou',
         'drag_action' => 'selecione um arquivo',
@@ -38,6 +55,10 @@ return [
         'page_end_placeholder' => 'Ex: 12',
         'source_language_label' => 'Idioma original',
         'target_language_label' => 'Idioma de destino',
+        'limit_label' => 'Limitar páginas (opcional)',
+        'limit_hint' => 'deixe vazio para traduzir todas',
+        'limit_placeholder' => 'Ex: 10',
+        'limit_helper' => 'Para testes rápidos, use 10 páginas (~25 segundos)',
         'language_autodetect' => 'Detectar automaticamente',
         'language_options' => [
             'pt-BR' => 'Português (Brasil)',
@@ -45,6 +66,9 @@ return [
             'es' => 'Espanhol',
             'fr' => 'Francês',
             'de' => 'Alemão',
+            'la' => 'Latim',
+            'he' => 'Hebraico',
+            'el' => 'Grego',
         ],
         'target_language_options' => [
             'en' => 'Inglês',
@@ -53,6 +77,9 @@ return [
             'fr' => 'Francês',
             'it' => 'Italiano',
             'de' => 'Alemão',
+            'la' => 'Latim',
+            'he' => 'Hebraico',
+            'el' => 'Grego',
         ],
         'output_format_label' => 'Formato de saída',
         'output_format_options' => [
@@ -63,6 +90,7 @@ return [
         'glossary_label' => 'Glossário (opcional)',
         'glossary_placeholder' => 'ID da base terminológica',
         'submit' => 'Enviar para tradução',
+        'subscription_required' => 'Você precisa de um plano ativo para traduzir livros',
     ],
     'preview' => [
         'title' => 'Pré-visualização e revisão',
@@ -82,7 +110,18 @@ return [
         'title' => 'Histórico de traduções',
         'description' => 'Consulte os últimos arquivos traduzidos, refaça exportações e acompanhe status de longas execuções.',
         'download' => 'Download',
+        'recent_books' => 'Seus livros',
+        'pages_limited' => ':current de :total páginas',
+        'pages_total' => ':total páginas',
+        'language_pair' => ':source → :target',
+        'status' => [
+            'translated' => 'Concluído',
+            'processing' => 'Processando',
+            'failed' => 'Erro',
+        ],
         'empty' => 'Nenhuma tradução concluída ainda.',
+        'empty_books' => 'Nenhum livro traduzido ainda',
+        'empty_hint' => 'Faça upload do seu primeiro PDF para começar',
         'default_name' => 'Documento',
     ],
     'integration' => [
@@ -103,6 +142,10 @@ return [
                 'body' => 'Instale o client oficial ou SDK escolhido e ajuste os jobs para enviar requisições aos endpoints translateText e translateDocument.',
             ],
         ],
+    ],
+    'loading' => [
+        'title' => 'Processando seu livro...',
+        'subtitle' => 'Isso pode levar alguns minutos',
     ],
     'loading_overlay' => 'Processando PDF e preparando tradução...',
     'js' => [

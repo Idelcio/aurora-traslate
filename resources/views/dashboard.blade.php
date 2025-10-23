@@ -21,10 +21,10 @@
             <div class="flex flex-col gap-6 md:flex-row md:items-center md:justify-between">
                 <div class="space-y-3">
                     <h1 class="text-3xl font-bold md:text-4xl">
-                        Olá, {{ $user->name }}! 👋
+                        {{ __('dashboard.hero.greeting', ['name' => $user->name]) }}
                     </h1>
                     <p class="text-lg text-white/90">
-                        Bem-vindo ao seu painel de traduções
+                        {{ __('dashboard.hero.welcome_message') }}
                     </p>
                 </div>
 
@@ -38,17 +38,17 @@
                                 </svg>
                             </div>
                             <div>
-                                <p class="text-sm font-medium text-white/80">Plano Atual</p>
+                                <p class="text-sm font-medium text-white/80">{{ __('dashboard.subscription.current_plan') }}</p>
                                 <p class="text-xl font-bold">{{ $plan->name }}</p>
                             </div>
                         </div>
                         <div class="mt-4 pt-4 border-t border-white/20">
-                            <p class="text-sm text-white/80">Limite de Páginas</p>
+                            <p class="text-sm text-white/80">{{ __('dashboard.subscription.limit_label') }}</p>
                             <p class="text-lg font-semibold">
                                 @if($plan->max_pages == 0)
-                                    Ilimitado ∞
+                                    {{ __('dashboard.subscription.unlimited') }}
                                 @else
-                                    até {{ number_format($plan->max_pages, 0, ',', '.') }} páginas/livro
+                                    {{ __('dashboard.subscription.limit_value', ['pages' => number_format($plan->max_pages, 0, ',', '.')]) }}
                                 @endif
                             </p>
                         </div>
@@ -60,12 +60,12 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                             </svg>
                             <div>
-                                <p class="font-semibold">Nenhum plano ativo</p>
-                                <p class="text-sm text-white/80">Contrate um plano para começar</p>
+                                <p class="font-semibold">{{ __('dashboard.subscription.inactive_title') }}</p>
+                                <p class="text-sm text-white/80">{{ __('dashboard.subscription.inactive_description') }}</p>
                             </div>
                         </div>
                         <a href="#" class="mt-4 inline-flex w-full items-center justify-center gap-2 rounded-lg bg-white px-4 py-2 text-sm font-semibold text-slate-900 transition hover:bg-white/90">
-                            Ver Planos
+                            {{ __('dashboard.subscription.view_plans') }}
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
                             </svg>
@@ -115,7 +115,7 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-sm font-medium text-slate-500">Total de Livros</p>
+                        <p class="text-sm font-medium text-slate-500">{{ __('dashboard.stats.total_books') }}</p>
                         <p class="text-2xl font-bold text-slate-900">{{ $books->count() }}</p>
                     </div>
                 </div>
@@ -130,7 +130,7 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-sm font-medium text-slate-500">Páginas Traduzidas</p>
+                        <p class="text-sm font-medium text-slate-500">{{ __('dashboard.stats.translated_pages') }}</p>
                         <p class="text-2xl font-bold text-slate-900">{{ number_format($totalTranslatedPages, 0, ',', '.') }}</p>
                     </div>
                 </div>
@@ -145,7 +145,7 @@
                         </svg>
                     </div>
                     <div>
-                        <p class="text-sm font-medium text-slate-500">Idiomas Usados</p>
+                        <p class="text-sm font-medium text-slate-500">{{ __('dashboard.stats.languages_used') }}</p>
                         <p class="text-2xl font-bold text-slate-900">{{ $books->unique('target_language')->count() }}</p>
                     </div>
                 </div>
@@ -164,7 +164,7 @@
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                         </svg>
                     </div>
-                    <h2 class="text-2xl font-bold text-slate-900">Novo Livro</h2>
+                    <h2 class="text-2xl font-bold text-slate-900">{{ __('dashboard.form.new_book_title') }}</h2>
                 </div>
 
                 <form id="pdf-translate-form" action="{{ route('pdf.upload.post') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
@@ -172,17 +172,18 @@
 
                     {{-- Upload de PDF --}}
                     <div>
-                        <label for="pdf-file" class="mb-2 block text-sm font-semibold text-slate-700">Arquivo PDF</label>
+                        <label for="pdf-file" class="mb-2 block text-sm font-semibold text-slate-700">{{ __('dashboard.form.pdf_label') }}</label>
                         <div id="drop-zone"
                             class="flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed border-slate-300 bg-slate-50 px-6 py-10 text-center transition hover:border-indigo-400 hover:bg-indigo-50/50">
                             <svg xmlns="http://www.w3.org/2000/svg" class="h-12 w-12 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
                             </svg>
                             <p class="mt-4 text-sm font-medium text-slate-700">
-                                Arraste seu PDF aqui ou <span class="text-indigo-600 underline">clique para selecionar</span>
+                                {{ __('dashboard.form.drag_prompt') }}
+                                <span class="text-indigo-600 underline">{{ __('dashboard.form.drag_action') }}</span>
                             </p>
                             <p id="selected-file" class="mt-2 text-xs font-medium text-slate-400">
-                                Nenhum arquivo selecionado
+                                {{ __('dashboard.form.no_file') }}
                             </p>
                         </div>
                         <input id="pdf-file" type="file" name="pdf" accept="application/pdf" class="hidden" required>
@@ -191,17 +192,16 @@
                     {{-- Idiomas --}}
                     <div class="grid gap-4 md:grid-cols-2">
                         <div>
-                            <label for="source_language" class="mb-2 block text-sm font-semibold text-slate-700">Idioma Original</label>
+                            <label for="source_language" class="mb-2 block text-sm font-semibold text-slate-700">{{ __('dashboard.form.source_language_label') }}</label>
                             <select id="source_language" name="source_language"
                                 class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
-                                <option value="">Auto-detectar</option>
                                 @foreach ($languageOptions as $value => $label)
-                                    <option value="{{ $value }}">{{ $label }}</option>
+                                    <option value="{{ $value }}" @selected(old('source_language', 'pt-BR') === $value)>{{ $label }}</option>
                                 @endforeach
                             </select>
                         </div>
                         <div>
-                            <label for="target_language" class="mb-2 block text-sm font-semibold text-slate-700">Traduzir Para</label>
+                            <label for="target_language" class="mb-2 block text-sm font-semibold text-slate-700">{{ __('dashboard.form.target_language_label') }}</label>
                             <select id="target_language" name="target_language" required
                                 class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
                                 @foreach ($targetLanguageOptions as $value => $label)
@@ -214,13 +214,13 @@
                     {{-- Limite de Páginas (opcional) --}}
                     <div>
                         <label for="max_pages" class="mb-2 block text-sm font-semibold text-slate-700">
-                            Limitar Páginas (opcional)
-                            <span class="text-xs font-normal text-slate-500">- deixe vazio para traduzir todas</span>
+                            {{ __('dashboard.form.limit_label') }}
+                            <span class="text-xs font-normal text-slate-500">{{ __('dashboard.form.limit_hint') }}</span>
                         </label>
-                        <input type="number" id="max_pages" name="max_pages" min="1" max="1000" placeholder="Ex: 10"
+                        <input type="number" id="max_pages" name="max_pages" min="1" max="1000" placeholder="{{ __('dashboard.form.limit_placeholder') }}"
                             class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
                         <p class="mt-1 text-xs text-slate-500">
-                            💡 Para testes rápidos, use 10 páginas (~25 segundos)
+                            {{ __('dashboard.form.limit_helper') }}
                         </p>
                     </div>
 
@@ -230,12 +230,12 @@
                         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z" />
                         </svg>
-                        <span>Iniciar Tradução</span>
+                        <span>{{ __('dashboard.form.submit') }}</span>
                     </button>
 
                     @if(!$subscription || !$subscription->isActive())
                         <p class="text-center text-sm text-red-600">
-                            Você precisa de um plano ativo para traduzir livros
+                            {{ __('dashboard.form.subscription_required') }}
                         </p>
                     @endif
                 </form>
@@ -250,7 +250,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                             </svg>
                         </div>
-                        <h2 class="text-2xl font-bold text-slate-900">Seus Livros</h2>
+                        <h2 class="text-2xl font-bold text-slate-900">{{ __('dashboard.history.recent_books') }}</h2>
                     </div>
                     <span class="rounded-full bg-slate-100 px-3 py-1 text-sm font-semibold text-slate-700">{{ $books->count() }}</span>
                 </div>
@@ -267,13 +267,13 @@
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
                                             @if($book->max_pages)
-                                                {{ $book->max_pages }} de {{ $book->total_pages }} páginas
+                                                {{ __('dashboard.history.pages_limited', ['current' => $book->max_pages, 'total' => $book->total_pages]) }}
                                             @else
-                                                {{ $book->total_pages }} páginas
+                                                {{ __('dashboard.history.pages_total', ['total' => $book->total_pages]) }}
                                             @endif
                                         </span>
                                         <span>•</span>
-                                        <span>{{ strtoupper($book->source_language) }} → {{ strtoupper($book->target_language) }}</span>
+                                        <span>{{ __('dashboard.history.language_pair', ['source' => strtoupper($book->source_language), 'target' => strtoupper($book->target_language)]) }}</span>
                                         <span>•</span>
                                         <span>{{ $book->created_at->format('d/m/Y H:i') }}</span>
                                     </div>
@@ -283,7 +283,7 @@
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd" />
                                                 </svg>
-                                                Concluído
+                                                {{ __('dashboard.history.status.translated') }}
                                             </span>
 
                                             @if($book->translated_pdf_path)
@@ -292,7 +292,7 @@
                                                     <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
                                                     </svg>
-                                                    Baixar
+                                                    {{ __('dashboard.history.download') }}
                                                 </a>
                                             @endif
                                         @elseif($book->status === 'processing')
@@ -301,14 +301,14 @@
                                                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                                                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                                                 </svg>
-                                                Processando
+                                                {{ __('dashboard.history.status.processing') }}
                                             </span>
                                         @else
                                             <span class="inline-flex items-center gap-1 rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
                                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-3 w-3" viewBox="0 0 20 20" fill="currentColor">
                                                     <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
                                                 </svg>
-                                                Erro
+                                                {{ __('dashboard.history.status.failed') }}
                                             </span>
                                         @endif
                                     </div>
@@ -320,8 +320,8 @@
                             <svg xmlns="http://www.w3.org/2000/svg" class="mx-auto h-12 w-12 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
                             </svg>
-                            <p class="mt-4 text-sm font-medium text-slate-500">Nenhum livro traduzido ainda</p>
-                            <p class="mt-1 text-xs text-slate-400">Faça upload do seu primeiro PDF para começar</p>
+                            <p class="mt-4 text-sm font-medium text-slate-500">{{ __('dashboard.history.empty_books') }}</p>
+                            <p class="mt-1 text-xs text-slate-400">{{ __('dashboard.history.empty_hint') }}</p>
                         </div>
                     @endforelse
                 </div>
@@ -343,8 +343,8 @@
                 <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                 <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
             </svg>
-            <p class="text-sm font-medium text-slate-700">Processando seu livro...</p>
-            <p class="text-xs text-slate-500">Isso pode levar alguns minutos</p>
+            <p class="text-sm font-medium text-slate-700">{{ __('dashboard.loading.title') }}</p>
+            <p class="text-xs text-slate-500">{{ __('dashboard.loading.subtitle') }}</p>
         </div>
     </div>
 
@@ -355,9 +355,14 @@
         const form = document.getElementById('pdf-translate-form');
         const overlay = document.getElementById('loading-overlay');
 
+        const i18n = {
+            noFile: @json(__('dashboard.form.no_file')),
+            invalidPdf: @json(__('dashboard.js.invalid_pdf')),
+        };
+
         const updateFileName = file => {
             if (!file) {
-                selectedFile.textContent = 'Nenhum arquivo selecionado';
+                selectedFile.textContent = i18n.noFile;
                 return;
             }
             selectedFile.textContent = file.name;
@@ -385,7 +390,7 @@
                     fileInput.files = event.dataTransfer.files;
                     updateFileName(file);
                 } else {
-                    alert('Por favor, selecione apenas arquivos PDF.');
+                    alert(i18n.invalidPdf);
                 }
             }
         });

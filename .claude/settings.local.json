@@ -7,7 +7,9 @@
       "Bash(findstr:*)",
       "Bash(dir:*)",
       "Bash(git add:*)",
-      "Bash(git reset:*)"
+      "Bash(git reset:*)",
+      "Bash(git commit -m \"$(cat <<''EOF''\nFeat: Add OCR support and page limit feature with improved PDF formatting\n\n- Implement OCR extraction using Tesseract for image-based PDFs\n- Add max_pages field to limit translation to specific number of pages\n- Fix PDF formatting with proper text wrapping and margins\n- Update dashboard to show actual translated pages count\n\nNew Features:\n- OCR extraction scripts (extract_pdf_with_ocr_always.py, extract_pdf_text_with_ocr.py)\n- Page limit input in dashboard with validation\n- Database migration for max_pages column in books table\n\nImprovements:\n- Rewrite create_simple_translated_pdf.py to use line-by-line rendering\n- Add textwrap for proper word wrapping within margins\n- Set A4 page size with 1.8cm margins (~17.5cm x 26cm usable area)\n- Fix text overlapping issues in PDF generation\n- Update dashboard to calculate translated pages based on max_pages\n\nTechnical Details:\n- Windows PATH configuration for Tesseract executable\n- Parallel OCR processing with ThreadPoolExecutor (4 workers)\n- Performance: ~2.5 seconds per page with OCR\n- Updated requirements.txt with pytesseract and Pillow\n\n🤖 Generated with [Claude Code](https://claude.com/claude-code)\n\nCo-Authored-By: Claude <noreply@anthropic.com>\nEOF\n)\")",
+      "Bash(git push)"
     ],
     "deny": [],
     "ask": []
