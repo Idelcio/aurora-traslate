@@ -36,4 +36,10 @@ return [
         'project_id' => env('GOOGLE_TRANSLATE_PROJECT_ID', 'upheld-setting-463923-b1'),
     ],
 
+    'python_translate' => [
+        'binary' => env('PYTHON_TRANSLATE_BINARY', 'python'),
+        'use_optimized' => env('PYTHON_TRANSLATE_USE_OPTIMIZED', true),
+        'max_concurrent' => env('PYTHON_TRANSLATE_MAX_CONCURRENT', 5),
+    ],
+
 ];

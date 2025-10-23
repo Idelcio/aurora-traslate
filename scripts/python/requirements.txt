@@ -1,0 +1,4 @@
+# Python dependencies for PDF translation scripts
+aiohttp>=3.9.0
+requests>=2.31.0
+PyMuPDF>=1.23.0

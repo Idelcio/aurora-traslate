@@ -2,144 +2,95 @@
 
 namespace App\Jobs;
 
+use App\Models\Book;
+use App\Services\Pdf\PythonPdfService;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
-use App\Models\Book;
-use App\Services\GoogleTranslateService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class TranslatePdfJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
-    protected $book;
-    public $timeout = 1800; // 30 minutos
-    public $tries = 1; // Não retentar automaticamente
+    public $timeout = 1800;
+    public $tries = 1;
 
-    /**
-     * Create a new job instance.
-     */
-    public function __construct(Book $book)
-    {
-        $this->book = $book;
+    public function __construct(
+        protected Book $book
+    ) {
     }
 
-    /**
-     * Execute the job.
-     */
-    public function handle(GoogleTranslateService $translateService): void
+    public function handle(PythonPdfService $pythonPdfService): void
     {
         try {
-            Log::info("Iniciando tradução do livro ID: {$this->book->id}");
+            Log::info('Iniciando traducao do livro (Python pipeline)', [
+                'book_id' => $this->book->id,
+                'title' => $this->book->title,
+            ]);
 
-            // Caminho do PDF original
             $originalPdfPath = storage_path('app/public/' . $this->book->pdf_path);
 
             if (!file_exists($originalPdfPath)) {
-                throw new \Exception('Arquivo PDF original não encontrado');
+                throw new \RuntimeException('Arquivo PDF original nao encontrado');
             }
 
-            // Gera nomes únicos para arquivos de trabalho
             $timestamp = time();
-            $extractedJsonPath = storage_path('app/public/pdfs/temp/' . $timestamp . '_extracted.json');
-            $translatedJsonPath = storage_path('app/public/pdfs/temp/' . $timestamp . '_translated.json');
-            $outputPdfPath = storage_path('app/public/pdfs/translated/' . $timestamp . '_translated.pdf');
+            $safeBaseName = Str::slug($this->book->title, '-') ?: 'livro';
+            $outputPdfFilename = "{$timestamp}_{$safeBaseName}_traduzido.pdf";
+            $outputPdfPath = storage_path('app/public/pdfs/translated/' . $outputPdfFilename);
 
-            // Passo 1: Extrai texto
-            Log::info("Extraindo texto do PDF");
-            $this->extractPdfText($originalPdfPath, $extractedJsonPath);
+            $this->ensureDirectory(dirname($outputPdfPath));
 
-            // Passo 2: Traduz
-            Log::info("Traduzindo texto");
-            $this->translateExtractedText(
-                $extractedJsonPath,
-                $translatedJsonPath,
+            // Use unified Python service for entire pipeline
+            // Always pass source language - use 'pt-BR' as default if 'auto'
+            $sourceLanguage = $this->book->source_language === 'auto' ? 'pt-BR' : $this->book->source_language;
+
+            $result = $pythonPdfService->translatePdf(
+                $originalPdfPath,
+                $outputPdfPath,
                 $this->book->target_language,
-                $this->book->source_language === 'auto' ? null : $this->book->source_language,
-                $translateService
+                $sourceLanguage,
+                function ($progress) {
+                    // Log progress updates
+                    Log::info('Translation progress', [
+                        'book_id' => $this->book->id,
+                        'progress' => $progress['progress'] ?? 0,
+                        'completed' => $progress['completedBatches'] ?? 0,
+                        'total' => $progress['totalBatches'] ?? 0,
+                    ]);
+                }
             );
 
-            // Passo 3: Reconstrói PDF
-            Log::info("Reconstruindo PDF");
-            $this->rebuildPdf($originalPdfPath, $extractedJsonPath, $translatedJsonPath, $outputPdfPath);
-
-            // Atualiza o registro
             $this->book->update([
                 'status' => 'translated',
-                'translated_pdf_path' => 'pdfs/translated/' . basename($outputPdfPath)
+                'translated_pdf_path' => 'pdfs/translated/' . $outputPdfFilename,
             ]);
 
-            // Limpa temporários
-            if (file_exists($extractedJsonPath)) unlink($extractedJsonPath);
-            if (file_exists($translatedJsonPath)) unlink($translatedJsonPath);
+            Log::info('Traducao concluida com sucesso', [
+                'book_id' => $this->book->id,
+                'stats' => $result['stats'] ?? [],
+            ]);
 
-            Log::info("Tradução concluída com sucesso para o livro ID: {$this->book->id}");
+        } catch (\Throwable $throwable) {
+            Log::error('Erro ao traduzir livro', [
+                'book_id' => $this->book->id,
+                'message' => $throwable->getMessage(),
+                'trace' => $throwable->getTraceAsString(),
+            ]);
 
-        } catch (\Exception $e) {
-            Log::error("Erro ao traduzir livro ID {$this->book->id}: " . $e->getMessage());
             $this->book->update(['status' => 'error']);
-            throw $e;
+            throw $throwable;
         }
     }
 
-    private function extractPdfText($pdfPath, $outputJsonPath)
+    private function ensureDirectory(string $directory): void
     {
-        $scriptPath = base_path('scripts/extractPdfText_simple.cjs');
-        $command = sprintf('node "%s" "%s" "%s" 2>&1', $scriptPath, $pdfPath, $outputJsonPath);
-        exec($command, $output, $returnCode);
-
-        if ($returnCode !== 0) {
-            throw new \Exception('Erro ao extrair texto: ' . implode("\n", $output));
-        }
-    }
-
-    private function translateExtractedText($extractedJsonPath, $outputJsonPath, $targetLang, $sourceLang, $translateService)
-    {
-        $extractedData = json_decode(file_get_contents($extractedJsonPath), true);
-
-        $translatedData = [
-            'numPages' => $extractedData['numPages'],
-            'pages' => []
-        ];
-
-        foreach ($extractedData['pages'] as $page) {
-            $translatedPage = [
-                'pageNumber' => $page['pageNumber'],
-                'textItems' => []
-            ];
-
-            foreach ($page['textItems'] as $item) {
-                $result = $translateService->translate($item['text'], $targetLang, $sourceLang);
-
-                $translatedPage['textItems'][] = [
-                    'originalText' => $item['text'],
-                    'translatedText' => $result['success'] ? $result['translatedText'] : $item['text']
-                ];
-
-                usleep(100000); // 100ms delay
-            }
-
-            $translatedData['pages'][] = $translatedPage;
-        }
-
-        file_put_contents($outputJsonPath, json_encode($translatedData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-    }
-
-    private function rebuildPdf($originalPdfPath, $extractedJsonPath, $translatedJsonPath, $outputPdfPath)
-    {
-        // Lê os dados extraídos para pegar o número de páginas
-        $extractedData = json_decode(file_get_contents($extractedJsonPath), true);
-        $numPages = $extractedData['numPages'] ?? 1;
-
-        $scriptPath = base_path('scripts/rebuildSimplePdf.cjs');
-        $command = sprintf('node "%s" "%s" "%s" %d 2>&1', $scriptPath, $translatedJsonPath, $outputPdfPath, $numPages);
-        exec($command, $output, $returnCode);
-
-        if ($returnCode !== 0) {
-            throw new \Exception('Erro ao reconstruir PDF: ' . implode("\n", $output));
+        if (!file_exists($directory)) {
+            mkdir($directory, 0755, true);
         }
     }
 }

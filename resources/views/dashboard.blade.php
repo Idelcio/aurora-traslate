@@ -253,7 +253,7 @@
                                         <span>•</span>
                                         <span>{{ strtoupper($book->source_language) }} → {{ strtoupper($book->target_language) }}</span>
                                         <span>•</span>
-                                        <span>{{ $book->created_at->format('d/m/Y') }}</span>
+                                        <span>{{ $book->created_at->format('d/m/Y H:i') }}</span>
                                     </div>
                                     <div class="mt-3 flex items-center gap-3">
                                         @if($book->status === 'translated')

@@ -13,7 +13,10 @@ let pdfjsLib;
 async function initPdfJs() {
     if (!pdfjsLib) {
         pdfjsLib = await import('pdfjs-dist/legacy/build/pdf.mjs');
-        pdfjsLib.GlobalWorkerOptions.workerSrc = false;
+        // Define o caminho correto para o worker
+        const path = require('path');
+        const workerPath = path.join(__dirname, '../node_modules/pdfjs-dist/legacy/build/pdf.worker.mjs');
+        pdfjsLib.GlobalWorkerOptions.workerSrc = workerPath;
     }
     return pdfjsLib;
 }

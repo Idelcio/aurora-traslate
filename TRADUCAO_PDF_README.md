@@ -181,3 +181,9 @@ Para problemas ou dúvidas:
 
 **Versão**: 1.0
 **Última atualização**: 2025-01-22
+
+## Dependencias Python
+
+- Python 3.10+ instalado (recomendado 64 bits)
+- Executar: python -m pip install -r scripts/python/requirements.txt
+- Variavel de ambiente PYTHON_TRANSLATE_BINARY pode ajustar o caminho do interpretador

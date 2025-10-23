@@ -2,27 +2,26 @@
 
 namespace App\Http\Controllers;
 
+use App\Services\Pdf\PythonTranslator;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Storage;
-use App\Services\GoogleTranslateService;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Str;
 
 class PdfTranslateController extends Controller
 {
-    protected $translateService;
-
-    public function __construct(GoogleTranslateService $translateService)
-    {
-        $this->translateService = $translateService;
+    public function __construct(
+        protected PythonTranslator $pythonTranslator
+    ) {
     }
 
     /**
-     * Processa a tradução de um PDF
+     * Handles the PDF translation workflow.
      */
     public function translate(Request $request)
     {
         $request->validate([
-            'pdf' => 'required|mimes:pdf|max:51200', // max 50MB
+            'pdf' => 'required|mimes:pdf|max:51200', // 50MB
             'target_language' => 'required|string|max:10',
             'source_language' => 'nullable|string|max:10',
         ]);
@@ -32,40 +31,37 @@ class PdfTranslateController extends Controller
             $targetLang = $request->target_language;
             $sourceLang = $request->source_language ?? 'auto';
 
-            // Gera nomes únicos para os arquivos
-            $timestamp = time();
-            $originalFilename = $timestamp . '_original.pdf';
-            $extractedJsonFilename = $timestamp . '_extracted.json';
-            $translatedJsonFilename = $timestamp . '_translated.json';
-            $outputPdfFilename = $timestamp . '_translated.pdf';
+            $originalBaseName = pathinfo($pdf->getClientOriginalName(), PATHINFO_FILENAME);
+            $safeBaseName = Str::slug($originalBaseName, '-') ?: 'documento';
 
-            // Salva o PDF original
+            $timestamp = time();
+            $originalFilename = "{$timestamp}_original.pdf";
+            $extractedJsonFilename = "{$timestamp}_extracted.json";
+            $translatedJsonFilename = "{$timestamp}_translated.json";
+            $outputPdfFilename = "{$timestamp}_{$safeBaseName}_traduzido.pdf";
+            $downloadName = "{$originalBaseName} (traduzido).pdf";
+
             $pdfPath = $pdf->storeAs('pdfs/temp', $originalFilename, 'public');
             $fullPdfPath = storage_path('app/public/' . $pdfPath);
 
-            // Caminho para os arquivos de trabalho
             $extractedJsonPath = storage_path('app/public/pdfs/temp/' . $extractedJsonFilename);
             $translatedJsonPath = storage_path('app/public/pdfs/temp/' . $translatedJsonFilename);
             $outputPdfPath = storage_path('app/public/pdfs/translated/' . $outputPdfFilename);
 
-            // Cria diretório de saída se não existir
-            if (!file_exists(dirname($outputPdfPath))) {
-                mkdir(dirname($outputPdfPath), 0755, true);
-            }
+            $this->ensureDirectory(dirname($extractedJsonPath));
+            $this->ensureDirectory(dirname($outputPdfPath));
 
-            // Passo 1: Extrai texto do PDF
-            Log::info('Extraindo texto do PDF: ' . $fullPdfPath);
+            Log::info('Extraindo texto do PDF', ['path' => $fullPdfPath]);
             $extractResult = $this->extractPdfText($fullPdfPath, $extractedJsonPath);
 
             if (!$extractResult['success']) {
                 return response()->json([
                     'success' => false,
-                    'error' => 'Erro ao extrair texto do PDF: ' . $extractResult['error']
+                    'error' => 'Erro ao extrair texto do PDF: ' . $extractResult['error'],
                 ], 500);
             }
 
-            // Passo 2: Traduz o texto extraído
-            Log::info('Traduzindo texto extraído');
+            Log::info('Traduzindo conteudo com Python');
             $translateResult = $this->translateExtractedText(
                 $extractedJsonPath,
                 $translatedJsonPath,
@@ -76,12 +72,11 @@ class PdfTranslateController extends Controller
             if (!$translateResult['success']) {
                 return response()->json([
                     'success' => false,
-                    'error' => 'Erro ao traduzir texto: ' . $translateResult['error']
+                    'error' => 'Erro ao traduzir texto: ' . ($translateResult['error'] ?? 'processo desconhecido'),
                 ], 500);
             }
 
-            // Passo 3: Reconstrói o PDF com texto traduzido
-            Log::info('Reconstruindo PDF com texto traduzido');
+            Log::info('Reconstruindo PDF traduzido');
             $rebuildResult = $this->rebuildPdf(
                 $fullPdfPath,
                 $extractedJsonPath,
@@ -92,36 +87,34 @@ class PdfTranslateController extends Controller
             if (!$rebuildResult['success']) {
                 return response()->json([
                     'success' => false,
-                    'error' => 'Erro ao reconstruir PDF: ' . $rebuildResult['error']
+                    'error' => 'Erro ao reconstruir PDF: ' . $rebuildResult['error'],
                 ], 500);
             }
 
-            // Limpa arquivos temporários
             Storage::disk('public')->delete($pdfPath);
-            unlink($extractedJsonPath);
-            unlink($translatedJsonPath);
+            $this->deleteIfExists($extractedJsonPath);
+            $this->deleteIfExists($translatedJsonPath);
 
-            // Retorna o PDF traduzido
             return response()->json([
                 'success' => true,
                 'filename' => $outputPdfFilename,
                 'download_url' => route('pdf.translate.download', ['filename' => $outputPdfFilename]),
-                'stats' => $translateResult['stats']
+                'stats' => $translateResult['stats'] ?? [],
+                'download_filename' => $downloadName,
+            ]);
+        } catch (\Throwable $throwable) {
+            Log::error('Erro ao processar traducao de PDF', [
+                'message' => $throwable->getMessage(),
             ]);
 
-        } catch (\Exception $e) {
-            Log::error('Erro ao processar tradução de PDF: ' . $e->getMessage());
             return response()->json([
                 'success' => false,
-                'error' => 'Erro ao processar PDF: ' . $e->getMessage()
+                'error' => 'Erro ao processar PDF: ' . $throwable->getMessage(),
             ], 500);
         }
     }
 
-    /**
-     * Extrai texto do PDF usando Node.js
-     */
-    private function extractPdfText($pdfPath, $outputJsonPath)
+    private function extractPdfText(string $pdfPath, string $outputJsonPath): array
     {
         $scriptPath = base_path('scripts/extractPdfText.cjs');
 
@@ -137,81 +130,39 @@ class PdfTranslateController extends Controller
         if ($returnCode !== 0) {
             return [
                 'success' => false,
-                'error' => implode("\n", $output)
+                'error' => implode("\n", $output),
             ];
         }
 
         return ['success' => true];
     }
 
-    /**
-     * Traduz o texto extraído
-     */
-    private function translateExtractedText($extractedJsonPath, $outputJsonPath, $targetLang, $sourceLang)
-    {
-        $extractedData = json_decode(file_get_contents($extractedJsonPath), true);
+    private function translateExtractedText(
+        string $extractedJsonPath,
+        string $outputJsonPath,
+        string $targetLang,
+        string $sourceLang
+    ): array {
+        try {
+            return $this->pythonTranslator->translate(
+                $extractedJsonPath,
+                $outputJsonPath,
+                $targetLang,
+                $sourceLang === 'auto' ? null : $sourceLang
+            );
+        } catch (\Throwable $throwable) {
+            Log::error('Falha ao executar script Python de traducao', [
+                'message' => $throwable->getMessage(),
+            ]);
 
-        $translatedData = [
-            'numPages' => $extractedData['numPages'],
-            'pages' => []
-        ];
-
-        $totalTexts = 0;
-        $totalChars = 0;
-
-        // Processa cada página
-        foreach ($extractedData['pages'] as $page) {
-            $translatedPage = [
-                'pageNumber' => $page['pageNumber'],
-                'textItems' => []
+            return [
+                'success' => false,
+                'error' => $throwable->getMessage(),
             ];
-
-            // Traduz cada item de texto
-            foreach ($page['textItems'] as $item) {
-                $text = $item['text'];
-                $totalTexts++;
-                $totalChars += strlen($text);
-
-                // Traduz usando o GoogleTranslateService
-                $result = $this->translateService->translate($text, $targetLang, $sourceLang === 'auto' ? null : $sourceLang);
-
-                if ($result['success']) {
-                    $translatedPage['textItems'][] = [
-                        'originalText' => $text,
-                        'translatedText' => $result['translatedText']
-                    ];
-                } else {
-                    // Se falhar, mantém o texto original
-                    Log::warning('Falha ao traduzir texto: ' . $text);
-                    $translatedPage['textItems'][] = [
-                        'originalText' => $text,
-                        'translatedText' => $text
-                    ];
-                }
-
-                // Pequeno delay para evitar rate limiting
-                usleep(100000); // 100ms
-            }
-
-            $translatedData['pages'][] = $translatedPage;
         }
-
-        file_put_contents($outputJsonPath, json_encode($translatedData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE));
-
-        return [
-            'success' => true,
-            'stats' => [
-                'totalPages' => $extractedData['numPages'],
-                'totalTexts' => $totalTexts,
-                'totalChars' => $totalChars
-            ]
-        ];
     }
 
-    /**
-     * Reconstrói o PDF com texto traduzido
-     */
-    private function rebuildPdf($originalPdfPath, $extractedJsonPath, $translatedJsonPath, $outputPdfPath)
+    private function rebuildPdf(string $originalPdfPath, string $extractedJsonPath, string $translatedJsonPath, string $outputPdfPath): array
     {
         $scriptPath = base_path('scripts/rebuildPdfWithTranslation.cjs');
 
@@ -229,24 +180,58 @@ class PdfTranslateController extends Controller
         if ($returnCode !== 0) {
             return [
                 'success' => false,
-                'error' => implode("\n", $output)
+                'error' => implode("\n", $output),
             ];
         }
 
         return ['success' => true];
     }
 
-    /**
-     * Download do PDF traduzido
-     */
-    public function download($filename)
+    public function download(string $filename)
     {
         $path = storage_path('app/public/pdfs/translated/' . $filename);
 
         if (!file_exists($path)) {
-            abort(404, 'Arquivo não encontrado');
+            abort(404, 'Arquivo nao encontrado');
         }
 
-        return response()->download($path);
+        $downloadName = $this->resolveDownloadName($filename);
+
+        return response()->download($path, $downloadName, [
+            'Content-Type' => 'application/pdf',
+        ]);
+    }
+
+    private function resolveDownloadName(string $filename): string
+    {
+        $basename = pathinfo($filename, PATHINFO_FILENAME);
+        $parts = explode('_', $basename, 2);
+        $remainder = $parts[1] ?? $parts[0];
+
+        $remainder = preg_replace('/_?traduzido$/i', '', $remainder);
+        $readable = Str::of($remainder)
+            ->replace('-', ' ')
+            ->trim()
+            ->title();
+
+        if ($readable->isEmpty()) {
+            return 'Documento Traduzido.pdf';
+        }
+
+        return "{$readable} (traduzido).pdf";
+    }
+
+    private function ensureDirectory(string $directory): void
+    {
+        if (!file_exists($directory)) {
+            mkdir($directory, 0755, true);
+        }
+    }
+
+    private function deleteIfExists(string $path): void
+    {
+        if (file_exists($path)) {
+            unlink($path);
+        }
     }
 }

@@ -103,7 +103,11 @@ Route::middleware('auth')->group(function () {
                 abort(404, 'Arquivo traduzido não encontrado.');
             }
 
-            return response()->download($filePath, $book->title . '_traduzido.pdf');
+            $downloadName = trim($book->title) !== ''
+                ? $book->title . ' (traduzido).pdf'
+                : 'Documento Traduzido.pdf';
+
+            return response()->download($filePath, $downloadName);
         })->name('download');
     });
 

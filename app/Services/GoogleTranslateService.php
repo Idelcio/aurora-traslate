@@ -167,6 +167,189 @@ class GoogleTranslateService
     }
 
     /**
+     * Translate texts with deduplication and smart batching (optimized for PDFs).
+     * Returns array mapping original text => translated text.
+     *
+     * @param array $texts
+     * @param string $targetLang
+     * @param string|null $sourceLang
+     * @return array
+     */
+    public function translateTextsOptimized(array $texts, string $targetLang, ?string $sourceLang = null): array
+    {
+        $startTime = microtime(true);
+
+        // Remove empty texts
+        $nonEmptyTexts = array_filter($texts, fn($text) => !empty(trim($text)));
+
+        if (empty($nonEmptyTexts)) {
+            return [];
+        }
+
+        Log::info('PHP Translation - Starting', [
+            'total_texts' => count($texts),
+            'non_empty' => count($nonEmptyTexts),
+            'target' => $targetLang,
+            'source' => $sourceLang ?? 'auto',
+        ]);
+
+        // Deduplicate - normalize and map
+        $normalizedMap = [];
+        foreach ($nonEmptyTexts as $text) {
+            $normalized = $this->normalizeText($text);
+            if (!isset($normalizedMap[$normalized])) {
+                $normalizedMap[$normalized] = [];
+            }
+            $normalizedMap[$normalized][] = $text;
+        }
+
+        $uniqueTexts = array_keys($normalizedMap);
+
+        Log::info('PHP Translation - Deduplication', [
+            'original' => count($nonEmptyTexts),
+            'unique' => count($uniqueTexts),
+            'reduction' => round((1 - count($uniqueTexts) / count($nonEmptyTexts)) * 100, 1) . '%',
+        ]);
+
+        // Create smart batches (max 30K chars, 128 texts per batch)
+        $batches = $this->createSmartBatches($uniqueTexts);
+
+        Log::info('PHP Translation - Batches created', ['count' => count($batches)]);
+
+        // Translate batches
+        $translationCache = [];
+        foreach ($batches as $index => $batch) {
+            $batchResult = $this->translateBatchInternal($batch, $targetLang, $sourceLang);
+
+            foreach ($batch as $i => $originalText) {
+                $translationCache[$originalText] = $batchResult[$i] ?? $originalText;
+            }
+
+            Log::debug('PHP Translation - Batch completed', [
+                'batch' => ($index + 1) . '/' . count($batches),
+                'texts' => count($batch),
+            ]);
+        }
+
+        // Map back to ALL original texts (including duplicates and empties)
+        $results = [];
+        foreach ($texts as $originalText) {
+            if (empty(trim($originalText))) {
+                $results[$originalText] = $originalText;
+                continue;
+            }
+
+            $normalized = $this->normalizeText($originalText);
+            $results[$originalText] = $translationCache[$normalized] ?? $originalText;
+        }
+
+        $elapsed = microtime(true) - $startTime;
+
+        Log::info('PHP Translation - Completed', [
+            'elapsed_seconds' => round($elapsed, 2),
+            'texts_per_second' => round(count($texts) / $elapsed, 2),
+        ]);
+
+        return $results;
+    }
+
+    /**
+     * Internal batch translation that returns array of translated texts.
+     */
+    private function translateBatchInternal(array $texts, string $targetLang, ?string $sourceLang): array
+    {
+        try {
+            $body = [
+                'q' => $texts,
+                'target' => $targetLang,
+                'format' => 'text',
+            ];
+
+            if ($sourceLang) {
+                $body['source'] = $sourceLang;
+            }
+
+            // API key goes in URL, body as JSON
+            $url = $this->endpoint . '?key=' . $this->apiKey;
+
+            $response = Http::timeout(60)
+                ->retry(3, 2000)
+                ->post($url, $body);
+
+            if ($response->successful()) {
+                $data = $response->json();
+                $translations = $data['data']['translations'] ?? [];
+
+                return array_map(fn($t) => $t['translatedText'] ?? '', $translations);
+            }
+
+            Log::error('PHP Translation - Batch failed', [
+                'status' => $response->status(),
+                'body' => $response->body(),
+            ]);
+
+            return $texts; // Return originals on error
+
+        } catch (\Exception $e) {
+            Log::error('PHP Translation - Exception', [
+                'message' => $e->getMessage(),
+            ]);
+
+            return $texts;
+        }
+    }
+
+    /**
+     * Normalize text for deduplication.
+     */
+    private function normalizeText(string $text): string
+    {
+        if (empty($text)) {
+            return '';
+        }
+
+        $lines = explode("\n", $text);
+        $normalizedLines = array_map(function($line) {
+            return trim(preg_replace('/\s+/', ' ', $line));
+        }, $lines);
+
+        $result = implode("\n", array_filter($normalizedLines));
+        return $result ?: trim($text);
+    }
+
+    /**
+     * Create smart batches (max 30K chars and 128 texts per batch).
+     */
+    private function createSmartBatches(array $texts): array
+    {
+        $batches = [];
+        $currentBatch = [];
+        $currentChars = 0;
+        $maxChars = 30000;
+        $maxTexts = 128;
+
+        foreach ($texts as $text) {
+            $textLength = strlen($text);
+
+            if (!empty($currentBatch) &&
+                ($currentChars + $textLength > $maxChars || count($currentBatch) >= $maxTexts)) {
+                $batches[] = $currentBatch;
+                $currentBatch = [];
+                $currentChars = 0;
+            }
+
+            $currentBatch[] = $text;
+            $currentChars += $textLength;
+        }
+
+        if (!empty($currentBatch)) {
+            $batches[] = $currentBatch;
+        }
+
+        return $batches;
+    }
+
+    /**
      * Lista idiomas suportados
      *
      * @param string|null $targetLang Idioma para retornar nomes
