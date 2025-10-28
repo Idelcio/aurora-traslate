@@ -1,80 +1,99 @@
 <?php
 
 return [
-    'meta_title' => 'Aurora Translate · Tradução inteligente de PDFs',
+    'meta_title' => 'Aurora Translate – IA de tradução para PDFs',
     'hero' => [
-        'badge' => 'Tradução assistida para livros',
-        'title' => 'A maneira mais elegante de traduzir livros em PDF.',
-        'description' => 'Tenha seus manuscritos, relatórios técnicos e best-sellers prontos para novos mercados sem perder formatação, capítulos ou notas de rodapé. Operações em lote, revisão integrada e exportação automática para PDF finalizado.',
+        'badge' => 'IA de tradução para livros',
+        'title' => 'Traduza seus PDFs com a inteligência da Aurora.',
+        'description' => 'Nossa IA neural preserva formatação, sumários e notas, entregando versões prontas para publicar em poucos minutos.',
         'primary_cta' => 'Acessar plataforma',
-        'secondary_cta' => 'Ver integrações',
+        'secondary_cta' => 'Conhecer recursos',
     ],
     'card' => [
-        'title' => 'Pronto para traduções completas',
+        'title' => 'IA criada para editoras e tradutores',
         'highlights' => [
-            'Tradução por página, capítulos ou obra inteira',
-            'Controle de terminologia com glossários personalizados',
-            'Histórico de versões e comparativos lado a lado',
-            'Exportação imediata para PDF, DOCX ou HTML',
+            'Tecnologia própria otimizada para obras longas e conteúdo técnico',
+            'Traduza o livro inteiro ou defina um limite de páginas para pré-visualizações',
+            'Suporte aos principais idiomas: Português, Inglês, Espanhol, Francês, Italiano, Alemão, Latim, Hebraico e Grego',
+            'PDF final com layout, notas e numeração preservados',
         ],
     ],
     'info' => [
         'items' => [
             [
-                'title' => 'Processamento avançado de PDFs',
-                'body' => 'Extraímos texto, imagens e estruturas de capítulos para preservar o layout original. Compatível com livros muito extensos.',
+                'title' => 'IA dedicada a livros',
+                'body' => 'A Aurora ajusta parágrafos extensos, títulos e rodapés para manter fluidez de leitura em qualquer idioma.',
             ],
             [
-                'title' => 'Fluxo híbrido humano + IA',
-                'body' => 'Combine a Cloud Translation API com revisores internos. Compare versões e faça ajustes sem sair da plataforma.',
+                'title' => 'Configuração rápida',
+                'body' => 'Escolha idiomas de origem e destino, limite de páginas ou livro completo e acompanhe o progresso em tempo real.',
             ],
             [
-                'title' => 'Entrega em múltiplos formatos',
-                'body' => 'Gere PDFs finais, rascunhos em DOCX para revisão editorial ou HTML otimizado para publicação digital.',
+                'title' => 'Entrega pronta para publicar',
+                'body' => 'Baixe o PDF traduzido ou compartilhe com sua equipe para revisão editorial final.',
             ],
         ],
     ],
     'workflow' => [
-        'badge' => 'Em três passos',
-        'title' => 'Do upload à publicação em minutos',
+        'badge' => 'Como funciona',
+        'title' => 'Três passos para traduzir com a Aurora IA',
         'steps' => [
             [
-                'title' => 'Upload inteligente',
-                'body' => 'Selecione um PDF completo ou informe as páginas desejadas. Detectamos idioma automaticamente e validamos metadados.',
+                'title' => 'Envie seu PDF',
+                'body' => 'Faça upload diretamente pelo navegador. Suporte a livros extensos, relatórios técnicos e apostilas.',
             ],
             [
-                'title' => 'Tradução orquestrada',
-                'body' => 'Conecte-se à Google Cloud Translation API e personalize com glossários e modelos treinados especificamente para o seu acervo.',
+                'title' => 'Defina idiomas e limites',
+                'body' => 'Selecione os idiomas suportados pela Aurora e escolha traduzir tudo ou apenas parte do livro.',
             ],
             [
-                'title' => 'Refinamento e exportação',
-                'body' => 'Revise, compare e aprove. Em seguida, gere o PDF final com sumário, capas e notas preservadas.',
+                'title' => 'Receba o resultado',
+                'body' => 'Nossa IA processa o documento, preserva o layout e gera o PDF final pronto para revisão e distribuição.',
             ],
         ],
     ],
     'integration' => [
-        'badge' => 'Google Cloud Translation API',
-        'title' => 'Integração oficial e segura com a Google Cloud.',
-        'description' => 'Utilize as rotas translateText e translateDocument para traduções síncronas ou em lote. Apoio nativo para glossários, datasets de Adaptive MT e monitoramento de operações longas.',
+        'badge' => 'Tecnologia Aurora IA',
+        'title' => 'Tradução neural que respeita sua obra.',
+        'description' => 'Combinamos modelos de linguagem de última geração com ajustes específicos para livros, garantindo fidelidade e consistência.',
         'cards' => [
             [
-                'title' => 'Provisionamento rápido',
-                'body' => 'Crie um projeto, habilite a API e gere uma chave de serviço. Configure a variável GOOGLE_APPLICATION_CREDENTIALS.',
+                'title' => 'Fidelidade ao layout',
+                'body' => 'Reconhecemos títulos, notas, rodapés e índices para manter a identidade visual do PDF.',
             ],
             [
-                'title' => 'Clientes oficiais',
-                'body' => 'Utilize os SDKs disponibilizados ou requisições REST. Suporte completo a detecção de idioma, glossários e romanização de textos.',
+                'title' => 'Idiomas principais',
+                'body' => 'Traduza entre Português, Inglês, Espanhol, Francês, Italiano, Alemão, Latim, Hebraico e Grego sem ajustes complexos.',
             ],
             [
-                'title' => 'Monitoramento contínuo',
-                'body' => 'Acompanhe jobs longos com projects.locations.operations, cancele ou reprocesse conforme necessário.',
+                'title' => 'Segurança e privacidade',
+                'body' => 'Processamento protegido, logs completos e opção de excluir arquivos ao término da tradução.',
             ],
         ],
     ],
-    'cta' => [
-        'title' => 'Comece a traduzir agora mesmo.',
-        'description' => 'Uma plataforma completa para editoras, universidades e tradutores independentes. Experimente a tradução de um capítulo e acompanhe o resultado em tempo real.',
+    'plans' => [
+        'title' => 'Escolha o plano ideal para o seu time',
+        'description' => 'Compare limites, veja qual modelo atende melhor ao seu fluxo editorial e comece agora.',
+        'currency' => 'R$',
+        'per_month' => 'por mês',
+        'page_limit' => '{1}:count página por livro|[2,*]:count páginas por livro',
+        'book_limit' => '{1}:count livro por mês|[2,*]:count livros por mês',
+        'book_limit_unlimited' => 'Livros ilimitados por mês',
+        'unlimited' => 'Ilimitado',
+        'unlimited_label' => 'Páginas ilimitadas por livro',
+        'unlimited_badge' => 'Sem limites',
+        'button' => 'Escolher plano',
+    ],
+    'quick_start' => [
+        'title' => 'Teste a Aurora IA agora mesmo.',
+        'description' => 'Envie um PDF, selecione idiomas e veja a tradução automática preservando o layout original.',
         'button' => 'Iniciar tradução',
     ],
-    'footer' => 'Aurora Translate · Plataforma de tradução profissional para PDFs',
+    'cta' => [
+        'title' => 'Acelere seu próximo projeto de tradução.',
+        'description' => 'A Aurora IA reduz semanas de trabalho para minutos, mantendo a qualidade que suas publicações exigem.',
+        'button' => 'Começar agora',
+    ],
+    'footer' => 'Aurora Translate – IA de tradução profissional para PDFs',
 ];
+

@@ -183,26 +183,26 @@ def main() -> int:
     parser.add_argument("extracted_json", help="Path to extracted JSON file")
     parser.add_argument("translated_json", help="Path to translated JSON file")
     parser.add_argument("output_pdf", help="Path to output PDF file")
-    
+
     args = parser.parse_args()
-    
+
     try:
         print(f"Rebuilding PDF with translations...")
         print(f"  Original: {args.original_pdf}")
         print(f"  Output: {args.output_pdf}")
-        
+
         rebuild_pdf_with_translation(
             args.original_pdf,
             args.extracted_json,
             args.translated_json,
             args.output_pdf
         )
-        
+
         print(f"PDF rebuilt successfully!")
         print(f"  Saved to: {args.output_pdf}")
-        
+
         return 0
-        
+
     except Exception as e:
         print(f"Error: {e}", file=sys.stderr)
         return 1

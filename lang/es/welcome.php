@@ -1,80 +1,99 @@
 <?php
 
 return [
-    'meta_title' => 'Aurora Translate · Traducción inteligente de PDFs',
+    'meta_title' => 'Aurora Translate – IA de traducción para PDFs',
     'hero' => [
-        'badge' => 'Traducción asistida para libros',
-        'title' => 'La forma más elegante de traducir libros en PDF.',
-        'description' => 'Ten tus manuscritos, informes técnicos y best sellers listos para nuevos mercados sin perder formato, capítulos ni notas al pie. Operaciones en lote, revisión integrada y exportación automática a PDFs finales.',
+        'badge' => 'IA de traducción para libros',
+        'title' => 'Traduce tus PDFs con la inteligencia de Aurora.',
+        'description' => 'Nuestro motor neuronal preserva el diseño, los índices y las notas, entregando versiones listas para publicar en minutos.',
         'primary_cta' => 'Acceder a la plataforma',
-        'secondary_cta' => 'Ver integraciones',
+        'secondary_cta' => 'Ver funcionalidades',
     ],
     'card' => [
-        'title' => 'Listo para traducciones completas',
+        'title' => 'IA creada para editoriales y traductores',
         'highlights' => [
-            'Traduce páginas, capítulos o la obra completa',
-            'Control terminológico con glosarios personalizados',
-            'Historial de versiones y comparaciones paralelas',
-            'Exportación instantánea a PDF, DOCX o HTML',
+            'Tecnología propia optimizada para obras extensas y contenido técnico',
+            'Traduce el libro completo o define un límite de páginas para muestras',
+            'Idiomas principales: Portugués, Inglés, Español, Francés, Italiano, Alemán, Latín, Hebreo y Griego',
+            'PDF final con diseño, notas y numeración preservados',
         ],
     ],
     'info' => [
         'items' => [
             [
-                'title' => 'Procesamiento avanzado de PDFs',
-                'body' => 'Extraemos texto, imágenes y estructuras de capítulos para preservar el diseño original. Compatible con libros muy extensos.',
+                'title' => 'IA enfocada en libros',
+                'body' => 'Aurora ajusta párrafos largos, encabezados y pies de página para mantener una lectura natural en cualquier idioma.',
             ],
             [
-                'title' => 'Flujo híbrido humano + IA',
-                'body' => 'Combina la Cloud Translation API con revisores internos. Compara versiones y ajusta sin salir de la plataforma.',
+                'title' => 'Configuración rápida',
+                'body' => 'Selecciona los idiomas de origen y destino, elige traducir todo el libro o un límite de páginas y sigue el progreso en tiempo real.',
             ],
             [
-                'title' => 'Entrega en múltiples formatos',
-                'body' => 'Genera PDFs finales, borradores en DOCX para revisión editorial o HTML optimizado para publicación digital.',
+                'title' => 'Entrega lista para publicar',
+                'body' => 'Descarga el PDF traducido o compártelo con tu equipo para la revisión editorial final.',
             ],
         ],
     ],
     'workflow' => [
-        'badge' => 'En tres pasos',
-        'title' => 'Del upload a la publicación en minutos',
+        'badge' => 'Cómo funciona',
+        'title' => 'Traduce con la IA de Aurora en tres pasos',
         'steps' => [
             [
-                'title' => 'Carga inteligente',
-                'body' => 'Selecciona un PDF completo o especifica páginas. Detectamos el idioma automáticamente y validamos metadatos.',
+                'title' => 'Sube tu PDF',
+                'body' => 'Carga el archivo directamente desde el navegador. Soportamos libros extensos, informes técnicos y materiales académicos.',
             ],
             [
-                'title' => 'Traducción orquestada',
-                'body' => 'Conéctate a la Google Cloud Translation API y personaliza glosarios y modelos adaptados a tu catálogo.',
+                'title' => 'Define idiomas y límites',
+                'body' => 'Elige entre los idiomas soportados por Aurora y decide si traducirás todo el libro o solo una parte.',
             ],
             [
-                'title' => 'Refinamiento y exportación',
-                'body' => 'Revisa, compara y aprueba. Luego genera el PDF final con índice, portadas y notas preservadas.',
+                'title' => 'Recibe la versión traducida',
+                'body' => 'La IA de Aurora procesa el documento, conserva el diseño y genera el PDF final listo para revisión o distribución.',
             ],
         ],
     ],
     'integration' => [
-        'badge' => 'Google Cloud Translation API',
-        'title' => 'Integración oficial y segura con Google Cloud.',
-        'description' => 'Utiliza los endpoints translateText y translateDocument para traducciones síncronas o por lotes. Soporte nativo para glosarios, conjuntos Adaptive MT y monitoreo de operaciones extensas.',
+        'badge' => 'Tecnología IA de Aurora',
+        'title' => 'Traducción neuronal que respeta tu obra.',
+        'description' => 'Combinamos modelos lingüísticos de última generación con ajustes pensados para libros, materiales académicos y documentación técnica.',
         'cards' => [
             [
-                'title' => 'Provisionamiento rápido',
-                'body' => 'Crea un proyecto, habilita la API y genera una clave de servicio. Configura la variable GOOGLE_APPLICATION_CREDENTIALS.',
+                'title' => 'Fidelidad al diseño',
+                'body' => 'Identificamos encabezados, notas e índices para mantener la identidad visual del PDF original.',
             ],
             [
-                'title' => 'Clientes oficiales',
-                'body' => 'Usa los SDK de Google o solicitudes REST. Soporte completo para detección de idioma, glosarios y romanización.',
+                'title' => 'Idiomas principales',
+                'body' => 'Traduce entre Portugués, Inglés, Español, Francés, Italiano, Alemán, Latín, Hebreo y Griego sin configuraciones complejas.',
             ],
             [
-                'title' => 'Monitoreo continuo',
-                'body' => 'Sigue los procesos largos con projects.locations.operations, cancela o reprocesa cuando sea necesario.',
+                'title' => 'Seguridad y privacidad',
+                'body' => 'Procesamiento protegido, registros completos y opción de eliminar los archivos al finalizar la traducción.',
             ],
         ],
     ],
-    'cta' => [
-        'title' => 'Comienza a traducir ahora mismo.',
-        'description' => 'Una plataforma completa para editoriales, universidades y traductores independientes. Prueba la traducción de un capítulo y observa el resultado en tiempo real.',
+    'plans' => [
+        'title' => 'Elige el plan ideal para tu equipo',
+        'description' => 'Compara límites, ajusta beneficios a tu flujo editorial y comienza ahora mismo.',
+        'currency' => 'US$',
+        'per_month' => 'por mes',
+        'page_limit' => '{1}:count página por libro|[2,*]:count páginas por libro',
+        'book_limit' => '{1}:count libro por mes|[2,*]:count libros por mes',
+        'book_limit_unlimited' => 'Libros ilimitados por mes',
+        'unlimited' => 'Ilimitado',
+        'unlimited_label' => 'Páginas ilimitadas por libro',
+        'unlimited_badge' => 'Sin límites',
+        'button' => 'Elegir plan',
+    ],
+    'quick_start' => [
+        'title' => 'Prueba la IA de Aurora ahora mismo.',
+        'description' => 'Sube un PDF, selecciona los idiomas y observa la traducción automática manteniendo el diseño original.',
         'button' => 'Empezar a traducir',
     ],
-    'footer' => 'Aurora Translate · Plataforma profesional de traducción de PDFs',
+    'cta' => [
+        'title' => 'Impulsa tu próximo proyecto de traducción.',
+        'description' => 'La IA de Aurora reduce semanas de trabajo a minutos, con la calidad que tus publicaciones necesitan.',
+        'button' => 'Comenzar ahora',
+    ],
+    'footer' => 'Aurora Translate – Plataforma profesional de traducción IA para PDFs',
 ];
+

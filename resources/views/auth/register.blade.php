@@ -24,18 +24,6 @@
             </div>
 
             <div class="space-y-2">
-                <x-input-label for="company_name" :value="__('forms.company_name')" class="text-sm font-medium text-slate-700" />
-                <x-text-input id="company_name"
-                              type="text"
-                              name="company_name"
-                              :value="old('company_name')"
-                              required
-                              autocomplete="organization"
-                              class="w-full rounded-2xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-800 shadow-sm transition focus:border-indigo-500 focus:outline-none focus:ring-2 focus:ring-indigo-200" />
-                <x-input-error :messages="$errors->get('company_name')" class="text-sm text-rose-500" />
-            </div>
-
-            <div class="space-y-2">
                 <x-input-label for="phone" :value="__('forms.phone')" class="text-sm font-medium text-slate-700" />
                 <x-text-input id="phone"
                               type="tel"

@@ -4,9 +4,10 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Book;
+use App\Models\Plan;
 use App\Models\Subscription;
 use App\Models\User;
-use Illuminate\Support\Collection;
+use Carbon\Carbon;
 use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
@@ -25,15 +26,30 @@ class AdminController extends Controller
 
         $totalRevenue = (float) $totalRevenue;
 
+        $currentMonthStart = Carbon::now()->startOfMonth();
+        $currentMonthEnd = Carbon::now()->endOfMonth();
+
         $usersSummary = User::select('id', 'name', 'email')
+            ->with(['activeSubscription.plan'])
             ->withCount('books')
             ->withSum('books as books_pages_sum', 'total_pages')
-            ->orderByDesc('books_count')
+            ->withCount(['books as books_this_month' => function ($query) use ($currentMonthStart, $currentMonthEnd) {
+                $query->whereBetween('created_at', [$currentMonthStart, $currentMonthEnd]);
+            }])
+            ->orderBy('name')
             ->get()
             ->map(function ($user) {
                 $user->books_pages_sum = (int) ($user->books_pages_sum ?? 0);
+                $user->books_this_month = (int) ($user->books_this_month ?? 0);
                 return $user;
             });
+
+        $plans = Plan::orderBy('price')->get();
+
+        $activePlanCounts = Subscription::select('plan_id', DB::raw('COUNT(*) as total'))
+            ->where('status', 'active')
+            ->groupBy('plan_id')
+            ->pluck('total', 'plan_id');
 
         return view('admin.dashboard', [
             'totalUsers' => $totalUsers,
@@ -42,6 +58,8 @@ class AdminController extends Controller
             'activeSubscriptions' => $activeSubscriptions,
             'totalRevenue' => $totalRevenue,
             'usersSummary' => $usersSummary,
+            'plans' => $plans,
+            'activePlanCounts' => $activePlanCounts,
         ]);
     }
 }

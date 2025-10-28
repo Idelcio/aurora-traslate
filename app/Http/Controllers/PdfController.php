@@ -21,34 +21,22 @@ class PdfController extends Controller
         set_time_limit(0); // Sem limite de tempo
         ini_set('max_execution_time', '0');
 
-        $allowedSourceLanguages = config('translation.source_languages', []);
         $allowedTargetLanguages = config('translation.target_languages', []);
 
         // Valida o upload
         $request->validate([
             'pdf' => 'required|mimes:pdf|max:51200', // max 50MB
-            'source_language' => [
-                'nullable',
-                'string',
-                'max:10',
-                Rule::in($allowedSourceLanguages),
-            ],
             'target_language' => [
                 'required',
                 'string',
                 'max:10',
                 Rule::in($allowedTargetLanguages),
             ],
-            'max_pages' => 'nullable|integer|min:1|max:1000',
+            'start_page' => 'nullable|integer|min:1',
+            'end_page' => 'nullable|integer|min:1|gte:start_page',
         ]);
 
         $user = auth()->user();
-        $subscription = $user->activeSubscription;
-
-        // Verifica se o usuário tem plano ativo
-        if (!$subscription || !$subscription->isActive()) {
-            return back()->with('error', 'Você precisa de um plano ativo para traduzir livros.');
-        }
 
         // Obtém o arquivo PDF
         $pdf = $request->file('pdf');
@@ -66,21 +54,39 @@ class PdfController extends Controller
             return back()->with('error', 'Não foi possível ler o arquivo PDF. Verifique se o arquivo está corrompido.');
         }
 
-        // Verifica se o usuário pode fazer upload com base no plano
-        if (!$user->canUploadBook($pageCount)) {
-            Storage::disk('public')->delete($path);
-            return back()->with('error', "Este livro tem {$pageCount} páginas, mas seu plano permite no máximo {$subscription->plan->max_pages} páginas.");
+        // Calcula o número de páginas a serem traduzidas
+        $startPage = $request->start_page;
+        $endPage = $request->end_page;
+
+        // Valida se o intervalo está dentro do PDF
+        if ($startPage && $endPage) {
+            if ($startPage > $pageCount || $endPage > $pageCount) {
+                Storage::disk('public')->delete($path);
+                return back()->with('error', "O intervalo de páginas selecionado ($startPage-$endPage) excede o total de páginas do PDF ($pageCount).");
+            }
+            $pagesToTranslate = $endPage - $startPage + 1;
+        } else {
+            $pagesToTranslate = $pageCount;
         }
 
-        // Cria o registro do livro
+        // Verifica limites do plano (páginas e livros/mês)
+        $planValidation = $user->validatePlanLimits($pagesToTranslate);
+
+        if (!$planValidation['allowed']) {
+            Storage::disk('public')->delete($path);
+            return back()->with('error', $planValidation['message']);
+        }
+
+        // Cria o registro do livro - idioma de origem será detectado automaticamente
         $book = $user->books()->create([
             'title' => pathinfo($pdf->getClientOriginalName(), PATHINFO_FILENAME),
             'original_filename' => $pdf->getClientOriginalName(),
             'pdf_path' => $path,
-            'source_language' => $request->source_language ?? config('translation.defaults.source_language', 'auto'),
+            'source_language' => 'auto', // Sempre usa detecção automática
             'target_language' => $request->target_language,
             'total_pages' => $pageCount,
-            'max_pages' => $request->max_pages,
+            'start_page' => $startPage,
+            'end_page' => $endPage,
             'status' => 'processing',
         ]);
 

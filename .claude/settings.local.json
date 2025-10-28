@@ -23,7 +23,10 @@
       "Bash(pip install:*)",
       "Bash(powershell -Command:*)",
       "Bash(node scripts/rebuildSimplePdf.cjs:*)",
-      "Bash(php:*)"
+      "Bash(php:*)",
+      "Bash(for:*)",
+      "Bash(do echo \"Testing: $f\")",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

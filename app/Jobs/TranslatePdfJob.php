@@ -46,14 +46,12 @@ class TranslatePdfJob implements ShouldQueue
             $this->ensureDirectory(dirname($outputPdfPath));
 
             // Use unified Python service for entire pipeline
-            // Always pass source language - use 'pt-BR' as default if 'auto'
-            $sourceLanguage = $this->book->source_language === 'auto' ? 'pt-BR' : $this->book->source_language;
-
+            // Pass null for source language to enable automatic detection
             $result = $pythonPdfService->translatePdf(
                 $originalPdfPath,
                 $outputPdfPath,
                 $this->book->target_language,
-                $sourceLanguage,
+                null, // Auto-detect source language
                 function ($progress) {
                     // Log progress updates
                     Log::info('Translation progress', [
@@ -63,7 +61,8 @@ class TranslatePdfJob implements ShouldQueue
                         'total' => $progress['totalBatches'] ?? 0,
                     ]);
                 },
-                $this->book->max_pages
+                $this->book->start_page,
+                $this->book->end_page
             );
 
             $this->book->update([

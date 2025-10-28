@@ -3,63 +3,40 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Models\Plan;
 use Illuminate\Http\Request;
 
 class PlanController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     */
     public function index()
     {
-        //
+        $plans = Plan::orderBy('price')->get();
+
+        return view('admin.plans.index', [
+            'plans' => $plans,
+        ]);
     }
 
-    /**
-     * Show the form for creating a new resource.
-     */
-    public function create()
+    public function update(Request $request, Plan $plan)
     {
-        //
-    }
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'price' => ['required', 'numeric', 'min:0'],
+            'max_pages' => ['required', 'integer', 'min:0'],
+            'max_books_per_month' => ['required', 'integer', 'min:0'],
+            'description' => ['nullable', 'string'],
+            'active' => ['nullable', 'boolean'],
+        ]);
 
-    /**
-     * Store a newly created resource in storage.
-     */
-    public function store(Request $request)
-    {
-        //
-    }
+        $plan->update([
+            'name' => $data['name'],
+            'price' => $data['price'],
+            'max_pages' => $data['max_pages'],
+            'max_books_per_month' => $data['max_books_per_month'],
+            'description' => $data['description'] ?? null,
+            'active' => $request->boolean('active'),
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(string $id)
-    {
-        //
-    }
-
-    /**
-     * Show the form for editing the specified resource.
-     */
-    public function edit(string $id)
-    {
-        //
-    }
-
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(Request $request, string $id)
-    {
-        //
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     */
-    public function destroy(string $id)
-    {
-        //
+        return back()->with('success', 'Plano atualizado com sucesso.');
     }
 }

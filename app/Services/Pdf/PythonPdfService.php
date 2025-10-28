@@ -34,7 +34,8 @@ class PythonPdfService
      * @param string $targetLanguage Target language code (e.g., 'pt', 'en')
      * @param string|null $sourceLanguage Source language code or null for auto-detect
      * @param callable|null $progressCallback Optional callback for progress updates
-     * @param int|null $maxPages Maximum number of pages to translate (null = all pages)
+     * @param int|null $startPage First page to translate (1-indexed, null = first page)
+     * @param int|null $endPage Last page to translate (1-indexed, null = last page)
      * @return array{success: bool, stats: array}
      */
     public function translatePdf(
@@ -43,7 +44,8 @@ class PythonPdfService
         string $targetLanguage,
         ?string $sourceLanguage = null,
         ?callable $progressCallback = null,
-        ?int $maxPages = null
+        ?int $startPage = null,
+        ?int $endPage = null
     ): array {
         $timestamp = time();
         $tempDir = storage_path('app/public/pdfs/temp');
@@ -59,9 +61,10 @@ class PythonPdfService
             // Step 1: Extract PDF text
             Log::info('Step 1/3: Extracting PDF text', [
                 'pdf' => $originalPdfPath,
-                'max_pages' => $maxPages ?? 'all',
+                'start_page' => $startPage ?? 'first',
+                'end_page' => $endPage ?? 'last',
             ]);
-            $this->extractPdfText($originalPdfPath, $extractedJsonPath, $maxPages);
+            $this->extractPdfText($originalPdfPath, $extractedJsonPath, $startPage, $endPage);
 
             // Step 2: Translate texts
             Log::info('Step 2/3: Translating text');
@@ -100,7 +103,7 @@ class PythonPdfService
     /**
      * Extract text and metadata from PDF using Python/PyMuPDF with OCR.
      */
-    private function extractPdfText(string $pdfPath, string $outputJsonPath, ?int $maxPages = null): void
+    private function extractPdfText(string $pdfPath, string $outputJsonPath, ?int $startPage = null, ?int $endPage = null): void
     {
         // Use OCR-always script for best results with scanned/image PDFs
         $scriptPath = "{$this->scriptsPath}/extract_pdf_with_ocr_always.py";
@@ -136,9 +139,12 @@ class PythonPdfService
             $command[] = '2.0';  // zoom
             $command[] = '4';    // max workers for parallel OCR
 
-            // Add max_pages if specified
-            if ($maxPages !== null) {
-                $command[] = (string) $maxPages;
+            // Add page range if specified
+            if ($startPage !== null) {
+                $command[] = (string) $startPage;
+            }
+            if ($endPage !== null) {
+                $command[] = (string) $endPage;
             }
         }
 
@@ -196,22 +202,29 @@ class PythonPdfService
             }
         }
 
+        // Get outline but DON'T translate it - keep original
+        $outline = $extracted['outline'] ?? [];
+
         Log::info('Translating texts via PHP', [
             'total_texts' => count($allTexts),
+            'outline_entries' => count($outline),
+            'outline_note' => 'Outline kept as-is (not translated)',
             'target' => $targetLanguage,
             'source' => $sourceLanguage ?? 'auto',
         ]);
 
         // Translate using PHP service (bypasses Python DNS issues)
+        // Pass null for source language to enable auto-detection for multi-language support
         $translations = $this->translateService->translateTextsOptimized(
             $allTexts,
             $targetLanguage,
-            $sourceLanguage
+            null  // Auto-detect source language for each text
         );
 
-        // Build output structure
+        // Build output structure - copy outline as-is (no translation)
         $output = [
             'numPages' => $extracted['numPages'] ?? count($extracted['pages']),
+            'outline' => $outline,  // Copy outline without translation
             'pages' => [],
         ];
 
@@ -224,7 +237,13 @@ class PythonPdfService
 
             foreach ($page['textItems'] ?? [] as $item) {
                 $originalText = $item['text'] ?? '';
+                // Keep original text if translation fails or is empty
                 $translatedText = $translations[$originalText] ?? $originalText;
+
+                // If translation is empty, use original
+                if (empty(trim($translatedText))) {
+                    $translatedText = $originalText;
+                }
 
                 $outputPage['textItems'][] = [
                     'originalText' => $originalText,

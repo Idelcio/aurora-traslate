@@ -13,6 +13,8 @@ use App\Http\Controllers\AnnotationController;
 use App\Http\Controllers\TermsOfUseController;
 use App\Http\Controllers\ComandosController;
 use App\Http\Controllers\Admin\AdminController;
+use App\Http\Controllers\Admin\PlanController;
+use App\Http\Controllers\Admin\UserPlanController;
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -139,6 +141,9 @@ Route::middleware('auth')->group(function () {
 
 Route::middleware(['auth', 'verified', 'admin'])->prefix('admin')->name('admin.')->group(function () {
     Route::get('/dashboard', [AdminController::class, 'index'])->name('dashboard');
+    Route::patch('/users/{user}/plan', [UserPlanController::class, 'update'])->name('users.plan.update');
+    Route::get('/plans', [PlanController::class, 'index'])->name('plans.index');
+    Route::patch('/plans/{plan}', [PlanController::class, 'update'])->name('plans.update');
 });
 
 // Incluindo as rotas de autenticação

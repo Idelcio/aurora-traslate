@@ -54,16 +54,17 @@ def normalise_text(text: str) -> str:
 def translate_batch(
     payloads: Sequence[str],
     target_language: str,
-    source_language: Optional[str],
     api_key: str,
     timeout: float,
 ) -> List[str]:
-    """Translate a batch of texts using Google Translate API (JSON)."""
+    """Translate a batch of texts using Google Translate API (JSON).
+
+    No source language specified - Google will auto-detect for multi-language support.
+    """
     url = f"{GOOGLE_TRANSLATE_ENDPOINT}?key={api_key}"
 
+    # Don't include source language - let Google auto-detect for multi-language support
     body = {"q": payloads, "target": target_language, "format": "text"}
-    if source_language:
-        body["source"] = source_language
 
     try:
         response = requests.post(url, json=body, timeout=timeout)
@@ -91,7 +92,6 @@ def translate_texts(
     texts: Sequence[str],
     *,
     target_language: str,
-    source_language: Optional[str],
     api_key: str,
     batch_size: int,
     timeout: float,
@@ -109,20 +109,21 @@ def translate_texts(
                 translations = translate_batch(
                     chunk,
                     target_language=target_language,
-                    source_language=source_language,
                     api_key=api_key,
                     timeout=timeout,
                 )
                 for original, translated in zip(chunk, translations):
-                    cache[original] = translated
+                    # Keep original text if translation is empty or failed
+                    cache[original] = translated if translated else original
                 break
             except TranslationError as exc:
                 logging.warning("Failed to translate batch: %s", exc)
                 if attempts >= retry_attempts:
-                    logging.error(
-                        "Giving up on batch after %s attempts; using original text",
+                    logging.warning(
+                        "Giving up on batch after %s attempts; keeping original text",
                         attempts,
                     )
+                    # Keep original text for untranslatable content
                     for original in chunk:
                         cache[original] = original
                     break
@@ -151,7 +152,11 @@ def write_json(path: str, payload: Dict) -> None:
         json.dump(payload, handle, ensure_ascii=False, indent=2)
 
 
-def collect_text_items(extracted: Dict) -> Tuple[List[Dict], List[str]]:
+def collect_text_items(extracted: Dict) -> Tuple[List[Dict], List[str], List[Dict]]:
+    """
+    Collect text items from pages only (outline will be copied as-is).
+    Returns: (flattened_pages, page_texts, outline_items)
+    """
     pages = extracted.get("pages", [])
     flattened: List[Dict] = []
     texts: List[str] = []
@@ -167,12 +172,17 @@ def collect_text_items(extracted: Dict) -> Tuple[List[Dict], List[str]]:
                 }
             )
             texts.append(text)
-    return flattened, texts
+
+    # Get outline but DON'T translate it - keep original
+    outline = extracted.get("outline", [])
+
+    return flattened, texts, outline
 
 
 def build_output_structure(
     extracted: Dict,
     flattened: Sequence[Dict],
+    outline_items: List[Dict],
     translations: Dict[str, str],
 ) -> Dict:
     output = {"numPages": extracted.get("numPages"), "pages": []}
@@ -189,6 +199,10 @@ def build_output_structure(
                 "translatedText": normalise_text(translated) or text,
             }
         )
+
+    # Copy outline as-is (no translation)
+    output["outline"] = outline_items
+
     return output
 
 
@@ -202,7 +216,6 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     parser.add_argument("--input-json", required=True)
     parser.add_argument("--output-json", required=True)
     parser.add_argument("--target-language", required=True)
-    parser.add_argument("--source-language", default=None)
     parser.add_argument("--api-key", default=None)
     parser.add_argument("--batch-size", type=int, default=64)
     parser.add_argument("--request-timeout", type=float, default=15.0)
@@ -226,21 +239,21 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         return 2
 
     extracted = load_json(args.input_json)
-    flattened, texts = collect_text_items(extracted)
+    flattened, texts, outline_items = collect_text_items(extracted)
     total_items = len(flattened)
     total_chars = sum(len(text or "") for text in texts)
 
     logging.info(
-        "Processing %s text items across %s page(s)",
+        "Processing %s text items across %s page(s) (outline: %s entries, kept as-is)",
         total_items,
         extracted.get("numPages"),
+        len(outline_items),
     )
 
     try:
         translations = translate_texts(
             texts,
             target_language=args.target_language,
-            source_language=args.source_language,
             api_key=api_key,
             batch_size=args.batch_size,
             timeout=args.request_timeout,
@@ -251,7 +264,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
         logging.error("Translation failed: %s", exc)
         return 3
 
-    output_payload = build_output_structure(extracted, flattened, translations)
+    output_payload = build_output_structure(extracted, flattened, outline_items, translations)
     write_json(args.output_json, output_payload)
 
     stats = {

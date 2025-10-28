@@ -15,6 +15,7 @@ class Plan extends Model
         'slug',
         'max_pages',
         'price',
+        'max_books_per_month',
         'description',
         'active',
     ];
@@ -22,6 +23,7 @@ class Plan extends Model
     protected $casts = [
         'price' => 'decimal:2',
         'active' => 'boolean',
+        'max_books_per_month' => 'integer',
     ];
 
     public function subscriptions(): HasMany

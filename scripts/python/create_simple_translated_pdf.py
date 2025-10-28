@@ -127,8 +127,9 @@ def create_simple_pdf(translated_json_path, output_pdf_path):
     usable_width = page_width - left_margin - right_margin
 
     # Font settings
-    font_size = 11
-    line_height = font_size * 1.6  # 1.6 line spacing for readability
+    font_size = 12  # Increased from 11 for better readability
+    line_height = font_size * 1.8  # Increased spacing for better readability
+    paragraph_spacing = line_height * 0.8  # Space between paragraphs
 
     # Create first page
     page = doc.new_page(width=page_width, height=page_height)
@@ -157,10 +158,15 @@ def create_simple_pdf(translated_json_path, output_pdf_path):
 
         for paragraph in paragraphs:
             # Wrap text to fit within usable width
-            # Approximate: 60 characters per line for 11pt font
-            wrapped_lines = textwrap.wrap(paragraph, width=70)
+            # Approximate: 65 characters per line for 12pt font with good margins
+            wrapped_lines = textwrap.wrap(
+                paragraph,
+                width=75,  # Adjusted for better line length
+                break_long_words=False,
+                break_on_hyphens=True
+            )
 
-            for line in wrapped_lines:
+            for line_idx, line in enumerate(wrapped_lines):
                 # Check if we need a new page
                 if current_y + line_height > page_height - bottom_margin:
                     page = doc.new_page(width=page_width, height=page_height)
@@ -237,8 +243,36 @@ def create_simple_pdf(translated_json_path, output_pdf_path):
                 # Move to next line
                 current_y += line_height
 
-            # Add extra spacing after paragraph
-            current_y += line_height * 0.5
+            # Add paragraph spacing after each paragraph
+            current_y += paragraph_spacing
+
+    # Add outline (table of contents) if available
+    outline = translated.get("outline", [])
+    if outline:
+        print(f"Adding outline with {len(outline)} entries", file=sys.stderr)
+
+        # Build TOC in PyMuPDF format: list of [level, title, page_number]
+        toc = []
+        for item in outline:
+            level = item.get("level", 1)
+            title = item.get("title", "")
+            page = item.get("page", 1)
+
+            # Ensure page number is within bounds
+            if page > len(doc):
+                page = len(doc)
+            if page < 1:
+                page = 1
+
+            toc.append([level, title, page])
+
+        try:
+            doc.set_toc(toc)
+            print(f"Successfully added outline", file=sys.stderr)
+        except Exception as e:
+            print(f"Warning: Could not add outline: {e}", file=sys.stderr)
+    else:
+        print("No outline to add", file=sys.stderr)
 
     # Save PDF
     doc.save(output_pdf_path, garbage=4, deflate=True)

@@ -12,8 +12,16 @@ return new class extends Migration
     public function up(): void
     {
         Schema::table('books', function (Blueprint $table) {
-            $table->integer('start_page')->nullable()->after('target_language');
-            $table->integer('end_page')->nullable()->after('start_page');
+            if (!Schema::hasColumn('books', 'start_page')) {
+                $table->integer('start_page')->nullable()->after('total_pages');
+            }
+            if (!Schema::hasColumn('books', 'end_page')) {
+                $table->integer('end_page')->nullable()->after('start_page');
+            }
+            // Remove max_pages if it exists
+            if (Schema::hasColumn('books', 'max_pages')) {
+                $table->dropColumn('max_pages');
+            }
         });
     }
 
@@ -24,6 +32,7 @@ return new class extends Migration
     {
         Schema::table('books', function (Blueprint $table) {
             $table->dropColumn(['start_page', 'end_page']);
+            $table->integer('max_pages')->nullable()->after('total_pages');
         });
     }
 };

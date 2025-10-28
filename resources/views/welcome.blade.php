@@ -25,6 +25,11 @@
             'es' => ['img' => 'flags/es.png', 'label' => 'ES', 'title' => 'Español'],
         ];
         $currentLocale = app()->getLocale();
+        $plans = \App\Models\Plan::query()->where('active', true)->orderBy('price')->get();
+        $planTexts = trans('welcome.plans');
+        $decimalSeparator = $currentLocale === 'en' ? '.' : ',';
+        $thousandSeparator = $currentLocale === 'en' ? ',' : '.';
+        $currencySymbol = $planTexts['currency'] ?? 'R$';
     @endphp
 
     <!-- Hero Section -->
@@ -93,9 +98,9 @@
                     class="mt-4 text-4xl font-semibold leading-tight tracking-tight text-white drop-shadow-lg lg:text-5xl xl:text-6xl">
                     {{ __('welcome.hero.title') }}
                 </h1>
-                <p class="mt-6 text-base leading-relaxed text-white/90">
+                {{-- <p class="mt-6 text-base leading-relaxed text-white/90">
                     {{ __('welcome.hero.description') }}
-                </p>
+                </p> --}}
                 <div class="mt-10 flex flex-wrap gap-4">
                     <a href="{{ route('dashboard') }}"
                         class="inline-flex items-center gap-2 rounded-full bg-slate-50 px-8 py-4 text-sm font-semibold text-gray-900 shadow-xl shadow-slate-900/25 transition hover:-translate-y-1 hover:shadow-2xl hover:shadow-slate-900/35">
@@ -184,6 +189,153 @@
                 @endforeach
             </div>
         </section>
+
+        @if ($plans->isNotEmpty())
+            <!-- Plans Section -->
+            <section class="mx-auto mb-20 max-w-screen-xl px-6">
+                <div
+                    class="rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-indigo-900 via-indigo-950 to-slate-950 px-10 py-16 shadow-2xl shadow-indigo-900/30">
+                    <div class="mx-auto max-w-3xl text-center">
+                        <h2 class="text-3xl font-semibold text-indigo-100 sm:text-4xl">
+                            {{ $planTexts['title'] ?? '' }}
+                        </h2>
+                        <p class="mt-4 text-base leading-relaxed text-indigo-200">
+                            {{ $planTexts['description'] ?? '' }}
+                        </p>
+                    </div>
+
+                    <div class="mt-12 grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+                        @foreach ($plans as $plan)
+                            @php
+                                $formattedPrice = number_format($plan->price, 2, $decimalSeparator, $thousandSeparator);
+                                $formattedPages = number_format(
+                                    max($plan->max_pages, 0),
+                                    0,
+                                    $decimalSeparator,
+                                    $thousandSeparator,
+                                );
+                                $formattedBooks = number_format(
+                                    max($plan->max_books_per_month, 0),
+                                    0,
+                                    $decimalSeparator,
+                                    $thousandSeparator,
+                                );
+                                $planLink = Route::has('register')
+                                    ? route('register', ['plan' => $plan->slug])
+                                    : (Route::has('login')
+                                        ? route('login', ['plan' => $plan->slug])
+                                        : route('dashboard'));
+                                $bookLimitText =
+                                    $plan->max_books_per_month === 0
+                                        ? $planTexts['book_limit_unlimited'] ?? ($planTexts['unlimited'] ?? '')
+                                        : trans_choice('welcome.plans.book_limit', $plan->max_books_per_month, [
+                                            'count' => $formattedBooks,
+                                        ]);
+                            @endphp
+                            <article
+                                class="group flex flex-col justify-between rounded-[1.75rem] bg-white/95 p-8 text-left shadow-xl shadow-indigo-900/10 ring-1 ring-transparent transition hover:-translate-y-1 hover:shadow-indigo-900/20 hover:ring-indigo-200/70">
+                                <div>
+                                    <div class="flex items-center justify-between gap-3">
+                                        <h3 class="text-xl font-semibold text-slate-900">{{ $plan->name }}</h3>
+                                        @if ($plan->max_pages === 0)
+                                            <span
+                                                class="rounded-full bg-indigo-100 px-3 py-1 text-xs font-semibold text-indigo-700">
+                                                {{ $planTexts['unlimited_badge'] ?? ($planTexts['unlimited'] ?? 'Unlimited') }}
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <p class="mt-3 text-sm leading-relaxed text-slate-600">{{ $plan->description }}</p>
+                                </div>
+
+                                <div class="mt-8 flex flex-col gap-4">
+                                    <div class="flex items-baseline gap-2 text-slate-900">
+                                        <span class="text-2xl font-semibold">{{ $currencySymbol }}</span>
+                                        <span class="text-4xl font-bold tracking-tight">{{ $formattedPrice }}</span>
+                                        <span class="text-xs uppercase text-slate-500">
+                                            {{ $planTexts['per_month'] ?? '' }}
+                                        </span>
+                                    </div>
+                                    {{-- <ul class="space-y-2 text-sm text-slate-600">
+                                        <li class="flex items-center gap-2">
+                                            <span
+                                                class="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600/10 text-indigo-600">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M5 12l5 5l10 -10" />
+                                                </svg>
+                                            </span>
+                                            <span>
+                                                @if ($plan->max_pages === 0)
+                                                    {{ $planTexts['unlimited_label'] ?? $planTexts['unlimited'] ?? '' }}
+                                                @else
+                                                    {{ trans_choice('welcome.plans.page_limit', $plan->max_pages, ['count' => $formattedPages]) }}
+                                                @endif
+                                            </span>
+                                        </li>
+                                        <li class="flex items-center gap-2">
+                                            <span
+                                                class="flex h-6 w-6 items-center justify-center rounded-full bg-indigo-600/10 text-indigo-600">
+                                                <svg xmlns="http://www.w3.org/2000/svg" width="14" height="14"
+                                                    viewBox="0 0 24 24" fill="none" stroke="currentColor"
+                                                    stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                                    <path d="M5 12l5 5l10 -10" />
+                                                </svg>
+                                            </span>
+                                            <span>
+                                                {{ $bookLimitText }}
+                                            </span>
+                                        </li>
+                                    </ul> --}}
+                                </div>
+
+                                <div class="mt-8">
+                                    <a href="{{ $planLink }}"
+                                        class="inline-flex items-center gap-2 rounded-full bg-indigo-600 px-6 py-3 text-sm font-semibold text-white shadow-md shadow-indigo-600/30 transition hover:-translate-y-0.5 hover:bg-indigo-500">
+                                        {{ $planTexts['button'] ?? __('welcome.quick_start.button') }}
+                                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18"
+                                            fill="none" stroke="currentColor" stroke-width="1.5"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round"
+                                                d="M3 12h18m0 0l-6-6m6 6l-6 6" />
+                                        </svg>
+                                    </a>
+                                </div>
+                            </article>
+                        @endforeach
+                    </div>
+                </div>
+            </section>
+        @else
+            <!-- Quick Start CTA (Fallback) -->
+            <section class="mx-auto mb-20 max-w-screen-lg px-6">
+                <div
+                    class="rounded-[2.5rem] border border-white/10 bg-gradient-to-br from-indigo-800 via-indigo-900 to-slate-950 px-10 py-16 text-center shadow-2xl shadow-indigo-900/30">
+                    <h2 class="text-3xl font-semibold text-indigo-100 sm:text-4xl">
+                        {{ __('welcome.quick_start.title') }}
+                    </h2>
+                    <p class="mx-auto mt-4 max-w-2xl text-base leading-relaxed text-indigo-200">
+                        {{ __('welcome.quick_start.description') }}
+                    </p>
+                    @php
+                        $quickStartUrl = Route::has('register')
+                            ? route('register')
+                            : (Route::has('login')
+                                ? route('login')
+                                : route('dashboard'));
+                    @endphp
+                    <a href="{{ $quickStartUrl }}"
+                        class="group mt-8 inline-flex items-center gap-2 rounded-full bg-white/10 px-8 py-3 text-sm font-semibold text-indigo-50 transition hover:bg-white/20 hover:text-white">
+                        {{ __('welcome.quick_start.button') }}
+                        <svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" fill="none"
+                            stroke="currentColor" stroke-width="1.5" viewBox="0 0 24 24"
+                            class="transition group-hover:translate-x-1">
+                            <path stroke-linecap="round" stroke-linejoin="round" d="M3 12h18m0 0l-6-6m6 6l-6 6" />
+                        </svg>
+                    </a>
+                </div>
+            </section>
+        @endif
 
         <!-- Final CTA Section -->
         <section

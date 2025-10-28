@@ -20,7 +20,10 @@ class DatabaseSeeder extends Seeder
             'email' => 'test@example.com',
         ]);
 
-        // Chamada para o seeder de termos de uso
-        $this->call(TermsOfUseSeeder::class);
+        // Seeders adicionais
+        $this->call([
+            TermsOfUseSeeder::class,
+            PlanSeeder::class,
+        ]);
     }
 }

@@ -7,9 +7,12 @@
         $languageOptions = trans('dashboard.form.language_options');
         $targetLanguageOptions = trans('dashboard.form.target_language_options');
 
-        // Calculate total translated pages (considering max_pages limit)
+        // Calculate total translated pages (considering page range)
         $totalTranslatedPages = $user->books()->get()->sum(function($book) {
-            return $book->max_pages ?? $book->total_pages;
+            if ($book->start_page && $book->end_page) {
+                return ($book->end_page - $book->start_page + 1);
+            }
+            return $book->total_pages;
         });
     @endphp
 
@@ -42,15 +45,23 @@
                                 <p class="text-xl font-bold">{{ $plan->name }}</p>
                             </div>
                         </div>
-                        <div class="mt-4 pt-4 border-t border-white/20">
-                            <p class="text-sm text-white/80">{{ __('dashboard.subscription.limit_label') }}</p>
-                            <p class="text-lg font-semibold">
-                                @if($plan->max_pages == 0)
-                                    {{ __('dashboard.subscription.unlimited') }}
-                                @else
-                                    {{ __('dashboard.subscription.limit_value', ['pages' => number_format($plan->max_pages, 0, ',', '.')]) }}
-                                @endif
-                            </p>
+                        <div class="mt-4 grid grid-cols-2 gap-4 pt-4 border-t border-white/20">
+                            <div>
+                                <p class="text-sm text-white/80">{{ __('dashboard.subscription.pages_per_book') }}</p>
+                                <p class="text-lg font-semibold">
+                                    @if($plan->max_pages == 0)
+                                        {{ __('dashboard.subscription.unlimited') }}
+                                    @else
+                                        {{ number_format($plan->max_pages, 0, ',', '.') }}
+                                    @endif
+                                </p>
+                            </div>
+                            <div>
+                                <p class="text-sm text-white/80">{{ __('dashboard.subscription.books_this_month') }}</p>
+                                <p class="text-lg font-semibold">
+                                    {{ $user->booksUploadedThisMonth() }} / {{ number_format($plan->max_books_per_month, 0, ',', '.') }}
+                                </p>
+                            </div>
                         </div>
                     </div>
                 @else
@@ -189,40 +200,40 @@
                         <input id="pdf-file" type="file" name="pdf" accept="application/pdf" class="hidden" required>
                     </div>
 
-                    {{-- Idiomas --}}
-                    <div class="grid gap-4 md:grid-cols-2">
-                        <div>
-                            <label for="source_language" class="mb-2 block text-sm font-semibold text-slate-700">{{ __('dashboard.form.source_language_label') }}</label>
-                            <select id="source_language" name="source_language"
-                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
-                                @foreach ($languageOptions as $value => $label)
-                                    <option value="{{ $value }}" @selected(old('source_language', 'pt-BR') === $value)>{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                        <div>
-                            <label for="target_language" class="mb-2 block text-sm font-semibold text-slate-700">{{ __('dashboard.form.target_language_label') }}</label>
-                            <select id="target_language" name="target_language" required
-                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
-                                @foreach ($targetLanguageOptions as $value => $label)
-                                    <option value="{{ $value }}">{{ $label }}</option>
-                                @endforeach
-                            </select>
-                        </div>
-                    </div>
-
-                    {{-- Limite de Páginas (opcional) --}}
+                    {{-- Idioma de destino --}}
                     <div>
-                        <label for="max_pages" class="mb-2 block text-sm font-semibold text-slate-700">
-                            {{ __('dashboard.form.limit_label') }}
-                            <span class="text-xs font-normal text-slate-500">{{ __('dashboard.form.limit_hint') }}</span>
-                        </label>
-                        <input type="number" id="max_pages" name="max_pages" min="1" max="1000" placeholder="{{ __('dashboard.form.limit_placeholder') }}"
-                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
+                        <label for="target_language" class="mb-2 block text-sm font-semibold text-slate-700">{{ __('dashboard.form.target_language_label') }}</label>
+                        <select id="target_language" name="target_language" required
+                            class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
+                            @foreach ($targetLanguageOptions as $value => $label)
+                                <option value="{{ $value }}">{{ $label }}</option>
+                            @endforeach
+                        </select>
                         <p class="mt-1 text-xs text-slate-500">
-                            {{ __('dashboard.form.limit_helper') }}
+                            {{ __('dashboard.form.auto_detect_hint') }}
                         </p>
                     </div>
+
+                    {{-- Intervalo de Páginas (opcional) --}}
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label for="start_page" class="mb-2 block text-sm font-semibold text-slate-700">
+                                {{ __('dashboard.form.start_page_label') }}
+                            </label>
+                            <input type="number" id="start_page" name="start_page" min="1" placeholder="{{ __('dashboard.form.start_page_placeholder') }}"
+                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <div>
+                            <label for="end_page" class="mb-2 block text-sm font-semibold text-slate-700">
+                                {{ __('dashboard.form.end_page_label') }}
+                            </label>
+                            <input type="number" id="end_page" name="end_page" min="1" placeholder="{{ __('dashboard.form.end_page_placeholder') }}"
+                                class="w-full rounded-xl border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700 placeholder-slate-400 focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                    </div>
+                    <p class="mt-1 text-xs text-slate-500">
+                        {{ __('dashboard.form.page_range_helper') }}
+                    </p>
 
                     {{-- Botão de Envio --}}
                     <button type="submit" @if(!$subscription || !$subscription->isActive()) disabled @endif
@@ -266,8 +277,8 @@
                                             <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                                             </svg>
-                                            @if($book->max_pages)
-                                                {{ __('dashboard.history.pages_limited', ['current' => $book->max_pages, 'total' => $book->total_pages]) }}
+                                            @if($book->start_page && $book->end_page)
+                                                {{ __('dashboard.history.pages_range', ['start' => $book->start_page, 'end' => $book->end_page, 'total' => $book->total_pages]) }}
                                             @else
                                                 {{ __('dashboard.history.pages_total', ['total' => $book->total_pages]) }}
                                             @endif

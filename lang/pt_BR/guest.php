@@ -4,35 +4,36 @@ return [
     'layout' => [
         'tagline' => 'Aurora Translate',
         'headline' => [
-            'login' => 'Entre para traduzir seus livros',
-            'register' => 'Crie sua conta Aurora Translate',
+            'login' => 'Entre para usar a IA da Aurora',
+            'register' => 'Crie sua conta e traduza com IA',
         ],
         'subhead' => [
-            'login' => 'Faça login para retomar traduções, revisar páginas e exportar PDFs finalizados.',
-            'register' => 'Configure o acesso da sua equipe e comece a traduzir PDFs completos ou páginas individuais.',
+            'login' => 'Retome traduções, revise PDFs com layout preservado e acompanhe o histórico da sua equipe.',
+            'register' => 'Cadastre-se para traduzir livros inteiros ou trechos definidos, escolhendo os idiomas suportados pela Aurora.',
         ],
         'features' => [
-            'upload_title' => 'Importe e traduza PDFs completos',
-            'upload_body' => 'Aplique glossários, traduza páginas específicas e preserve sumário, notas e formatação.',
-            'cloud_title' => 'Integração com Google Cloud',
-            'cloud_body' => 'Conecte sua conta Google Cloud Translation para aproveitar modelos Neural e Adaptive MT.',
+            'upload_title' => 'PDFs prontos em minutos',
+            'upload_body' => 'Faça upload, escolha idiomas e limites de páginas. A IA da Aurora cuida do texto e mantém o design.',
+            'cloud_title' => 'Idiomas principais',
+            'cloud_body' => 'Português, Inglês, Espanhol, Francês, Italiano, Alemão, Latim, Hebraico e Grego com otimizações específicas para livros.',
         ],
         'nav' => [
             'dashboard' => 'Dashboard',
             'login' => 'Entrar',
             'register' => 'Criar conta',
         ],
-        'footer' => 'Aurora Translate • Plataforma de tradução de PDFs orientada por IA',
+        'footer' => 'Aurora Translate – Plataforma de tradução de PDFs movida por IA própria',
         'terms_link' => 'Termos de Uso de Dados',
     ],
     'login' => [
         'title' => 'Bem-vindo de volta',
-        'subtitle' => 'Acesse a plataforma para administrar traduções, revisar PDFs e acompanhar o histórico da sua equipe.',
+        'subtitle' => 'Acesse a Aurora para administrar traduções, baixar PDFs e colaborar com sua equipe.',
         'no_account' => 'Ainda não tem conta?',
     ],
     'register' => [
         'title' => 'Crie sua conta',
-        'subtitle' => 'Cadastre a sua equipe para iniciar traduções de PDFs com o pipeline assistido pela Aurora Translate.',
-        'has_account' => 'Já é cadastrado?',
+        'subtitle' => 'Configure o acesso da sua equipe e traduza livros com a IA da Aurora Translate.',
+        'has_account' => 'Já possui login?',
     ],
 ];
+

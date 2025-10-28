@@ -72,20 +72,92 @@ class User extends Authenticatable
         return $this->activeSubscription()->exists();
     }
 
-    public function canUploadBook(int $pageCount): bool
+    /**
+     * Count books uploaded in the last 30 days (rolling month)
+     */
+    public function booksUploadedThisMonth(): int
     {
+        return $this->books()
+            ->where('created_at', '>=', now()->subDays(30))
+            ->count();
+    }
+
+    /**
+     * Validate if user can upload a book with given page count
+     *
+     * @param int $pageCount Number of pages to translate
+     * @return array ['allowed' => bool, 'message' => string|null, 'remaining_books' => int|null]
+     */
+    public function validatePlanLimits(int $pageCount): array
+    {
+        if ($this->is_admin) {
+            return ['allowed' => true, 'message' => null, 'remaining_books' => null];
+        }
+
         $subscription = $this->activeSubscription;
 
         if (!$subscription || !$subscription->isActive()) {
-            return false;
+            return [
+                'allowed' => false,
+                'message' => __('messages.plan_required'),
+                'remaining_books' => 0,
+            ];
         }
 
         $plan = $subscription->plan;
 
-        if ($plan->isUnlimited()) {
-            return true;
+        if (!$plan) {
+            return [
+                'allowed' => false,
+                'message' => __('messages.plan_required'),
+                'remaining_books' => 0,
+            ];
         }
 
-        return $pageCount <= $plan->max_pages;
+        // Check monthly book limit (rolling 30 days)
+        if ($plan->max_books_per_month > 0) {
+            $booksThisMonth = $this->booksUploadedThisMonth();
+
+            if ($booksThisMonth >= $plan->max_books_per_month) {
+                return [
+                    'allowed' => false,
+                    'message' => __('messages.plan_book_limit', [
+                        'max' => number_format($plan->max_books_per_month, 0, ',', '.'),
+                        'current' => $booksThisMonth,
+                    ]),
+                    'remaining_books' => 0,
+                ];
+            }
+        }
+
+        // Check pages per book limit
+        // If unlimited (0), allow any page count
+        if (!$plan->isUnlimited() && $plan->max_pages > 0 && $pageCount > $plan->max_pages) {
+            $nextPage = $plan->max_pages + 1;
+            return [
+                'allowed' => false,
+                'message' => __('messages.plan_page_limit', [
+                    'max' => number_format($plan->max_pages, 0, ',', '.'),
+                    'requested' => number_format($pageCount, 0, ',', '.'),
+                    'next' => number_format($nextPage, 0, ',', '.'),
+                ]),
+                'remaining_books' => $plan->max_books_per_month - $this->booksUploadedThisMonth(),
+            ];
+        }
+
+        $remainingBooks = $plan->max_books_per_month > 0
+            ? $plan->max_books_per_month - $this->booksUploadedThisMonth()
+            : null;
+
+        return [
+            'allowed' => true,
+            'message' => null,
+            'remaining_books' => $remainingBooks,
+        ];
+    }
+
+    public function canUploadBook(int $pageCount): bool
+    {
+        return $this->validatePlanLimits($pageCount)['allowed'];
     }
 }
